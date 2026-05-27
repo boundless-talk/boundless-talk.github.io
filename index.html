@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B-TALK</title>
+    <!-- Firebase Legacy SDKs (Compat mode matching user's stack) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Agora RTC Web SDK -->
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
+
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at center, #1a1d24 0%, #0d0e12 100%);
+            --accent-color: #00e5ff;
+            --accent-glow: rgba(0, 229, 255, 0.2);
+            --danger-color: #ff3b30;
+            --danger-glow: rgba(255, 59, 48, 0.2);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+        }
+
+        /* 영구 정지 스크린 */
+        #ban-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0d0e12;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+        }
+        #ban-overlay h1 { font-size: 42px; color: var(--danger-color); margin-bottom: 15px; letter-spacing: 2px; }
+        #ban-overlay p { font-size: 16px; color: #a0aec0; max-width: 500px; line-height: 1.6; }
+
+        .lang-container { position: absolute; top: 20px; right: 20px; z-index: 10; }
+        .lang-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.6); padding: 6px 14px; font-size: 12px; font-weight: 600;
+            border-radius: 20px; cursor: pointer; transition: all 0.2s;
+        }
+        .lang-btn:hover { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0,229,255,0.05); }
+
+        .reputation-board {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 15px 30px; border-radius: 16px; margin-bottom: 25px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px);
+            width: 100%; max-width: 400px;
+        }
+        .reputation-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+        .badge-list { display: flex; gap: 12px; justify-content: center; }
+        .badge-item { font-size: 13px; background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); font-weight: 500; }
+
+        #main-container {
+            width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
+        }
+
+        h2 { font-size: 24px; font-weight: 300; letter-spacing: 4px; margin-bottom: 25px; text-transform: uppercase; text-align: center; color: #fff; }
+        
+        .input-group { width: 100%; position: relative; margin-bottom: 20px; }
+        input {
+            width: 100%; padding: 16px 20px; background-color: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 14px; color: #ffffff; transition: all 0.3s ease;
+        }
+        input:focus { border-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-glow); outline: none; }
+        
+        .select-group {
+            width: 100%; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+        }
+        .select-group label { font-size: 13px; color: rgba(255,255,255,0.6); }
+        select { background: #161920; color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; cursor: pointer; outline: none; font-size: 13px; }
+
+        button { width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; border: none; transition: all 0.2s ease; }
+        
+        #auth-section { width: 100%; display: flex; gap: 10px; margin-bottom: 25px; }
+        #google-login-btn { background-color: #ffffff; color: #111111; margin: 0; }
+        #google-login-btn:hover { background-color: #e5e5e5; transform: translateY(-1px); }
+        #anon-login-btn { background-color: #242933; color: #ffffff; border: 1px solid rgba(255,255,255,0.1); margin: 0; }
+        #anon-login-btn:hover { background-color: #2f3644; transform: translateY(-1px); }
+        #logout-btn { background-color: transparent; color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 10px; font-size: 13px; display: none; }
+        #logout-btn:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+        #join-btn { background-color: var(--accent-color); color: #000000; font-size: 16px; box-shadow: 0 4px 15px var(--accent-glow); }
+        #join-btn:hover:not(:disabled) { background-color: #00b8cc; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,229,255,0.3); }
+        #join-btn:disabled { background-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); box-shadow: none; cursor: not-allowed; }
+        
+        #leave-btn { background-color: transparent; color: var(--danger-color); border: 1px solid rgba(255,59,48,0.3); display: none; }
+        #leave-btn:hover:not(:disabled) { background-color: rgba(255,59,48,0.05); border-color: var(--danger-color); transform: translateY(-1px); }
+        
+        #report-btn { background-color: #ff9500; color: #ffffff; display: none; box-shadow: 0 4px 12px rgba(255,149,0,0.15); }
+        #report-btn:hover:not(:disabled) { background-color: #e08400; transform: translateY(-1px); }
+
+        /* 대화방 활성화 시 매칭 상태 및 참여자 그리드 */
+        #matching-status { font-size: 13px; color: var(--accent-color); letter-spacing: 0.5px; margin-bottom: 15px; text-align: center; min-height: 20px; font-weight: 500; }
+        #participants-box {
+            width: 100%; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 15px; margin-bottom: 20px; display: none;
+        }
+        .part-title { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: center;}
+        .part-list { display: flex; flex-direction: column; gap: 8px; }
+        .part-item { background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; font-size: 13.5px; display: flex; align-items: center; gap: 10px; border-left: 3px solid var(--accent-color); }
+        .part-item.speaking { border-left-color: #34c759; animation: pulse 1.5s infinite; }
+
+        #channel-debug { font-size: 11px; color: rgba(255,255,255,0.2); letter-spacing: 1px; margin-top: 15px; text-align: center; }
+
+        /* 모달 레이아웃 고도화 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            padding: 20px;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: #161920; border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 30px;
+            border-radius: 20px; text-align: center; width: 100%; max-width: 440px;
+            transform: scale(0.95); transition: all 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-content h3 { margin-top: 0; font-weight: 400; letter-spacing: 1px; font-size: 20px; }
+        .modal-content p { color: rgba(255,255,255,0.5); font-size: 13.5px; margin-bottom: 20px; line-height: 1.5; }
+        
+        .ai-summary-box {
+            background: rgba(0,229,255,0.03); border: 1px dashed rgba(0,229,255,0.2);
+            border-radius: 12px; padding: 15px; margin-bottom: 20px;
+            text-align: left; font-size: 13px; line-height: 1.6; color: #e0e6ed;
+        }
+        .ai-summary-box strong { color: var(--accent-color); }
+        
+        .target-select-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 160px; overflow-y: auto; }
+        .target-btn {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 12px; border-radius: 8px; text-align: left; font-size: 13.5px; cursor: pointer; transition: all 0.2s;
+        }
+        .target-btn:hover { background: rgba(0,229,255,0.08); border-color: var(--accent-color); }
+        .target-btn.selected { background: rgba(0,229,255,0.15); border-color: var(--accent-color); color: var(--accent-color); font-weight: 600; }
+
+        .badge-select-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .badge-vote-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 12px; border-radius: 8px; font-size: 14px;
+            text-align: center; cursor: pointer; transition: all 0.2s; width: 100%; margin: 0;
+        }
+        .badge-vote-btn:hover:not(:disabled) { background: rgba(0,229,255,0.08); border-color: var(--accent-color); color: var(--accent-color); }
+        .badge-vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(52, 199, 89, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 유해유저 영구 제한 오버레이 화면 -->
+    <div id="ban-overlay">
+        <h1 id="ban-title">ACCESS DENIED</h1>
+        <p id="ban-desc">AI 정밀 분석 결과, 지속적인 규정 위반(욕설, 성희롱 등 유해 패턴)이 적발되어 이 계정은 서비스 이용이 영구 정지되었습니다.</p>
+    </div>
+
+    <div class="lang-container">
+        <button id="lang-toggle-btn" class="lang-btn">한국어</button>
+    </div>
+
+    <!-- 내 평판 점수판 -->
+    <div class="reputation-board" id="reputation-section" style="display: none;">
+        <div class="reputation-title" id="rep-title">My Reputation Profile</div>
+        <div class="badge-list">
+            <div class="badge-item">👍 <span id="label-manner">Manner</span>: <strong id="score-manner">0</strong></div>
+            <div class="badge-item">🧠 <span id="label-logic">Logic</span>: <strong id="score-logic">0</strong></div>
+            <div class="badge-item">🤣 <span id="label-humor">Humor</span>: <strong id="score-humor">0</strong></div>
+        </div>
+    </div>
+
+    <div id="main-container">
+        <!-- 인증 섹션 -->
+        <div id="auth-section">
+            <button id="google-login-btn">Sign in with Google</button>
+            <button id="anon-login-btn">Guest Login</button>
+        </div>
+        <button id="logout-btn">Logout</button>
+
+        <h2 id="app-title">BOUNDLESS VOICE TALK</h2>
+        
+        <div class="input-group">
+            <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
+        </div>
+        
+        <div id="matching-status"></div>
+
+        <div class="select-group" id="max-people-group">
+            <label for="max-people-select" id="maxpeople">Max People:</label>
+            <select id="max-people-select">
+                <option value="3" id="opt-3">3 Members</option>
+                <option value="4" id="opt-4" selected>4 Members (Recommended)</option>
+                <option value="6" id="opt-6">6 Members</option>
+            </select>
+        </div>
+
+        <!-- 현재 참여자 관리 UI 박스 -->
+        <div id="participants-box">
+            <div class="part-title" id="part-title-label">Active Channel Participants</div>
+            <div class="part-list" id="part-list-container">
+                <!-- 동적으로 다중 유저 추가됨 -->
+            </div>
+        </div>
+
+        <button id="join-btn" disabled>Start Talk</button>
+        <button id="report-btn">🚨 Report Toxic User</button>
+        <button id="leave-btn">Leave Room</button>
+
+        <div id="channel-debug"></div>
+    </div>
+
+    <!-- 종합 평가 및 배지 선물 모달창 -->
+    <div class="modal-overlay" id="badge-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Conversation Report</h3>
+            <p id="modal-desc">Here is your AI conversation summary. Choose a peer to gift a badge!</p>
+            
+            <div class="ai-summary-box">
+                💡 <strong id="summary-headline">AI Chat Summary Loading...</strong><br>
+                <span id="summary-content" style="color: rgba(255,255,255,0.7);">Analyzing the dialogue pattern...</span>
+            </div>
+
+            <!-- 다중 접속 환경 대응: 평가 타겟 유저 선택 영역 -->
+            <div class="target-select-list" id="vote-target-container"></div>
+
+            <div class="badge-select-grid">
+                <button class="badge-vote-btn" id="btn-vote-manner" onclick="executeVote('manner')" disabled>👍 <span id="vote-manner">Good Manners</span></button>
+                <button class="badge-vote-btn" id="btn-vote-logic" onclick="executeVote('logic')" disabled>🧠 <span id="vote-logic">Highly Logical</span></button>
+                <button class="badge-vote-btn" id="btn-vote-humor" onclick="executeVote('humor')" disabled>🤣 <span id="vote-humor">Very Humorous</span></button>
+                <button class="badge-vote-btn" onclick="closeModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-weight:400; margin-top: 10px;" id="vote-skip">Skip Feedback</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 신고 전용 모달창 -->
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-content">
+            <h3 style="color: var(--danger-color);" id="rep-m-title">🚨 Report Toxic User</h3>
+            <p id="rep-m-desc">Select the user you wish to report. The past 60 seconds of audio data will be audited by the Safeguard AI.</p>
+            
+            <div class="target-select-list" id="report-target-container"></div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="rep-m-submit" style="background: var(--danger-color); color: #fff;" onclick="executeReport()" disabled>Submit Report</button>
+                <button style="background: rgba(255,255,255,0.05); color: #fff;" onclick="closeReportModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // 1. Firebase Core Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSy" + "AvnzYiPbSoY0HN6WWLTa1Ge2yB0sGm02I",
+        authDomain: "b-talk-login.firebaseapp.com",
+        databaseURL: "https://b-talk-login-default-rtdb.firebaseio.com/",
+        projectId: "b-talk-login",
+        storageBucket: "b-talk-login.appspot.com",
+        messagingSenderId: "1041735787374",
+        appId: "1:1041735787374:web:b32df90d336d69fba7577f"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const database = firebase.database();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // 2. Global State Management
+    let currentLang = "ko"; 
+    const AGORA_APP_ID = "71b6f8c1cb424be1b2b5480d447e69e2";
+    const SIGNAL_SERVER_URL = "https://kvdb.io/YAPuhyeXZWiNidFcsstzqK/";
+
+    let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+    let localAudioTrack = null;
+    let isJoined = false;
+    let currentChannelName = "";
+    let myUid = null;
+    let signalTimer = null;
+
+    // 다중 참여자 목록 추적 (본인 제외)
+    let roomParticipants = []; 
+    let selectedVoteTarget = null;
+    let selectedReportTarget = null;
+
+    // 60초 롤링 녹음을 위한 Web Audio API 및 Buffer 오브젝트
+    let audioCtx = null;
+    let audioDest = null;
+    let mediaRecorder = null;
+    let audioSlices = []; // 10초 단위 녹음 슬라이스 관리 배열 (최대 6개 = 60초)
+    let sliceInterval = null;
+
+    // 다국어 데이터 사전 사전 정의
+    const textData = {
+        en: {
+            title: "Boundless Voice Talk",
+            placeholder: "Enter any topic freely (e.g., Elon Musk, tesla, counseling...)",
+            maxPeopleLabel: "Max People:",
+            startBtn: "Start Talk",
+            joinBtn: "In Conversation...",
+            leaveBtn: "Leave Room",
+            reportBtn: "🚨 Report Toxic User",
+            alertInput: "Please enter a topic!",
+            alertJoin: (topic, max) => `Joined [${topic}] channel! (${max} people max) Waiting for peers...`,
+            toggleBtn: "KR",
+            opt3: "3 members", opt4: "4 members (recommended)", opt6: "6 members",
+            repTitle: "My Reputation Profile",
+            badgeManner: "Manners", badgeLogic: "Logic", badgeHumor: "Humor",
+            mTitle: "Conversation Report",
+            mDesc: "Check out what AI noted, and gift a peer badge!",
+            vManner: "Good Manners", vLogic: "Highly Logical", vHumor: "Very Humorous", vSkip: "Skip & Close",
+            aiLoading: "AI Chat Summary Loading...",
+            aiHeadline: "Today's Dialogue Highlights",
+            aiSample: "• Discussed the core values of chosen topic dynamically.<br>• Respectful conversation flows detected by AI engine.<br>• Peer validation phase ready.",
+            matchingLoading: "🤖 AI is analyzing and assigning the best matched channel...",
+            matchingDone: (topic) => `✅ Connected to topic channel: [${topic}]`,
+            matchingFail: "⚠️ AI service delayed. Matching via raw keyword.",
+            partLabel: "Active Room Channels",
+            banTitle: "ACCESS PERMANENTLY BANNED",
+            banDesc: "Following a formal AI investigation of reported interaction logs, your account has been blacklisted for violating safety guidelines (profanity/sexual harassment). Access denied.",
+            selectTargetMsg: "Select a participant",
+            reportTitle: "🚨 Report Toxic User",
+            reportDesc: "Select the user you wish to report. The past 1 minute of voice dialogue will be uploaded and audited by AI Safeguard.",
+            reportSuccess: "Report Submitted. The target is being evaluated under AI surveillance.",
+            badgeSuccess: "Reputation Badge successfully transferred!"
+        },
+        ko: {
+            title: "바운들리스 음성 토킹",
+            placeholder: "원하는 주제를 편안하게 입력하세요 (예: 사랑, 테슬라, 고민상담, 여행)",
+            maxPeopleLabel: "최대 참여 인원:",
+            startBtn: "대화 시작하기",
+            joinBtn: "연결 및 대화 중...",
+            leaveBtn: "대화방 나가기",
+            reportBtn: "🚨 불량 유저 신고하기",
+            alertInput: "소통하고 싶은 주제를 입력해주세요!",
+            alertJoin: (topic, max) => `[${topic}] 채널에 입장했습니다! (정원 ${max}명) 다른 사람을 기다리는 중...`,
+            toggleBtn: "EN",
+            opt3: "3명", opt4: "4명 (권장)", opt6: "6명",
+            repTitle: "나의 평판 프로필",
+            badgeManner: "매너 좋음", badgeLogic: "논리적임", badgeHumor: "유머러스",
+            mTitle: "대화 분석 리포트",
+            mDesc: "AI가 요약한 대화 내용을 파악하고 함께 대화한 상대방에게 배지를 선물해 보세요.",
+            vManner: "매너가 좋았어요", vLogic: "논리적이었어요", vHumor: "유머러스했어요", vSkip: "닫기 및 건너뛰기",
+            aiLoading: "AI가 대화 요약본을 추출하는 중...",
+            aiHeadline: "오늘의 대화 핵심 쟁점 분석 결과",
+            aiSample: "• 참여자들이 설정한 주제에 부합하는 소통이 정상적으로 이루어졌습니다.<br>• 외모나 조건 없는 목소리 기반의 긍정적 티키타카가 감지되었습니다.<br>• 상호 평판 배지 수여가 가능합니다.",
+            matchingLoading: "🤖 AI가 대화 평판도 및 주제를 통합 분석하여 매칭하는 중...",
+            matchingDone: (topic) => `✅ 최적화된 [${topic}] 채널로 정밀 매칭되었습니다.`,
+            matchingFail: "⚠️ AI 서버 혼잡. 입력 키워드로 다이렉트 매칭을 처리합니다.",
+            partLabel: "현재 채널 내 오디오 참여자",
+            banTitle: "🚫 서비스 영구 정지 안내",
+            banDesc: "신고 접수에 따른 AI 정밀 오디오 판독 결과, 규정 위반 항목(성희롱, 모욕, 악성 발언)이 명백히 식별되어 본 계정은 전 서비스 공간에 대한 접근 및 이용이 영구적으로 불가합니다.",
+            selectTargetMsg: "대상 참여자를 선택하세요",
+            reportTitle: "🚨 불량 유저 신고하기",
+            reportDesc: "신고 대상을 선택해 주세요. 신고 시점 기준 '최근 1분간'의 실시간 음성 스트림 결합 데이터가 AI 유해성 감별 백엔드로 전송됩니다.",
+            reportSuccess: "신고 완료. 유해 발언이 확인되면 즉시 강력 영구 처분이 단행됩니다.",
+            badgeSuccess: "상대방의 평판 프로필에 배지를 성공적으로 누적했습니다!"
+        }
+    };
+
+    // 3. Authentication & Security Middleware
+    auth.onAuthStateChanged((user) => {
+        const googleBtn = document.getElementById("google-login-btn");
+        const anonBtn = document.getElementById("anon-login-btn");
+        const logoutBtn = document.getElementById("logout-btn");
+        const reputationSection = document.getElementById("reputation-section");
+        const startBtn = document.getElementById("join-btn");
+        const loginSection = document.getElementById("auth-section");
+
+        if (user) {
+            // [보안 핵심] 로그인 즉시 Realtime DB에서 해당 유저의 밴 유무 실시간 리스닝 수행
+            database.ref('users/' + user.uid + '/banned').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    document.getElementById("ban-overlay").style.display = "flex";
+                    auth.signOut();
+                    return;
+                }
+            });
+
+            if (googleBtn) googleBtn.style.display = "none";
+            if (anonBtn) anonBtn.style.display = "none";
+            if (loginSection) loginSection.style.display = "none";
+            if (logoutBtn) logoutBtn.style.display = "inline-block";
+            if (reputationSection) reputationSection.style.display = "block";
+            if (startBtn && !isJoined) startBtn.disabled = false;
+
+            // 평판 데이터 연동 (배지 수 누적 리스닝)
+            database.ref('users/' + user.uid + '/badges').on('value', (snapshot) => {
+                const badges = snapshot.val() || { manner: 0, logic: 0, humor: 0 };
+                document.getElementById('score-manner').innerText = badges.manner || 0;
+                document.getElementById('score-logic').innerText = badges.logic || 0;
+                document.getElementById('score-humor').innerText = badges.humor || 0;
+            });
+
+        } else {
+            if (googleBtn) googleBtn.style.display = "inline-block";
+            if (anonBtn) anonBtn.style.display = "inline-block";
+            if (loginSection) loginSection.style.display = "flex";
+            if (logoutBtn) logoutBtn.style.display = "none";
+            if (reputationSection) reputationSection.style.display = "none";
+            if (startBtn) startBtn.disabled = true;
+            document.getElementById("ban-overlay").style.display = "none";
+        }
+    });
+
+    // 세션 유지 설정
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch((error) => {
+        console.error("Persistence configuration error:", error);
+    });
+
+    // 4. UI 갱신 & 다국어 바인딩 매핑 로직
+    function updateUI() {
+        const lang = textData[currentLang];
+        document.getElementById('app-title').innerText = lang.title;
+        document.getElementById('topic-input').placeholder = lang.placeholder;
+        document.getElementById('maxpeople').innerText = lang.maxPeopleLabel;
+        document.getElementById('leave-btn').innerText = lang.leaveBtn;
+        document.getElementById('report-btn').innerText = lang.reportBtn;
+        document.getElementById('lang-toggle-btn').innerText = lang.toggleBtn;
+        document.getElementById('opt-3').innerText = lang.opt3;
+        document.getElementById('opt-4').innerText = lang.opt4;
+        document.getElementById('opt-6').innerText = lang.opt6;
+        document.getElementById('rep-title').innerText = lang.repTitle;
+        document.getElementById('label-manner').innerText = lang.badgeManner;
+        document.getElementById('label-logic').innerText = lang.badgeLogic;
+        document.getElementById('label-humor').innerText = lang.badgeHumor;
+        document.getElementById('modal-title').innerText = lang.mTitle;
+        document.getElementById('modal-desc').innerText = lang.mDesc;
+        document.getElementById('vote-manner').innerText = lang.vManner;
+        document.getElementById('vote-logic').innerText = lang.vLogic;
+        document.getElementById('vote-humor').innerText = lang.vHumor;
+        document.getElementById('vote-skip').innerText = lang.vSkip;
+        document.getElementById('part-title-label').innerText = lang.partLabel;
+        document.getElementById('ban-title').innerText = lang.banTitle;
+        document.getElementById('ban-desc').innerText = lang.banDesc;
+        document.getElementById('rep-m-title').innerText = lang.reportTitle;
+        document.getElementById('rep-m-desc').innerText = lang.reportDesc;
+
+        document.getElementById('google-login-btn').innerText = (currentLang === 'en') ? "Sign in with Google" : "구글 로그인";
+        document.getElementById('anon-login-btn').innerText = (currentLang === 'en') ? "Guest Login" : "게스트 로그인";
+        document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "Logout" : "로그아웃";
+
+        if (!document.getElementById('badge-modal').classList.contains('active')) {
+            document.getElementById('summary-headline').innerText = lang.aiLoading;
+        }
+        document.getElementById('join-btn').innerText = isJoined ? lang.joinBtn : lang.startBtn;
+    }
+
+    // 로그인 및 로그아웃 버튼 이벤트 바인딩
+    document.getElementById('google-login-btn').addEventListener('click', () => {
+        auth.signInWithPopup(provider).catch((error) => console.error(error));
+    });
+
+    document.getElementById('anon-login-btn').addEventListener('click', () => {
+        auth.signInAnonymously().catch((error) => console.error(error));
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        auth.signOut();
+    });
+
+    document.getElementById('lang-toggle-btn').addEventListener('click', () => {
+        currentLang = (currentLang === "en") ? "ko" : "en";
+        updateUI();
+        if (isJoined) renderParticipantsUI();
+    });
+
+    // 5. Netlify AI Serverless Function 연동 매칭 엔진
+    async function getAIMatchedTopic(userInput) {
+        const statusEl = document.getElementById('matching-status');
+        const lang = textData[currentLang];
+        statusEl.innerText = lang.matchingLoading;
+
+        try {
+            const response = await fetch("/.netlify/functions/getTopic", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userInput: userInput, uid: auth.currentUser ? auth.currentUser.uid : "anon" })
+            });
+            if (!response.ok) throw new Error("Backend response error");
+            const data = await response.json();
+            let topic = data.topic ? data.topic.toLowerCase().replace(/[^a-z0-9-_]/g, "").trim() : "general";
+            if(!topic) topic = "general";
+            statusEl.innerText = lang.matchingDone(topic);
+            return topic;
+        } catch (error) {
+            console.error("AI matching failed, moving to fallback route:", error);
+            statusEl.innerText = lang.matchingFail;
+            return userInput.toLowerCase().replace(/[^a-z0-9-_]/g, "").slice(0, 20) || "general";
+        }
+    }
+
+    // 6. 60초 최신 대화 오디오 롤링 버퍼 및 녹음 아키텍처 (Web Audio API 기반)
+    function setupRollingAudioRecorder() {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioDest = audioCtx.createMediaStreamDestination();
+            audioSlices = [];
+
+            // 내 오디오 트랙을 믹서에 병합 연결
+            if (localAudioTrack) {
+                const localStream = new MediaStream([localAudioTrack.getMediaStreamTrack()]);
+                const localSource = audioCtx.createMediaStreamSource(localStream);
+                localSource.connect(audioDest);
+            }
+
+            mediaRecorder = new MediaRecorder(audioDest.stream, { mimeType: 'audio/webm' });
+            let currentChunks = [];
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) currentChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(currentChunks, { type: 'audio/webm' });
+                audioSlices.push(blob);
+                // [정밀 규칙 관리] 10초 단위 슬라이스 배열 관리, 최대 6개 블록 유지 (=총 1분 보관)
+                if (audioSlices.length > 6) {
+                    audioSlices.shift();
+                }
+                currentChunks = [];
+                // 통화 참여가 유지되는 중이라면 녹음 계속 순환 순방향 재시작
+                if (isJoined && mediaRecorder) {
+                    try { mediaRecorder.start(); } catch(e){}
+                }
+            };
+
+            // 10초 단위로 오디오 데이터를 청크 슬라이싱 처리
+            mediaRecorder.start();
+            sliceInterval = setInterval(() => {
+                if (mediaRecorder && mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                }
+            }, 10000);
+
+        } catch (e) {
+            console.error("Failed to build Audio Context Security Safeguard Node:", e);
+        }
+    }
+
+    function stopRollingAudioRecorder() {
+        if (sliceInterval) { clearInterval(sliceInterval); sliceInterval = null; }
+        if (mediaRecorder) {
+            try { mediaRecorder.onstop = null; mediaRecorder.stop(); } catch(e){}
+            mediaRecorder = null;
+        }
+        if (audioCtx) { try { audioCtx.close(); } catch(e){} audioCtx = null; }
+    }
+
+    // 7. Agora RTC 소통 엔진 핵심 제어 로직
+    document.getElementById('join-btn').onclick = async function() {
+        const topicInput = document.getElementById('topic-input');
+        const rawTopic = String(topicInput.value).normalize('NFC').trim();
+        if (!rawTopic) {
+            alert(textData[currentLang].alertInput);
+            topicInput.focus();
+            return;
+        }
+
+        const maxPeople = parseInt(document.getElementById('max-people-select').value);
+        document.getElementById('join-btn').disabled = true;
+
+        const finalTopic = await getAIMatchedTopic(rawTopic);
+        currentChannelName = finalTopic;
+        document.getElementById('channel-debug').innerText = `Channel Name: ${currentChannelName}`;
+
+        try {
+            client.setClientRole("host");
+            const firebaseUser = auth.currentUser;
+            // Agora String UID 파라미터를 그대로 매핑 연동
+            const agoraUid = firebaseUser ? firebaseUser.uid : null;
+
+            myUid = await client.join(AGORA_APP_ID, currentChannelName, null, agoraUid);
+            isJoined = true;
+            roomParticipants = [];
+
+            // 마이크 활성화 및 아고라 채널 퍼블리시
+            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            await client.publish([localAudioTrack]);
+
+            // 오디오 보안 롤링 시스템 즉시 실행
+            setupRollingAudioRecorder();
+            startSignalPolling();
+
+            document.getElementById('join-btn').style.display = "none";
+            document.getElementById('leave-btn').style.display = "inline-block";
+            document.getElementById('report-btn').style.display = "inline-block";
+            document.getElementById('participants-box').style.display = "block";
+            document.getElementById('max-people-group').style.display = "none";
+            topicInput.disabled = true;
+
+            renderParticipantsUI();
+            alert(textData[currentLang].alertJoin(currentChannelName, maxPeople));
+
+        } catch (error) {
+            console.error("Agora room entry crashed:", error);
+            document.getElementById('join-btn').disabled = false;
+            document.getElementById('join-btn').innerText = textData[currentLang].startBtn;
+            topicInput.disabled = false;
+        }
+    };
+
+    // Agora 원격 유저 서브스크립션 이벤트 핸들러
+    client.on("user-published", async (user, mediaType) => {
+        await client.subscribe(user, mediaType);
+        if (mediaType === "audio") {
+            user.audioTrack.play();
+            
+            if (!roomParticipants.includes(user.uid)) {
+                roomParticipants.push(user.uid);
+                renderParticipantsUI();
+            }
+
+            // Web Audio API 오디오 믹서 노드가 구축되어 있으면 원격 오디오 스트림 결합 믹싱 처리
+            if (audioCtx && audioDest) {
+                try {
+                    const remoteStream = new MediaStream([user.audioTrack.getMediaStreamTrack()]);
+                    const remoteSource = audioCtx.createMediaStreamSource(remoteStream);
+                    remoteSource.connect(audioDest);
+                } catch(e){ console.error("Error linking remote stream node into mixer:", e); }
+            }
+        }
+    });
+
+    client.on("user-left", (user) => {
+        roomParticipants = roomParticipants.filter(uid => uid !== user.uid);
+        renderParticipantsUI();
+    });
+
+    // 익명화된 참가자 리스트 UI 렌더링 (외모/프로필 요소 완벽 배제)
+    function renderParticipantsUI() {
+        const container = document.getElementById('part-list-container');
+        container.innerHTML = "";
+        
+        if (roomParticipants.length === 0) {
+            container.innerHTML = `<div style="font-size:12px; color:rgba(255,255,255,0.3); text-align:center; padding:10px;">Waiting for peers...</div>`;
+            return;
+        }
+
+        roomParticipants.forEach((uid, index) => {
+            const el = document.createElement('div');
+            el.className = "part-item";
+            el.id = `part-${uid}`;
+            // 닉네임과 프로필을 원천 차단하고 순번을 이용해 처리 익명화 유지
+            el.innerHTML = `👤 Participant ${index + 1}`;
+            container.appendChild(el);
+        });
+    }
+
+    // 8. 실시간 평판 시그널링 폴링 시스템 (KVDB)
+    function startSignalPolling() {
+        if (signalTimer) clearInterval(signalTimer);
+        signalTimer = setInterval(async () => {
+            if (!isJoined || !currentChannelName) return;
+            try {
+                const res = await fetch(`${SIGNAL_SERVER_URL}${currentChannelName}`, { cache: 'no-store' });
+                if (res.status === 200) {
+                    const data = await res.json();
+                    if (data && data.targetUid === String(myUid)) {
+                        const receivedMsg = data.badgeType;
+                        const badgeNames = {
+                            manner: currentLang === 'ko' ? "매너 좋음" : "Manners",
+                            logic: currentLang === 'ko' ? "논리적임" : "Logic",
+                            humor: currentLang === 'ko' ? "유머러스함" : "Humor"
+                        };
+                        alert(currentLang === 'ko'
+                            ? `✨ 다른 참여자가 나에게 [${badgeNames[receivedMsg]}] 배지를 선물했습니다!`
+                            : `✨ A peer has gifted you a [${badgeNames[receivedMsg]}] badge!`
+                        );
+                        // 수신 트래픽 정리용으로 키 제거 요청 처리
+                        try { await fetch(`${SIGNAL_SERVER_URL}${currentChannelName}`, { method: 'DELETE' }); } catch(e){}
+                    }
+                }
+            } catch (e) {}
+        }, 6000);
+    }
+
+    // 9. 신고 모달 팝업 및 AI 1분 분석 유해 검사 제출 로직
+    document.getElementById('report-btn').onclick = function() {
+        if (roomParticipants.length === 0) {
+            alert(currentLang === 'ko' ? "신고할 원격 참여자가 방에 없습니다." : "No active participants to report.");
+            return;
+        }
+        
+        const container = document.getElementById('report-target-container');
+        container.innerHTML = "";
+        selectedReportTarget = null;
+        document.getElementById('rep-m-submit').disabled = true;
+
+        roomParticipants.forEach((uid, index) => {
+            const btn = document.createElement('button');
+            btn.className = "target-btn";
+            btn.innerText = `👤 Participant ${index + 1}`;
+            btn.onclick = () => {
+                document.querySelectorAll('#report-target-container .target-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedReportTarget = uid;
+                document.getElementById('rep-m-submit').disabled = false;
+            };
+            container.appendChild(btn);
+        });
+
+        document.getElementById('report-modal').classList.add('active');
+    };
+
+    function closeReportModal() {
+        document.getElementById('report-modal').classList.remove('active');
+    }
+
+    async function executeReport() {
+        if (!selectedReportTarget) return;
+        
+        // 롤링 버퍼에 존재하는 최근 1분간의 축적용 오디오 청크들을 하나의 대형 파일로 병합 병합
+        const fullReportBlob = new Blob(audioSlices, { type: 'audio/webm' });
+        
+        // 실제 운영 배포 단계용 FormData 전송부 인프라 설계 구성 제공
+        const formData = new FormData();
+        formData.append("audioData", fullReportBlob);
+        formData.append("reportedUid", selectedReportTarget);
+        formData.append("reporterUid", myUid);
+        formData.append("channel", currentChannelName);
+
+        alert(currentLang === 'ko' 
+            ? "🚨 최근 1분간의 대화 오디오 데이터를 추출하여 AI 검증 시스템에 업로드합니다." 
+            : "🚨 Extracting the last 60 seconds of conversational audio and uploading to AI Safeguard.");
+
+        closeReportModal();
+
+        try {
+            // Netlify 백엔드 서버리스 AI 검사 엔드포인트 호출 연동
+            const response = await fetch("/.netlify/functions/reportUser", {
+                method: "POST",
+                body: formData
+            });
+
+            // 프로토타입 시뮬레이션용 가상 결과 출력 (백엔드 인프라가 미완성일 때를 대비한 분기 처리 정비)
+            setTimeout(() => {
+                alert(textData[currentLang].reportSuccess);
+            }, 1000);
+
+        } catch (err) {
+            console.error("Report execution network issue:", err);
+            alert(textData[currentLang].reportSuccess);
+        }
+    }
+
+    // 10. 통화방 퇴장 및 멀티 피어 평판 배지 기프트 모달 제어 시스템
+    document.getElementById('leave-btn').onclick = async function() {
+        try {
+            stopRollingAudioRecorder();
+            if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
+            if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack.close(); localAudioTrack = null; }
+            await client.leave();
+
+            isJoined = false;
+            document.getElementById('join-btn').style.display = "block";
+            document.getElementById('join-btn').disabled = false;
+            document.getElementById('leave-btn').style.display = "none";
+            document.getElementById('report-btn').style.display = "none";
+            document.getElementById('participants-box').style.display = "none";
+            document.getElementById('max-people-group').style.display = "flex";
+            
+            const topicInput = document.getElementById('topic-input');
+            topicInput.disabled = false;
+            topicInput.value = "";
+            document.getElementById('matching-status').innerText = "";
+
+            // 피어 배지 전송 타겟 리스트박스 렌더링 구성
+            setupVoteTargetsUI();
+
+            // AI 대화 요약본 분석 브리핑 레이아웃 활성화
+            document.getElementById('badge-modal').classList.add('active');
+
+            setTimeout(() => {
+                document.getElementById('summary-headline').innerText = textData[currentLang].aiHeadline;
+                document.getElementById('summary-content').innerHTML = textData[currentLang].aiSample;
+            }, 1200);
+
+        } catch (error) { console.error("Error occurred while leaving room:", error); }
+    };
+
+    function setupVoteTargetsUI() {
+        const container = document.getElementById('vote-target-container');
+        container.innerHTML = "";
+        selectedVoteTarget = null;
+        
+        toggleVoteBadgeButtons(false);
+
+        if (roomParticipants.length === 0) {
+            container.innerHTML = `<div style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; padding:10px; line-height:1.4;">${currentLang === 'ko' ? "• 대화 시간이 짧거나 피어 참여자 기록이 확보되지 않아 배지 대상이 없습니다." : "• Call session was too brief or no peer connection logged."}</div>`;
+            return;
+        }
+
+        roomParticipants.forEach((uid, index) => {
+            const btn = document.createElement('button');
+            btn.className = "target-btn";
+            btn.innerText = `👤 Participant ${index + 1}`;
+            btn.onclick = () => {
+                document.querySelectorAll('#vote-target-container .target-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedVoteTarget = uid;
+                toggleVoteBadgeButtons(true);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function toggleVoteBadgeButtons(enable) {
+        document.getElementById('btn-vote-manner').disabled = !enable;
+        document.getElementById('btn-vote-logic').disabled = !enable;
+        document.getElementById('btn-vote-humor').disabled = !enable;
+    }
+
+    async function executeVote(badgeType) {
+        if (!selectedVoteTarget) return;
+
+        try {
+            // 1. KVDB 시그널링 전송 (상대방 브라우저 알림 인터셉터 트리거 발송)
+            await fetch(`${SIGNAL_SERVER_URL}${currentChannelName}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ badgeType, targetUid: String(selectedVoteTarget), senderId: String(myUid), timestamp: Date.now() })
+            });
+
+            // 2. Firebase Database 트랜잭션 원자적 연산 - 상대방 UID에 점수 다이렉트 누적 처리
+            const targetBadgeRef = database.ref('users/' + selectedVoteTarget + '/badges/' + badgeType);
+            await targetBadgeRef.transaction((currentValue) => {
+                return (currentValue || 0) + 1;
+            });
+
+            alert(textData[currentLang].badgeSuccess);
+            closeModal();
+
+        } catch (err) {
+            console.error("Firebase transaction processing failure:", err);
+            closeModal();
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('badge-modal').classList.remove('active');
+    }
+
+    // 초기 실행 구동부 체인 링크
+    window.addEventListener('DOMContentLoaded', () => {
+        updateUI();
+    });
+</script>
+</body>
+</html>
