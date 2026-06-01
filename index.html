@@ -570,7 +570,7 @@
             emailSignup: "Sign Up"
         },
         ko: {
-            title: "바운들리스 음성 토킹",
+            title: "경계 없는 목소리",
             subtitle: "하고 싶은 모든 이야기, 누구와든 나누어 보세요!",
             placeholder: "원하는 주제를 편안하게 입력하세요 (예: 사랑, 테슬라, 고민상담, 여행)",
             maxPeopleLabel: "최대 참여 인원:",
@@ -659,6 +659,11 @@
     // 4. UI 갱신 & 다국어 바인딩 매핑 로직
     function updateUI() {
         const lang = textData[currentLang];
+        const appTitle = document.getElementById('app-title');
+        const appSubtitle = document.getElementById('app-subtitle');
+        
+        if (appTitle) appTitle.innerText = lang.title;
+        if (appSubtitle) appSubtitle.innerText = lang.subtitle;
         document.getElementById('app-title').innerText = lang.title;
         document.getElementById('topic-input').placeholder = lang.placeholder;
         document.getElementById('maxpeople').innerText = lang.maxPeopleLabel;
