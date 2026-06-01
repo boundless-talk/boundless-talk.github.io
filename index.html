@@ -84,7 +84,11 @@
         /* 추가된 서브타이틀 스타일 */
         .sub-title { font-size: 14px; color: rgba(255,255,255,0.6); text-align: center; margin-top: -20px; margin-bottom: 30px; letter-spacing: 1px; }
         
-        .input-group { width: 100%; position: relative; margin-bottom: 20px; }
+        .input-group { 
+            width: 100%; 
+            position: relative; 
+            margin-bottom: 24px; /* 주제 입력창 아래 간격 */
+        }
         input {
             width: 100%; padding: 16px 20px; background-color: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 14px; color: #ffffff; transition: all 0.3s ease;
@@ -92,8 +96,10 @@
         input:focus { border-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-glow); outline: none; }
         
         .select-group {
-            width: 100%; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);
-            padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+            width: 100%; 
+            background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 24px; /* 참여인원 선택창 아래 간격 */
         }
         .select-group label { font-size: 13px; color: rgba(255,255,255,0.6); }
         select { background: #161920; color: #fff; border: 1px solid rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 6px; cursor: pointer; outline: none; font-size: 13px; }
@@ -234,16 +240,25 @@
         }
         .step-dot.active { background: var(--accent-color); }
 
+/* 3. 로그아웃 버튼 스타일 (평판 버튼과 100% 동일한 형태) */
         #logout-btn {
-            background-color: transparent;
-            color: rgba(255,255,255,0.35);
-            border: 1px solid rgba(255,255,255,0.08);
-            padding: 10px;
-            font-size: 13px;
+            width: auto;                  /* 가로 전체 차지 방지 */
             display: none;
-            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.03); /* 배경색 동일 */
+            border: 1px solid rgba(255, 255, 255, 0.12); /* 테두리 동일 */
+            color: rgba(255, 255, 255, 0.6); /* 글자색 동일 */
+            padding: 8px 16px;            /* 여백 동일 */
+            border-radius: 20px;          /* 둥글기 동일 */
+            cursor: pointer;
+            font-size: 12.5px;            /* 글자 크기 동일 */
+            margin: 0 auto 20px auto;     /* 위쪽(0)은 평판 버튼에 붙이고, 아래쪽만 여백 부여 */
+            transition: all 0.2s;
         }
-        #logout-btn:hover { color: #fff; border-color: rgba(255,255,255,0.25); }
+        #logout-btn:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
 
         #join-btn { background-color: var(--accent-color); color: #000000; font-size: 16px; box-shadow: 0 4px 15px var(--accent-glow); }
         #join-btn:hover:not(:disabled) { background-color: #00b8cc; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,229,255,0.3); }
@@ -256,11 +271,8 @@
         #report-btn:hover:not(:disabled) { background-color: #e08400; transform: translateY(-1px); }
 
         /* 대화방 활성화 시 매칭 상태 및 참여자 그리드 */
-        #matching-status { font-size: 13px; color: var(--accent-color); letter-spacing: 0.5px; margin-bottom: 15px; text-align: center; min-height: 20px; font-weight: 500; }
-        #participants-box {
-            width: 100%; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px; padding: 15px; margin-bottom: 20px; display: none;
-        }
+        #matching-status:empty { display: none; }
+        #participants-box { margin-bottom: 24px; }
         .part-title { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: center;}
         .part-list { display: flex; flex-direction: column; gap: 8px; }
         .part-item { background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; font-size: 13.5px; display: flex; align-items: center; gap: 10px; border-left: 3px solid var(--accent-color); }
@@ -316,6 +328,25 @@
             70% { box-shadow: 0 0 0 8px rgba(52, 199, 89, 0); }
             100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
         }
+
+        #toggle-rep-btn {
+            width: auto;
+            display: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12.5px;
+            margin: 25px auto 8px auto; /* 위쪽은 대화 버튼과 띄우고, 아래쪽(8px)은 로그아웃과 가깝게 */
+            transition: all 0.2s;
+        }
+        #toggle-rep-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(0, 229, 255, 0.05);
+        }
     </style>
 </head>
 <body>
@@ -330,15 +361,6 @@
         <button id="lang-toggle-btn" class="lang-btn">한국어</button>
     </div>
 
-    <!-- 내 평판 점수판 -->
-    <div class="reputation-board" id="reputation-section" style="display: none;">
-        <div class="reputation-title" id="rep-title">My Reputation Profile</div>
-        <div class="badge-list">
-            <div class="badge-item">👍 <span id="label-manner">Manner</span>: <strong id="score-manner">0</strong></div>
-            <div class="badge-item">🧠 <span id="label-logic">Logic</span>: <strong id="score-logic">0</strong></div>
-            <div class="badge-item">🤣 <span id="label-humor">Humor</span>: <strong id="score-humor">0</strong></div>
-        </div>
-    </div>
 
     <div id="main-container">
         <h2 id="app-title">BOUNDLESS VOICE TALK</h2>
@@ -413,7 +435,6 @@
             </div>
 
         </div>
-        <button id="logout-btn">로그아웃</button>
 
         <!-- 추가됨: 로그인 후에만 노출될 요소들을 감싸는 컨테이너 -->
         <div id="talk-controls" style="display: none; width: 100%;">
@@ -447,6 +468,20 @@
 
         <div id="channel-debug"></div>
     </div>
+    <!-- 💡 추가됨: 평판 프로필을 켜고 끌 토글 버튼 -->
+    <button id="toggle-rep-btn">📊 내 평판 프로필 보기</button>
+
+    <!-- 내 평판 점수판 -->
+    <div class="reputation-board" id="reputation-section" style="display: none;">
+        <div class="reputation-title" id="rep-title">My Reputation Profile</div>
+        <div class="badge-list">
+            <div class="badge-item">👍 <span id="label-manner">Manner</span>: <strong id="score-manner">0</strong></div>
+            <div class="badge-item">🧠 <span id="label-logic">Logic</span>: <strong id="score-logic">0</strong></div>
+            <div class="badge-item">🤣 <span id="label-humor">Humor</span>: <strong id="score-humor">0</strong></div>
+        </div>
+    </div>
+        <button id="logout-btn">로그아웃</button>
+
     </div>
 
 
@@ -629,9 +664,11 @@
 
             document.getElementById("auth-section").style.display = "none";
             if (logoutBtn) logoutBtn.style.display = "inline-block";
-            if (reputationSection) reputationSection.style.display = "block";
             if (talkControls) talkControls.style.display = "block";
             if (startBtn && !isJoined) startBtn.disabled = false;
+            document.getElementById("toggle-rep-btn").style.display = "inline-block";
+            if (reputationSection) reputationSection.style.display = "none";
+
 
             // 평판 데이터 연동 (배지 수 누적 리스닝)
             database.ref('users/' + user.uid + '/badges').on('value', (snapshot) => {
@@ -644,8 +681,11 @@
         } else {
             document.getElementById("auth-section").style.display = "flex";
             if (logoutBtn) logoutBtn.style.display = "none";
-            if (reputationSection) reputationSection.style.display = "none";
             if (talkControls) talkControls.style.display = "none";
+
+            document.getElementById("toggle-rep-btn").style.display = "none";
+            if (reputationSection) reputationSection.style.display = "none";
+
             if (startBtn) startBtn.disabled = true;
             document.getElementById("ban-overlay").style.display = "none";
         }
@@ -656,12 +696,21 @@
         console.error("Persistence configuration error:", error);
     });
 
-    // 4. UI 갱신 & 다국어 바인딩 매핑 로직
+// 4. UI 갱신 & 다국어 바인딩 매핑 로직
     function updateUI() {
         const lang = textData[currentLang];
         const appTitle = document.getElementById('app-title');
         const appSubtitle = document.getElementById('app-subtitle');
+        const isRepOpen = document.getElementById('reputation-section').style.display === "block";
         
+        // 토글 버튼 텍스트 다국어 처리
+        if (currentLang === 'ko') {
+            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 평판 프로필 접기" : "📊 내 평판 프로필 보기";
+        } else {
+            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 Hide Reputation Profile" : "📊 View My Reputation Profile";
+        }
+        
+        // 💡 위에서 잘못 닫혔던 괄호를 지웠습니다. 아래 코드들이 정상적으로 함수 안에서 실행됩니다.
         if (appTitle) appTitle.innerText = lang.title;
         if (appSubtitle) appSubtitle.innerText = lang.subtitle;
         document.getElementById('app-title').innerText = lang.title;
@@ -701,13 +750,26 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
             document.getElementById('summary-headline').innerText = lang.aiLoading;
         }
         document.getElementById('join-btn').innerText = isJoined ? lang.joinBtn : lang.startBtn;
-    }
+    }   
 
     // 로그인 및 로그아웃 버튼 이벤트 바인딩
     document.getElementById('google-login-btn').addEventListener('click', () => {
         auth.signInWithPopup(provider).catch((error) => console.error(error));
     });
 
+    // 💡 새롭게 추가하는 토글 클릭 이벤트 리스너
+    document.getElementById('toggle-rep-btn').addEventListener('click', () => {
+        const repSection = document.getElementById('reputation-section');
+        const btn = document.getElementById('toggle-rep-btn');
+        
+        if (repSection.style.display === "none") {
+            repSection.style.display = "block";
+            btn.innerText = (currentLang === 'ko') ? "📊 평판 프로필 접기" : "📊 Hide Reputation Profile";
+        } else {
+            repSection.style.display = "none";
+            btn.innerText = (currentLang === 'ko') ? "📊 내 평판 프로필 보기" : "📊 View My Reputation Profile";
+        }
+    });
     // ── 이메일 로그인 토글 ──
     let loginFormOpen = false;
     let signupFormOpen = false;
