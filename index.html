@@ -271,7 +271,21 @@
         #report-btn:hover:not(:disabled) { background-color: #e08400; transform: translateY(-1px); }
 
         /* 대화방 활성화 시 매칭 상태 및 참여자 그리드 */
-        #matching-status:empty { display: none; }
+        #matching-status { 
+            font-size: 13px; 
+            color: var(--accent-color); 
+            letter-spacing: 0.5px; 
+            margin-bottom: 15px; 
+            min-height: 20px; 
+            font-weight: 500; 
+
+            /* ── 여기부터 추가/변경되는 정렬 코드 ── */
+            display: flex;
+            justify-content: center;  /* 가로 기준 정중앙 정렬 */
+            align-items: center;      /* 세로 기준 정중앙 정렬 */
+            text-align: center;       /* 글자가 줄바꿈되어도 가운데 정렬 */
+            width: 100%;              /* 부모 너비를 100% 꽉 채워서 정중앙 정렬 기준 생성 */
+        }
         #participants-box { margin-bottom: 24px; }
         .part-title { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: center;}
         .part-list { display: flex; flex-direction: column; gap: 8px; }
@@ -957,7 +971,7 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
         if (isJoined) renderParticipantsUI();
     });
 
-    // 5. Netlify AI Serverless Function 연동 매칭 엔진
+// 5. Netlify AI Serverless Function 연동 매칭 엔진
     async function getAIMatchedTopic(userInput) {
         const statusEl = document.getElementById('matching-status');
         const lang = textData[currentLang];
@@ -971,14 +985,15 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
             });
             if (!response.ok) throw new Error("Backend response error");
             const data = await response.json();
-            let topic = data.topic ? data.topic.toLowerCase().replace(/[^a-z0-9-_]/g, "").trim() : "general";
+            let topic = data.topic ? data.topic.trim() : "general"; // 정규식 제거
             if(!topic) topic = "general";
             statusEl.innerText = lang.matchingDone(topic);
             return topic;
         } catch (error) {
             console.error("AI matching failed, moving to fallback route:", error);
             statusEl.innerText = lang.matchingFail;
-            return userInput.toLowerCase().replace(/[^a-z0-9-_]/g, "").slice(0, 20) || "general";
+            // 💡 에러 발생 시 유저가 입력한 한글 주제를 그대로 반환합니다!
+            return userInput.trim() || "general";
         }
     }
 
@@ -1039,7 +1054,7 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
         if (audioCtx) { try { audioCtx.close(); } catch(e){} audioCtx = null; }
     }
 
-    // 7. Agora RTC 소통 엔진 핵심 제어 로직
+// 7. Agora RTC 소통 엔진 핵심 제어 로직
     document.getElementById('join-btn').onclick = async function() {
         const topicInput = document.getElementById('topic-input');
         const rawTopic = String(topicInput.value).normalize('NFC').trim();
@@ -1053,16 +1068,22 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
         document.getElementById('join-btn').disabled = true;
 
         const finalTopic = await getAIMatchedTopic(rawTopic);
+        
+        // 💡 UI 표시용 한글 채널 이름 설정
         currentChannelName = finalTopic;
+        
+        // 🚨 아고라(Agora) 서버 전용 안전한 영문/숫자 암호화 이름 생성 (한글 튕김 버그 원천 차단)
+        const safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 64);
+
         document.getElementById('channel-debug').innerText = `Channel Name: ${currentChannelName}`;
 
         try {
             client.setClientRole("host");
             const firebaseUser = auth.currentUser;
-            // Agora String UID 파라미터를 그대로 매핑 연동
             const agoraUid = firebaseUser ? firebaseUser.uid : null;
 
-            myUid = await client.join(AGORA_APP_ID, currentChannelName, null, agoraUid);
+            // 💡 아고라 서버에는 안전하게 변환된 'safeAgoraChannelId'로 접속합니다.
+            myUid = await client.join(AGORA_APP_ID, safeAgoraChannelId, null, agoraUid);
             isJoined = true;
             roomParticipants = [];
 
@@ -1089,10 +1110,11 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
             document.getElementById('join-btn').disabled = false;
             document.getElementById('join-btn').innerText = textData[currentLang].startBtn;
             topicInput.disabled = false;
+            alert("마이크 권한을 허용했는지 확인해 주세요. (" + error.message + ")");
         }
     };
 
-    // Agora 원격 유저 서브스크립션 이벤트 핸들러
+    // Agora 원격 유저 서브스크립션 이벤트 핸들러 (⚠️ 절대 삭제 금지 - 그대로 유지됨)
     client.on("user-published", async (user, mediaType) => {
         await client.subscribe(user, mediaType);
         if (mediaType === "audio") {
@@ -1119,7 +1141,7 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
         renderParticipantsUI();
     });
 
-    // 익명화된 참가자 리스트 UI 렌더링 (외모/프로필 요소 완벽 배제)
+    // 익명화된 참가자 리스트 UI 렌더링 (⚠️ 절대 삭제 금지 - 그대로 유지됨)
     function renderParticipantsUI() {
         const container = document.getElementById('part-list-container');
         container.innerHTML = "";
@@ -1133,7 +1155,6 @@ document.getElementById('email-signup-btn-main').innerText = (currentLang === 'e
             const el = document.createElement('div');
             el.className = "part-item";
             el.id = `part-${uid}`;
-            // 닉네임과 프로필을 원천 차단하고 순번을 이용해 처리 익명화 유지
             el.innerHTML = `👤 Participant ${index + 1}`;
             container.appendChild(el);
         });
