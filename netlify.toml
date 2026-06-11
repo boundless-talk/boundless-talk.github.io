@@ -1,2 +1,5 @@
-[build.environment]
-  SECRETS_SCAN_SMART_DETECTION_ENABLED = "true"
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin-allow-popups"
+    Cross-Origin-Embedder-Policy = "unsafe-none"
