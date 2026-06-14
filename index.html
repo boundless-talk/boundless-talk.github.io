@@ -713,17 +713,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 인트로 화면 -->
     <div id="intro-screen">
         <div class="intro-title">BOUNDLESS TALK</div>
-        <p class="intro-desc" id="intro-desc">국적도, 나이도, 신분도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>말</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?</p>
+        <p class="intro-desc" id="intro-desc">국적도, 나이도, 신분도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>주제</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?</p>
         <div style="margin-bottom: 40px;">
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
         </div>
         <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">시작하기</button>
+        <button id="lang-toggle-btn" class="lang-btn" style="position:absolute; top:20px; right:20px; width:auto; padding:6px 14px; font-size:12px; margin:0;">EN</button>
     </div>
 
-    <div class="lang-container">
-        <button id="lang-toggle-btn" class="lang-btn">한국어</button>
+    <div class="lang-container" style="display:none;">
     </div>
 
 
@@ -1141,7 +1141,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMin: "비밀번호는 6자 이상이어야 합니다.",
             pwHintMismatch: "비밀번호가 일치하지 않습니다.",
             pwHintMatch: "✓ 비밀번호가 일치합니다.",
-        introDesc: `국적도, 나이도, 신분도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>말</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?`,
+        introDesc: `국적도, 나이도, 신분도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>주제</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?`,
         introBtn: "시작하기",
         talkAgainBtn: "🗣️ 또 대화하기",
         addFriendBtn: "➕ 친구 추가",
@@ -1629,6 +1629,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     document.getElementById('lang-toggle-btn').addEventListener('click', () => {
         currentLang = (currentLang === "en") ? "ko" : "en";
+        // 언어 토글 버튼 텍스트 업데이트
+        document.getElementById('lang-toggle-btn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
         // 인트로 화면 언어 업데이트
         const introDescEl = document.getElementById('intro-desc');
         const introBtnEl = document.getElementById('intro-start-btn');
