@@ -173,10 +173,10 @@
 
         /* 추가된 서브타이틀 스타일 */
         .sub-title { font-size: 14px; color: rgba(255,255,255,0.6); text-align: center; margin-top: -20px; margin-bottom: 0; letter-spacing: 1px; }
-        
-        .input-group { 
-            width: 100%; 
-            position: relative; 
+
+        .input-group {
+            width: 100%;
+            position: relative;
             margin-bottom: 24px; /* 주제 입력창 아래 간격 */
         }
         input {
@@ -184,7 +184,7 @@
             border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 14px; color: #ffffff; transition: all 0.3s ease;
         }
         input:focus { border-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-glow); outline: none; }
-        
+
  .select-group {
     width: 100%;
     background: transparent; border: none;
@@ -195,7 +195,7 @@
 .select-group label { font-size: 11px; color: rgba(255,255,255,0.35); }
 select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; cursor: pointer; outline: none; font-size: 11px; }
         button { width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; border: none; transition: all 0.2s ease; }
-        
+
         /* ── 인증 섹션 ── */
         #auth-section {
             width: 100%;
@@ -382,21 +382,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         #join-btn { background-color: var(--accent-color); color: #000000; font-size: 16px; box-shadow: 0 4px 15px var(--accent-glow); }
         #join-btn:hover:not(:disabled) { background-color: #00b8cc; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,229,255,0.3); }
         #join-btn:disabled { background-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); box-shadow: none; cursor: not-allowed; }
-        
+
         #leave-btn { background-color: transparent; color: var(--danger-color); border: 1px solid rgba(255,59,48,0.3); display: none; }
         #leave-btn:hover:not(:disabled) { background-color: rgba(255,59,48,0.05); border-color: var(--danger-color); transform: translateY(-1px); }
-        
+
         #report-btn { background-color: #ff9500; color: #ffffff; display: none; box-shadow: 0 4px 12px rgba(255,149,0,0.15); }
         #report-btn:hover:not(:disabled) { background-color: #e08400; transform: translateY(-1px); }
 
         /* 대화방 활성화 시 매칭 상태 및 참여자 그리드 */
-        #matching-status { 
-            font-size: 13px; 
-            color: var(--accent-color); 
-            letter-spacing: 0.5px; 
-            margin-bottom: 15px; 
-            min-height: 20px; 
-            font-weight: 500; 
+        #matching-status {
+            font-size: 13px;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            min-height: 20px;
+            font-weight: 500;
 
             /* ── 여기부터 추가/변경되는 정렬 코드 ── */
             display: flex;
@@ -431,14 +431,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .modal-overlay.active .modal-content { transform: scale(1); }
         .modal-content h3 { margin-top: 0; font-weight: 400; letter-spacing: 1px; font-size: 20px; }
         .modal-content p { color: rgba(255,255,255,0.5); font-size: 13.5px; margin-bottom: 20px; line-height: 1.5; }
-        
+
         .ai-summary-box {
             background: rgba(0,229,255,0.03); border: 1px dashed rgba(0,229,255,0.2);
             border-radius: 12px; padding: 15px; margin-bottom: 20px;
             text-align: left; font-size: 13px; line-height: 1.6; color: #e0e6ed;
         }
         .ai-summary-box strong { color: var(--accent-color); }
-        
+
         .target-select-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 160px; overflow-y: auto; }
         .target-btn {
             background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
@@ -455,7 +455,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .badge-vote-btn:hover:not(:disabled) { background: rgba(0,229,255,0.08); border-color: var(--accent-color); color: var(--accent-color); }
         .badge-vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        
+
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); }
             70% { box-shadow: 0 0 0 8px rgba(52, 199, 89, 0); }
@@ -802,11 +802,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
 
         <div id="talk-controls" style="display: none; width: 100%;">
-        
+
         <div class="input-group">
             <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
         </div>
-        
+
         <div id="matching-status"></div>
 
         <div class="select-group" id="max-people-group">
@@ -850,7 +850,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div class="badge-item">🤣 <span id="label-humor">Humor</span>: <strong id="score-humor">0</strong></div>
         </div>
     </div>
-  
+
 
     </div>
 
@@ -859,7 +859,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="modal-content">
             <h3 id="modal-title">Conversation Report</h3>
             <p id="modal-desc">Here is your AI conversation summary. Choose a peer to gift a badge!</p>
-            
+
             <div class="ai-summary-box">
                 💡 <strong id="summary-headline">AI Chat Summary Loading...</strong><br>
                 <span id="summary-content" style="color: rgba(255,255,255,0.7);">Analyzing the dialogue pattern...</span>
@@ -920,9 +920,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="modal-content">
             <h3 style="color: var(--danger-color);" id="rep-m-title">🚨 Report Toxic User</h3>
             <p id="rep-m-desc">Select the user you wish to report. The past 60 seconds of audio data will be audited by the Safeguard AI.</p>
-            
+
             <div class="target-select-list" id="report-target-container"></div>
-            
+
             <div style="display: flex; gap: 10px;">
                 <button id="rep-m-submit" style="background: var(--danger-color); color: #fff;" onclick="executeReport()" disabled>Submit Report</button>
                 <button style="background: rgba(255,255,255,0.05); color: #fff;" onclick="closeReportModal()">Cancel</button>
@@ -949,7 +949,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     provider.setCustomParameters({ prompt: 'select_account' });
 
     // 2. Global State Management
-    let currentLang = "ko"; 
+    let currentLang = "ko";
     const AGORA_APP_ID = "71b6f8c1cb424be1b2b5480d447e69e2";
     const TOKEN_SERVER_URL = "https://b-talk-0gi0.onrender.com";
     const SIGNAL_SERVER_URL = "https://kvdb.io/YAPuhyeXZWiNidFcsstzqK/";
@@ -957,6 +957,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     let localAudioTrack = null;
     let isJoined = false;
+    let isJoining = false; // 입장 처리 진행 중 플래그 (중복 클릭 방지)
     let currentChannelName = "";
     let safeAgoraChannelId = ""; // 전역으로 저장 — 저장/조회 시 항상 동일한 값 보장
     let myUid = null;
@@ -1275,7 +1276,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const appTitle = document.getElementById('app-title');
         const appSubtitle = document.getElementById('app-subtitle');
         const isRepOpen = document.getElementById('reputation-section').style.display === "block";
-        
+
         document.getElementById('btn-talk-again').innerText = lang.talkAgainBtn;
         // 인트로 화면 다국어
         const introDescEl = document.getElementById('intro-desc');
@@ -1284,14 +1285,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (introBtnEl) introBtnEl.textContent = lang.introBtn;
         if(document.getElementById('label-add-friend')) document.getElementById('label-add-friend').innerText = lang.addFriendBtn;
         if(document.getElementById('friends-m-title')) document.getElementById('friends-m-title').innerText = lang.friendsModalTitle;
-        
+
         // 토글 버튼 텍스트 다국어 처리
         if (currentLang === 'ko') {
             document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 평판 접기" : "📊 내 평판";
         } else {
             document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 Hide Reputation Profile" : "📊 View My Reputation";
         }
-        
+
         if (appTitle) appTitle.innerText = lang.title;
         if (appSubtitle) appSubtitle.innerText = lang.subtitle;
         document.getElementById('app-title').innerText = lang.title;
@@ -1334,7 +1335,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         document.getElementById('signup-email-input').placeholder = lang.signupEmailPlaceholder;
         document.getElementById('signup-hint-1').innerText = lang.signupHint1;
-        
+
         const sendBtn = document.getElementById('send-verify-btn');
         if (sendBtn.disabled && (sendBtn.innerText === "발송 중..." || sendBtn.innerText === "Sending...")) {
             sendBtn.innerText = lang.sendVerifyBtnLoading;
@@ -1343,7 +1344,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
 
         document.getElementById('signup-hint-2').innerHTML = lang.signupHint2;
-        
+
         const checkBtn = document.getElementById('check-verify-btn');
         if (checkBtn.disabled && (checkBtn.innerText === "확인 중..." || checkBtn.innerText === "Checking...")) {
             checkBtn.innerText = lang.checkVerifyBtnLoading;
@@ -1354,7 +1355,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         document.getElementById('resend-verify-btn').innerText = lang.resendVerifyBtnText;
         document.getElementById('signup-pw-input').placeholder = lang.signupPwPlaceholder;
         document.getElementById('signup-pw-confirm-input').placeholder = lang.signupPwConfirmPlaceholder;
-        
+
         const signupBtn = document.getElementById('email-signup-btn');
         if (signupBtn.disabled && (signupBtn.innerText === "처리 중..." || signupBtn.innerText === "Processing...")) {
             signupBtn.innerText = lang.emailSignupBtnLoading;
@@ -1375,7 +1376,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             document.getElementById('summary-headline').innerText = lang.aiLoading;
         }
         document.getElementById('join-btn').innerText = isJoined ? lang.joinBtn : lang.startBtn;
-    }   
+    }
 
     // 로그인 및 로그아웃 버튼 이벤트 바인딩
     document.getElementById('google-login-btn').addEventListener('click', () => {
@@ -1386,7 +1387,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     document.getElementById('toggle-rep-btn').addEventListener('click', () => {
         const repSection = document.getElementById('reputation-section');
         const btn = document.getElementById('toggle-rep-btn');
-        
+
         if (repSection.style.display === "none") {
             repSection.style.display = "block";
             btn.innerText = (currentLang === 'ko') ? "📊 내 평판 접기" : "📊 Hide My Reputation";
@@ -1420,7 +1421,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (signupFormOpen) {
         // ✨ [코드 추가] 새 가입을 진행하므로, 기존에 남아있던 유저 세션을 깨끗이 지웁니다.
         auth.signOut().catch(err => console.log("기존 세션 정리 중 예외 발생:", err));
-        
+
         resetSignupSteps();
     }
     });
@@ -1445,8 +1446,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     // 이메일 칸이 비어있는지 확인
     if (!email) {
-        alert(currentLang === 'ko' 
-            ? "비밀번호를 재설정할 이메일 주소를 위 칸에 먼저 입력해 주세요." 
+        alert(currentLang === 'ko'
+            ? "비밀번호를 재설정할 이메일 주소를 위 칸에 먼저 입력해 주세요."
             : "Please enter your email address above to reset your password.");
         document.getElementById('email-input').focus();
         return;
@@ -1455,12 +1456,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     try {
         // Firebase 비밀번호 재설정 메일 발송 API 호출
         await auth.sendPasswordResetEmail(email);
-        alert(currentLang === 'ko' 
-            ? "✅ 비밀번호 재설정 메일이 발송되었습니다! 메일함을 확인해 주세요." 
+        alert(currentLang === 'ko'
+            ? "✅ 비밀번호 재설정 메일이 발송되었습니다! 메일함을 확인해 주세요."
             : "✅ Password reset email sent! Please check your inbox.");
     } catch (error) {
         console.error("Password reset error:", error);
-        
+
         // 에러 코드에 따른 안내 분기
         if (error.code === 'auth/user-not-found') {
             alert(currentLang === 'ko' ? "가입되지 않은 이메일 주소입니다." : "User not found with this email.");
@@ -1727,11 +1728,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
 // 7. Agora RTC 소통 엔진 핵심 제어 로직
     document.getElementById('join-btn').onclick = async function() {
+        // 🚨 [수정] 중복 실행 방지 — 이미 입장했거나 연결 중이면 무시 (Agora "already connected" 에러 방지)
+        if (isJoined || isJoining ||
+            client.connectionState === "CONNECTING" ||
+            client.connectionState === "CONNECTED" ||
+            client.connectionState === "RECONNECTING") {
+            return;
+        }
+        isJoining = true;
+
         const topicInput = document.getElementById('topic-input');
         const rawTopic = String(topicInput.value).normalize('NFC').trim();
         if (!rawTopic) {
             alert(textData[currentLang].alertInput);
             topicInput.focus();
+            isJoining = false;
             return;
         }
 
@@ -1745,10 +1756,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         } else {
             finalTopic = await getAIMatchedTopic(rawTopic); // AI가 유사어를 동일 키워드로 정규화
         }
-        
+
         // 💡 UI 표시용 한글 채널 이름 설정
         currentChannelName = finalTopic;
-        
+
         // 🚨 전역 변수에 저장 — 저장/조회 시 항상 동일값 보장
         safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 64);
 
@@ -1810,10 +1821,33 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             renderParticipantsUI();
             // 입장 알림은 동물 배정 alert로 대체됨
 
+            isJoining = false;
+
         } catch (error) {
             console.error("Agora room entry crashed:", error);
+            // 🚨 [수정] 실패 시 Agora 연결을 깨끗이 정리 (이걸 안 하면 다음 시도 때 "already connected" 에러 발생)
+            try {
+                if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack.close(); localAudioTrack = null; }
+            } catch (e) {}
+            try {
+                if (client.connectionState === "CONNECTED" ||
+                    client.connectionState === "CONNECTING" ||
+                    client.connectionState === "RECONNECTING") {
+                    await client.leave();
+                }
+            } catch (e) { console.error("cleanup leave failed:", e); }
+
+            isJoined = false;
+            isJoining = false;
+            myUid = null;
+
             document.getElementById('join-btn').disabled = false;
+            document.getElementById('join-btn').style.display = "block";
             document.getElementById('join-btn').innerText = textData[currentLang].startBtn;
+            document.getElementById('leave-btn').style.display = "none";
+            document.getElementById('report-btn').style.display = "none";
+            document.getElementById('participants-box').style.display = "none";
+            document.getElementById('my-animal-tag').style.display = "none";
             topicInput.disabled = false;
             alert("마이크 권한을 허용했는지 확인해 주세요. (" + error.message + ")");
         }
@@ -1947,7 +1981,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             alert(currentLang === 'ko' ? "신고할 원격 참여자가 방에 없습니다." : "No active participants to report.");
             return;
         }
-        
+
         const container = document.getElementById('report-target-container');
         container.innerHTML = "";
         selectedReportTarget = null;
@@ -1976,10 +2010,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     async function executeReport() {
         if (!selectedReportTarget) return;
-        
+
         // 롤링 버퍼에 존재하는 최근 1분간의 축적용 오디오 청크들을 하나의 대형 파일로 병합 병합
         const fullReportBlob = new Blob(audioSlices, { type: 'audio/webm' });
-        
+
         // 실제 운영 배포 단계용 FormData 전송부 인프라 설계 구성 제공
         const formData = new FormData();
         formData.append("audioData", fullReportBlob);
@@ -1987,8 +2021,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         formData.append("reporterUid", myUid);
         formData.append("channel", currentChannelName);
 
-        alert(currentLang === 'ko' 
-            ? "🚨 최근 1분간의 대화 오디오 데이터를 추출하여 AI 검증 시스템에 업로드합니다." 
+        alert(currentLang === 'ko'
+            ? "🚨 최근 1분간의 대화 오디오 데이터를 추출하여 AI 검증 시스템에 업로드합니다."
             : "🚨 Extracting the last 60 seconds of conversational audio and uploading to AI Safeguard.");
 
         closeReportModal();
@@ -2021,6 +2055,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             await client.leave();
 
             isJoined = false;
+            isJoining = false;
             document.getElementById('join-btn').style.display = "block";
             document.getElementById('join-btn').disabled = false;
             document.getElementById('leave-btn').style.display = "none";
@@ -2028,11 +2063,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             document.getElementById('participants-box').style.display = "none";
             document.getElementById('max-people-group').style.display = "flex";
             document.getElementById('my-animal-tag').style.display = "none"; // 내 동물 태그 숨김
-            
+
             const topicInput = document.getElementById('topic-input');
             topicInput.disabled = false;
             topicInput.value = "";
             document.getElementById('matching-status').innerText = "";
+            // 주제가 비었으므로 '최대 인원' 선택란 다시 표시
+            document.getElementById('max-people-group').style.display = "flex";
 
             // 피어 배지 전송 타겟 리스트박스 렌더링 구성 (uidToAnimal 초기화 전에 호출!)
             setupVoteTargetsUI();
@@ -2090,7 +2127,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const container = document.getElementById('vote-target-container');
         container.innerHTML = "";
         selectedVoteTarget = null;
-        
+
         toggleVoteBadgeButtons(false);
 
         if (sessionParticipants.length === 0) {
@@ -2155,6 +2192,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     // 초기 실행 구동부 체인 링크
     window.addEventListener('DOMContentLoaded', () => {
         updateUI();
+
+        // 🚨 [수정] 주제를 입력하면 '최대 인원' 선택란을 숨김 (입력 전/비었을 때만 표시)
+        const topicInputEl = document.getElementById('topic-input');
+        const maxGroupEl = document.getElementById('max-people-group');
+        if (topicInputEl && maxGroupEl) {
+            topicInputEl.addEventListener('input', () => {
+                if (isJoined || isJoining) return; // 통화 중/연결 중에는 어차피 숨김 상태 유지
+                maxGroupEl.style.display = topicInputEl.value.trim() ? "none" : "flex";
+            });
+        }
     });
 
     // 타임스탬프를 "YYYY.MM.DD" 포맷으로 변환하는 헬퍼 함수
@@ -2312,8 +2359,6 @@ async function editFriendNickname(friendUid) {
     const myUid = auth.currentUser.uid;
     await database.ref(`users/${myUid}/friends/${friendUid}`).update({ nickname: newName.trim() });
     // 목록 새로고침
-    document.getElementById('btn-talk-again').click();
-    // 이미 열려있으면 그냥 다시 렌더
     loadFriendsList();
 }
 
@@ -2330,7 +2375,7 @@ function loadFriendsList() {
     if (!auth.currentUser) return;
     const myUid = auth.currentUser.uid;
     const container = document.getElementById('friends-list-container');
-    
+
     // [개선 3] 데이터를 요청하기 직전에 화면에 로딩 상태를 즉시 표시
     container.innerHTML = `<div style="padding: 20px; text-align: center; font-size: 13px; color: rgba(255,255,255,0.4);">불러오는 중...</div>`;
 
@@ -2364,7 +2409,7 @@ function loadFriendsList() {
             const el = document.createElement('div');
             el.className = "friend-item-box";
             el.id = `friend-item-${friendUid}`;
-            
+
             // XSS 방어: 사용자 입력값(displayName, dateStr)은 textContent로만 삽입
             const friendInfo = document.createElement('div');
             friendInfo.className = 'friend-info';
@@ -2434,7 +2479,7 @@ function loadFriendsList() {
 
 function closeFriendsModal() {
     document.getElementById('friends-modal').classList.remove('active');
-    
+
     // [개선 1-3] 모달이 닫힐 때 모든 친구의 실시간 접속 상태 관찰을 종료(.off())하여 메모리 누수 방지
     if (activePresenceRefs.length > 0) {
         activePresenceRefs.forEach(ref => ref.off());
@@ -2542,6 +2587,32 @@ async function submitSuspendAppeal() {
         alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         console.error('Suspend appeal submit failed:', e);
     }
+}
+
+// ── 24시간 정지 오버레이 표시 + 카운트다운 ──
+function showSuspendOverlay(until, reason, uid) {
+    const overlay = document.getElementById('suspend-overlay');
+    const descEl = document.getElementById('suspend-desc');
+    const timerEl = document.getElementById('suspend-timer');
+    overlay.style.display = 'flex';
+    descEl.innerText = reason
+        ? `정지 사유: ${reason}`
+        : "규정 위반으로 24시간 동안 이용이 제한되었습니다.";
+
+    function tick() {
+        const remain = until - Date.now();
+        if (remain <= 0) {
+            timerEl.innerText = "00:00:00";
+            location.reload();
+            return;
+        }
+        const h = String(Math.floor(remain / 3600000)).padStart(2, '0');
+        const m = String(Math.floor((remain % 3600000) / 60000)).padStart(2, '0');
+        const s = String(Math.floor((remain % 60000) / 1000)).padStart(2, '0');
+        timerEl.innerText = `${h}:${m}:${s}`;
+    }
+    tick();
+    setInterval(tick, 1000);
 }
 </script>
 </body>
