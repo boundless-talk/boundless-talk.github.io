@@ -1805,14 +1805,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             // 💡 토큰 서버에서 Agora 토큰 발급 후 접속
             let agoraToken = null;
             try {
+                dbg('6. 토큰 요청 중...');
                 const tokenRes = await fetch(`${TOKEN_SERVER_URL}/token?channelName=${encodeURIComponent(safeAgoraChannelId)}&uid=0`);
                 const tokenData = await tokenRes.json();
                 agoraToken = tokenData.token;
+                dbg('7. 토큰 받음: ' + (agoraToken ? '성공' : '없음'));
             } catch(e) {
+                dbg('토큰 실패: ' + e.message);
                 console.error("Token fetch failed:", e);
                 throw new Error("토큰 서버 연결 실패. 잠시 후 다시 시도해 주세요.");
             }
+            dbg('8. Agora join 시도');
             myUid = await client.join(AGORA_APP_ID, safeAgoraChannelId, agoraToken, 0);
+            dbg('9. join 성공');
             isJoined = true;
             roomParticipants = [];
             sessionParticipants = [];
