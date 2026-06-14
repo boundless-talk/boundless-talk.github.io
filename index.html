@@ -53,7 +53,8 @@
             padding: 30px;
         }
         #ban-overlay h1 { font-size: 42px; color: var(--danger-color); margin-bottom: 15px; letter-spacing: 2px; }
-        #ban-overlay p { font-size: 16px; color: #a0aec0; max-width: 500px; line-height: 1.6; }
+        #ban-overlay > p { font-size: 16px; color: #a0aec0; max-width: 500px; line-height: 1.6; }
+        #appeal-textarea:focus { border-color: rgba(255,59,48,0.5); box-shadow: 0 0 12px rgba(255,59,48,0.15); }
 
         .lang-container { position: absolute; top: 20px; right: 20px; z-index: 10; }
         .lang-btn {
@@ -522,9 +523,50 @@
 </head>
 <body>
 
+    <!-- 영구정지 오버레이 -->
     <div id="ban-overlay">
         <h1 id="ban-title">ACCESS DENIED</h1>
         <p id="ban-desc">AI 정밀 분석 결과, 지속적인 규정 위반(욕설, 성희롱 등 유해 패턴)이 적발되어 이 계정은 서비스 이용이 영구 정지되었습니다.</p>
+        <div id="appeal-section" style="margin-top:30px; width:100%; max-width:460px;">
+            <div id="appeal-form-wrap">
+                <p style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:14px;">정지가 억울하다고 생각하신다면 이의신청을 남겨주세요.</p>
+                <textarea id="appeal-textarea" placeholder="이의신청 사유를 구체적으로 입력해 주세요. (최대 500자)" maxlength="500"
+                    style="width:100%; min-height:100px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);
+                    border-radius:12px; padding:14px; color:#fff; font-size:13px; resize:vertical; outline:none; font-family:inherit;"></textarea>
+                <button id="appeal-submit-btn" onclick="submitAppeal()"
+                    style="margin-top:12px; width:100%; padding:14px; background:rgba(255,59,48,0.15); border:1px solid rgba(255,59,48,0.4);
+                    color:#ff6b6b; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+                    이의신청 제출하기
+                </button>
+            </div>
+            <div id="appeal-done-msg" style="display:none; padding:16px; background:rgba(0,229,255,0.07); border:1px solid rgba(0,229,255,0.25);
+                border-radius:12px; font-size:13.5px; color:var(--accent-color); line-height:1.6; text-align:center;">
+                ✅ 이의신청이 접수되었습니다.<br>영업일 기준 1~3일 내 검토 후 결과를 안내드립니다.
+            </div>
+        </div>
+    </div>
+
+    <!-- 24시간 정지 오버레이 -->
+    <div id="suspend-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%;
+        background:#0d0e12; z-index:9998; display:none; flex-direction:column;
+        align-items:center; justify-content:center; text-align:center; padding:30px;">
+        <h1 style="font-size:36px; color:#ff9500; margin-bottom:15px; letter-spacing:2px;">⏸ 일시 정지</h1>
+        <p id="suspend-desc" style="font-size:15px; color:#a0aec0; max-width:460px; line-height:1.7;"></p>
+        <p id="suspend-timer" style="font-size:28px; font-weight:700; color:#ff9500; margin-top:20px; letter-spacing:2px;"></p>
+        <div style="margin-top:30px; width:100%; max-width:460px;">
+            <p style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:12px;">억울하신가요? 이의신청을 남겨주세요.</p>
+            <textarea id="suspend-appeal-textarea" placeholder="이의신청 사유 입력 (최대 500자)" maxlength="500"
+                style="width:100%; min-height:90px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);
+                border-radius:12px; padding:14px; color:#fff; font-size:13px; resize:vertical; outline:none; font-family:inherit;"></textarea>
+            <button onclick="submitSuspendAppeal()"
+                style="margin-top:10px; width:100%; padding:13px; background:rgba(255,149,0,0.12); border:1px solid rgba(255,149,0,0.35);
+                color:#ff9500; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+                이의신청 제출
+            </button>
+            <div id="suspend-appeal-done" style="display:none; margin-top:12px; font-size:13px; color:var(--accent-color);">
+                ✅ 이의신청이 접수되었습니다.
+            </div>
+        </div>
     </div>
 
     <div class="lang-container">
@@ -914,12 +956,33 @@
             // presence 로직은 setupPresence()로 분리 — 인증 완료 후 별도 호출
             setupPresence(user.uid);
 
-            // [보안 핵심] 로그인 즉시 Realtime DB에서 해당 유저의 밴 유무 실시간 리스닝 수행
-            database.ref('users/' + user.uid + '/banned').on('value', (snapshot) => {
-                if (snapshot.val() === true) {
+            // [보안 핵심] 로그인 즉시 Realtime DB에서 제재 상태 실시간 리스닝
+            database.ref('users/' + user.uid).on('value', (snapshot) => {
+                const userData = snapshot.val() || {};
+
+                // 영구정지 체크
+                if (userData.banned === true) {
                     document.getElementById("ban-overlay").style.display = "flex";
                     auth.signOut();
                     return;
+                }
+
+                // 24시간 정지 체크
+                if (userData.suspendedUntil && userData.suspendedUntil > Date.now()) {
+                    showSuspendOverlay(userData.suspendedUntil, userData.suspendReason, user.uid);
+                    auth.signOut();
+                    return;
+                }
+
+                // 1차 경고 알림 (로그인 시 1회만)
+                if (userData.warnedAt && !sessionStorage.getItem('warnShown_' + user.uid)) {
+                    sessionStorage.setItem('warnShown_' + user.uid, '1');
+                    const warnMsg = currentLang === 'ko'
+                        ? "⚠️ 경고 알림\n\n규정 위반 신고가 접수되어 1차 경고가 발송되었습니다.\n\n반복 위반 시 24시간 정지 → 영구정지 순으로 제재가 강화됩니다.\n\n건강한 대화 문화를 함께 만들어 주세요."
+                        : "⚠️ Warning Notice\n\nA violation report has been received and a first warning has been issued.\n\nRepeated violations will result in 24h suspension → permanent ban.\n\nPlease help us maintain a healthy community.";
+                    setTimeout(() => alert(warnMsg), 500);
+                    // 경고 표시 후 warnedAt 초기화 (다음 로그인에선 안 뜨게)
+                    database.ref('users/' + user.uid + '/warnedAt').remove();
                 }
             });
 
@@ -1666,11 +1729,11 @@
 
             // AI 대화 요약본 분석 브리핑 레이아웃 활성화
             document.getElementById('badge-modal').classList.add('active');
+            document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
+            document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
 
-            setTimeout(() => {
-                document.getElementById('summary-headline').innerText = textData[currentLang].aiHeadline;
-                document.getElementById('summary-content').innerHTML = textData[currentLang].aiSample;
-            }, 1200);
+            // 실제 AI 요약 호출 (비동기 — 모달은 즉시 열림)
+            requestAISummary();
 
         } catch (error) { console.error("Error occurred while leaving room:", error); }
     };
