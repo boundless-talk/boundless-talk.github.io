@@ -39,6 +39,87 @@
             padding: 20px;
         }
 
+
+        /* ── 인트로 화면 ── */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-gradient);
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 30px;
+            animation: fadeInIntro 0.8s ease;
+        }
+        @keyframes fadeInIntro {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #intro-screen.hide {
+            animation: fadeOutIntro 0.5s ease forwards;
+        }
+        @keyframes fadeOutIntro {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        .intro-title {
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2);
+            margin-bottom: 40px;
+        }
+        .intro-desc {
+            font-size: 16px;
+            color: rgba(255,255,255,0.65);
+            line-height: 2;
+            max-width: 360px;
+            margin-bottom: 60px;
+            letter-spacing: 0.3px;
+        }
+        .intro-desc strong {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        .intro-start-btn {
+            width: auto !important;
+            padding: 16px 48px !important;
+            background: var(--accent-color) !important;
+            color: #000 !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            border-radius: 50px !important;
+            border: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 20px rgba(0,229,255,0.35) !important;
+            transition: all 0.2s ease !important;
+            letter-spacing: 1px;
+        }
+        .intro-start-btn:hover {
+            background: #00cce0 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 28px rgba(0,229,255,0.45) !important;
+        }
+        .intro-pulse {
+            width: 6px; height: 6px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 4px;
+            animation: pulse-dot 1.5s infinite;
+        }
+        .intro-pulse:nth-child(2) { animation-delay: 0.2s; }
+        .intro-pulse:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
         /* 영구 정지 스크린 */
         #ban-overlay {
             position: fixed;
@@ -629,6 +710,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <!-- 인트로 화면 -->
+    <div id="intro-screen">
+        <div class="intro-title">BOUNDLESS TALK</div>
+        <p class="intro-desc" id="intro-desc">국적도, 나이도, 신분도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>말</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?</p>
+        <div style="margin-bottom: 40px;">
+            <span class="intro-pulse"></span>
+            <span class="intro-pulse"></span>
+            <span class="intro-pulse"></span>
+        </div>
+        <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">시작하기</button>
+    </div>
+
     <div class="lang-container">
         <button id="lang-toggle-btn" class="lang-btn">한국어</button>
     </div>
@@ -981,6 +1074,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMin: "Password must be at least 6 characters.",
             pwHintMismatch: "Passwords do not match.",
             pwHintMatch: "✓ Passwords match.",
+        introDesc: `No barriers of nationality, age, status, or gender.<br><br>Connect with someone, somewhere in the world<br>through nothing but <strong>words</strong>.<br><br>Ready for a conversation<br>unlike any you've had before?`,
+        introBtn: "Start",
         talkAgainBtn: "🗣️ Talk Again",
         addFriendBtn: "➕ Add Friend",
         friendsModalTitle: "My Friends List",
@@ -1046,6 +1141,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMin: "비밀번호는 6자 이상이어야 합니다.",
             pwHintMismatch: "비밀번호가 일치하지 않습니다.",
             pwHintMatch: "✓ 비밀번호가 일치합니다.",
+        introDesc: `국적도, 나이도, 신분도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>말</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?`,
+        introBtn: "시작하기",
         talkAgainBtn: "🗣️ 또 대화하기",
         addFriendBtn: "➕ 친구 추가",
         friendsModalTitle: "나의 친구 목록",
@@ -1179,6 +1276,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const isRepOpen = document.getElementById('reputation-section').style.display === "block";
         
         document.getElementById('btn-talk-again').innerText = lang.talkAgainBtn;
+        // 인트로 화면 다국어
+        const introDescEl = document.getElementById('intro-desc');
+        const introBtnEl = document.getElementById('intro-start-btn');
+        if (introDescEl) introDescEl.innerHTML = lang.introDesc;
+        if (introBtnEl) introBtnEl.textContent = lang.introBtn;
         if(document.getElementById('label-add-friend')) document.getElementById('label-add-friend').innerText = lang.addFriendBtn;
         if(document.getElementById('friends-m-title')) document.getElementById('friends-m-title').innerText = lang.friendsModalTitle;
         
