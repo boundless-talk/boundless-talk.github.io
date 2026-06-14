@@ -1763,7 +1763,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             finalTopic = rawTopic; // 친구 1:1 방은 AI를 거치지 않고 다이렉트 패스
             document.getElementById('matching-status').innerText = (currentLang === 'ko') ? "🔒 1:1 비밀 채널 개설 완료!" : "🔒 Private Channel Connected!";
         } else {
-            finalTopic = await getAIMatchedTopic(rawTopic); // AI가 유사어를 동일 키워드로 정규화
+            finalTopic = rawTopic.trim().toLowerCase(); // AI 없이 입력 키워드 직접 사용
+            document.getElementById('matching-status').innerText = "";
         }
 
         // 💡 UI 표시용 한글 채널 이름 설정
@@ -1775,6 +1776,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         document.getElementById('channel-debug').innerText = `Channel Name: ${currentChannelName}`;
 
         try {
+            // iOS Safari: 터치 이벤트 직후 즉시 마이크 권한 요청 (가장 먼저 실행)
+            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+
             client.setClientRole("host");
             const firebaseUser = auth.currentUser;
             const agoraUid = firebaseUser ? firebaseUser.uid : null;
@@ -1811,8 +1815,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
             }
 
-            // 마이크 활성화 및 아고라 채널 퍼블리시
-            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            // 아고라 채널 퍼블리시
             await client.publish([localAudioTrack]);
 
             // 오디오 보안 롤링 시스템 즉시 실행
