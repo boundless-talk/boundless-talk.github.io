@@ -1776,8 +1776,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         document.getElementById('channel-debug').innerText = `Channel Name: ${currentChannelName}`;
 
         try {
-            // iOS Safari: 터치 이벤트 직후 즉시 마이크 권한 요청 (가장 먼저 실행)
-            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            // iOS Safari: getUserMedia로 먼저 권한 확보 후 Agora에 넘김
+            let nativeStream;
+            try {
+                nativeStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            } catch(permErr) {
+                alert(currentLang === 'ko'
+                    ? '마이크 권한을 허용해 주세요. Safari 설정 → 이 웹사이트 → 마이크 → 허용'
+                    : 'Please allow microphone access in Safari settings.');
+                isJoining = false;
+                document.getElementById('join-btn').disabled = false;
+                return;
+            }
+            // 네이티브 스트림으로 Agora 오디오 트랙 생성
+            const nativeTrack = nativeStream.getAudioTracks()[0];
+            localAudioTrack = AgoraRTC.createCustomAudioTrack({ mediaStreamTrack: nativeTrack });
 
             client.setClientRole("host");
             const firebaseUser = auth.currentUser;
