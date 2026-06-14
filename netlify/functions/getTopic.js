@@ -33,7 +33,7 @@ exports.handler = async function(event, context) {
 `;
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',  // ✅ 수정
+            model: 'gemini-2.0-flash-lite',  // ✅ 수정
             contents: prompt,
         });
 
