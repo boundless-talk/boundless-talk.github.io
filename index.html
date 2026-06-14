@@ -1213,6 +1213,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             document.getElementById("toggle-rep-btn").style.display = "inline-block";
             if (reputationSection) reputationSection.style.display = "none";
             document.getElementById("btn-talk-again").style.display = "inline-block";
+            // 로그인 시 이전 세션의 잔류 상태 메시지 초기화
+            document.getElementById("matching-status").innerText = "";
 
 
             // 평판 데이터 연동 (배지 수 누적 리스닝)
