@@ -54,11 +54,22 @@ exports.handler = async function(event, context) {
                     config: { responseMimeType: "application/json" }
                 });
 
-                const result = JSON.parse(response.text);
 
-                // 2. 유해성 감지 시 3단계 제재 처리
-                if (result.isToxic) {
-                    const userRef = db.ref('users/' + reportedUid);
+                    const result = JSON.parse(response.text);
+
+               // 2. 신고 내역 Firebase에 저장 (관리자 패널용)
+                await db.ref('reports').push({
+                reporterUid: fields.reporterUid || null,
+                reportedUid: reportedUid,
+                channel: fields.channel || null,
+                isToxic: result.isToxic,
+                reason: result.reason || null,
+                submittedAt: Date.now(),
+                resolved: false
+            });
+
+                // 3. 유해성 감지 시 3단계 제재 처리
+                 if (result.isToxic) { userRef = db.ref('users/' + reportedUid);
                     const snapshot = await userRef.once('value');
                     const userData = snapshot.val() || {};
 
