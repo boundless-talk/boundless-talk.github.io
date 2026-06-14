@@ -1378,9 +1378,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         document.getElementById('join-btn').innerText = isJoined ? lang.joinBtn : lang.startBtn;
     }
 
-    // 로그인 및 로그아웃 버튼 이벤트 바인딩
+    // 구글 로그인: 인앱 브라우저(카카오, 인스타 등) WebView에서 Popup이 차단되므로 Redirect 방식 사용
     document.getElementById('google-login-btn').addEventListener('click', () => {
-        auth.signInWithPopup(provider).catch((error) => console.error(error));
+        auth.signInWithRedirect(provider).catch((error) => console.error(error));
+    });
+
+    // 페이지 로드 시 Redirect 결과 처리 (리다이렉트 후 돌아왔을 때 자동 로그인 완료)
+    auth.getRedirectResult().catch((error) => {
+        if (error && error.code !== 'auth/no-current-user') {
+            console.error('Redirect login error:', error);
+        }
     });
 
     // 💡 새롭게 추가하는 토글 클릭 이벤트 리스너
@@ -1815,7 +1822,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             document.getElementById('leave-btn').style.display = "inline-block";
             document.getElementById('report-btn').style.display = "inline-block";
             document.getElementById('participants-box').style.display = "block";
-            document.getElementById('max-people-group').style.display = "none";
+            const maxPeopleGroup = document.getElementById('max-people-group');
+            maxPeopleGroup.style.display = "none";
+            maxPeopleGroup.style.visibility = "hidden";
+            maxPeopleGroup.style.opacity = "0";
+            maxPeopleGroup.style.pointerEvents = "none";
             topicInput.disabled = true;
 
             renderParticipantsUI();
@@ -1848,6 +1859,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             document.getElementById('report-btn').style.display = "none";
             document.getElementById('participants-box').style.display = "none";
             document.getElementById('my-animal-tag').style.display = "none";
+            const maxPeopleGroupErr = document.getElementById('max-people-group');
+            maxPeopleGroupErr.style.display = "flex";
+            maxPeopleGroupErr.style.visibility = "visible";
+            maxPeopleGroupErr.style.opacity = "1";
+            maxPeopleGroupErr.style.pointerEvents = "auto";
             topicInput.disabled = false;
             alert("마이크 권한을 허용했는지 확인해 주세요. (" + error.message + ")");
         }
@@ -2070,6 +2086,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             document.getElementById('matching-status').innerText = "";
             // 주제가 비었으므로 '최대 인원' 선택란 다시 표시
             document.getElementById('max-people-group').style.display = "flex";
+            document.getElementById('max-people-group').style.visibility = "visible";
+            document.getElementById('max-people-group').style.opacity = "1";
+            document.getElementById('max-people-group').style.pointerEvents = "auto";
 
             // 피어 배지 전송 타겟 리스트박스 렌더링 구성 (uidToAnimal 초기화 전에 호출!)
             setupVoteTargetsUI();
