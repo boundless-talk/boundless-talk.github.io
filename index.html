@@ -1779,12 +1779,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const dbg = (msg) => { document.getElementById('debug-log').innerText += msg + '\n'; };
         try {
             dbg('1. 시작');
-            // iOS Safari 포함 모든 브라우저: getUserMedia로 먼저 권한 확보
+            // iOS Safari: getUserMedia로 직접 스트림 획득 후 Agora custom track으로 사용
+            let micStream;
             try {
                 dbg('2. getUserMedia 시도');
-                const testStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 dbg('3. getUserMedia 성공');
-                testStream.getTracks().forEach(t => t.stop());
             } catch(permErr) {
                 dbg('마이크 권한 실패: ' + permErr.message);
                 alert(currentLang === 'ko'
@@ -1794,10 +1794,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 document.getElementById('join-btn').disabled = false;
                 return;
             }
-            dbg('4. Agora 마이크 트랙 생성 시도');
-            // 권한 확보 후 Agora로 마이크 트랙 생성
-            localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-            dbg('5. 마이크 트랙 생성 성공');
+            dbg('4. custom audio track 생성 시도');
+            const micTrack = micStream.getAudioTracks()[0];
+            localAudioTrack = AgoraRTC.createCustomAudioTrack({ mediaStreamTrack: micTrack });
+            dbg('5. 마이크 트랙 생성 성공: ' + (localAudioTrack ? 'OK' : 'NULL'));
 
             const firebaseUser = auth.currentUser;
             const agoraUid = firebaseUser ? firebaseUser.uid : null;
@@ -1840,7 +1840,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             }
 
             // 아고라 채널 퍼블리시
+            dbg('10. publish 시도');
             await client.publish([localAudioTrack]);
+            dbg('11. publish 성공');
 
             // 오디오 보안 롤링 시스템 즉시 실행
             setupRollingAudioRecorder();
