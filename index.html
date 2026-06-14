@@ -800,6 +800,7 @@
     // 다중 참여자 목록 추적 (본인 제외)
     let roomParticipants = []; // 현재 방에 있는 참여자 (나간 사람은 제거됨)
     let sessionParticipants = []; // 세션 중 한번이라도 참여한 모든 사람 (평가용, 먼저 나간 사람 포함)
+    let agoraToFirebaseUid = {}; // Agora UID → Firebase UID 매핑 테이블
     let selectedVoteTarget = null;
     let selectedReportTarget = null;
 
@@ -1536,6 +1537,14 @@
             isJoined = true;
             roomParticipants = [];
             sessionParticipants = []; // 세션 전체 참여자 기록 (먼저 나간 사람도 보존)
+            agoraToFirebaseUid = {}; // 매핑 초기화
+
+            // 내 Agora UID → Firebase UID 매핑을 채널 경로에 등록 (상대방이 참조용)
+            if (firebaseUser) {
+                await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
+                // 퇴장 시 자동 삭제
+                database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+            }
 
             // 마이크 활성화 및 아고라 채널 퍼블리시
             localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
@@ -1574,9 +1583,16 @@
                 roomParticipants.push(user.uid);
                 renderParticipantsUI();
             }
-            // 세션 전체 참여자 목록에도 추가 (나중에 평가 시 사용)
-            if (!sessionParticipants.includes(user.uid)) {
-                sessionParticipants.push(user.uid);
+            // Agora UID → Firebase UID 매핑 조회 후 저장
+            if (!agoraToFirebaseUid[user.uid]) {
+                const snap = await database.ref(`channels/${encodeURIComponent(currentChannelName).replace(/%/g,'_').slice(0,64)}/members/${user.uid}`).once('value');
+                const fbUid = snap.val();
+                if (fbUid) agoraToFirebaseUid[user.uid] = fbUid;
+            }
+            // 세션 전체 참여자 목록에도 추가 (나중에 평가 시 사용) - Firebase UID 기준
+            const fbUidForSession = agoraToFirebaseUid[user.uid] || String(user.uid);
+            if (!sessionParticipants.includes(fbUidForSession)) {
+                sessionParticipants.push(fbUidForSession);
             }
 
             // Web Audio API 오디오 믹서 노드가 구축되어 있으면 원격 오디오 스트림 결합 믹싱 처리
