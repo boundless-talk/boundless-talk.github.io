@@ -1,5 +1,3 @@
-$ cat "C:\Users\윤주황\Desktop\B-Talk-main\B-Talk-main\netlify\functions\summarize.js"
-
 const { GoogleGenAI } = require('@google/genai');
 const Busboy = require('busboy');
 
