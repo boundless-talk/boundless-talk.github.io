@@ -1,5 +1,3 @@
-$ cat "C:\Users\윤주황\Desktop\B-Talk-main\B-Talk-main\netlify\functions\reportUser.js"
-
 const { GoogleGenAI } = require('@google/genai');
 const admin = require('firebase-admin');
 const Busboy = require('busboy');
