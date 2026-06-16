@@ -816,6 +816,39 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             margin: 0;
         }
         .room-report-btn:hover { background: rgba(255,149,0,0.16); }
+
+        /* ── 번역 자막 ── */
+        .subtitle-section { width: 100%; max-width: 520px; padding: 0 4px; }
+        .subtitle-ctrl { display: flex; align-items: center; gap: 8px; padding: 12px 0 6px; flex-wrap: wrap; }
+        .subtitle-toggle-btn {
+            font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 20px;
+            border: 1px solid rgba(0,229,255,0.3); background: transparent;
+            color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+        }
+        .subtitle-toggle-btn.on {
+            background: rgba(0,229,255,0.12); border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .subtitle-lang-row { display: none; align-items: center; gap: 6px; }
+        .subtitle-lang-select {
+            font-size: 12px; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12); color: #fff;
+            padding: 4px 8px; border-radius: 8px; cursor: pointer;
+        }
+        .subtitle-arrow { color: rgba(255,255,255,0.35); font-size: 13px; }
+        .subtitle-list {
+            display: none; flex-direction: column; gap: 6px;
+            max-height: 160px; overflow-y: auto; padding-bottom: 4px;
+        }
+        .subtitle-item {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px; padding: 8px 12px;
+        }
+        .subtitle-speaker { font-size: 11px; color: var(--accent-color); margin-bottom: 3px; font-weight: 600; }
+        .subtitle-original { font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 2px; }
+        .subtitle-translated { font-size: 14px; color: rgba(255,255,255,0.88); font-weight: 500; line-height: 1.4; }
+        .subtitle-self-text { font-size: 12px; color: rgba(255,255,255,0.35); font-style: italic; }
+        .subtitle-loading { font-size: 12px; color: rgba(255,255,255,0.3); font-style: italic; }
     </style>
 </head>
 <body>
@@ -1095,6 +1128,32 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 인사해보시겠어요?</div>
                 <div class="icebreaker-sub" id="icebreaker-sub">낯선 만남도 첫 인사 한 마디면 금방 가까워져요 😊</div>
             </div>
+            <div class="subtitle-section" id="subtitle-section">
+                <div class="subtitle-ctrl">
+                    <button class="subtitle-toggle-btn" id="subtitle-toggle-btn" onclick="toggleSubtitles()">💬 번역 자막</button>
+                    <div class="subtitle-lang-row" id="subtitle-lang-row">
+                        <select class="subtitle-lang-select" id="my-lang-select">
+                            <option value="ko">🇰🇷 한국어</option>
+                            <option value="en">🇺🇸 English</option>
+                            <option value="ja">🇯🇵 日本語</option>
+                            <option value="zh-CN">🇨🇳 中文</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="fr">🇫🇷 Français</option>
+                        </select>
+                        <span class="subtitle-arrow">→</span>
+                        <select class="subtitle-lang-select" id="target-lang-select">
+                            <option value="en">🇺🇸 English</option>
+                            <option value="ko">🇰🇷 한국어</option>
+                            <option value="ja">🇯🇵 日本語</option>
+                            <option value="zh-CN">🇨🇳 中文</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="fr">🇫🇷 Français</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="subtitle-list" id="subtitle-list"></div>
+            </div>
+
             <div class="room-participants-section">
                 <div class="room-part-header">
                     <div class="room-part-title" id="room-part-title">참여자</div>
@@ -2142,6 +2201,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             myUid = null;
             // 연결 해제 → 다시 대기자로 등록
             if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).set(true);
+            stopSubtitleRecognition();
+            stopSubtitleListener();
+            subtitlesEnabled = false;
 
             document.getElementById('join-btn').disabled = false;
             document.getElementById('join-btn').style.display = "block";
@@ -2282,6 +2344,180 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     function hideRoomScreen() {
         document.getElementById('room-screen').classList.remove('active');
+        stopSubtitleRecognition();
+        stopSubtitleListener();
+        subtitlesEnabled = false;
+        document.getElementById('subtitle-toggle-btn').classList.remove('on');
+        document.getElementById('subtitle-toggle-btn').textContent = '💬 번역 자막';
+        document.getElementById('subtitle-lang-row').style.display = 'none';
+        document.getElementById('subtitle-list').style.display = 'none';
+        document.getElementById('subtitle-list').innerHTML = '';
+    }
+
+    // ── 번역 자막 시스템 (Whisper) ──
+    let subtitleMicStream = null;
+    let subtitlesEnabled = false;
+    let mySubtitleLang = 'ko';
+    let targetSubtitleLang = 'en';
+    let subtitleFbRef = null;
+
+    function toggleSubtitles() {
+        subtitlesEnabled = !subtitlesEnabled;
+        const btn = document.getElementById('subtitle-toggle-btn');
+        const langRow = document.getElementById('subtitle-lang-row');
+        const list = document.getElementById('subtitle-list');
+        const isKo = currentLang === 'ko';
+
+        if (subtitlesEnabled) {
+            mySubtitleLang = document.getElementById('my-lang-select').value;
+            targetSubtitleLang = document.getElementById('target-lang-select').value;
+            btn.classList.add('on');
+            btn.textContent = isKo ? '💬 자막 켜짐 ●' : '💬 Subtitles ON ●';
+            langRow.style.display = 'flex';
+            list.style.display = 'flex';
+            startWhisperRecognition();
+            listenSubtitles();
+        } else {
+            btn.classList.remove('on');
+            btn.textContent = '💬 번역 자막';
+            langRow.style.display = 'none';
+            list.style.display = 'none';
+            stopSubtitleRecognition();
+            stopSubtitleListener();
+        }
+    }
+
+    async function startWhisperRecognition() {
+        if (!navigator.mediaDevices) {
+            alert(currentLang === 'ko'
+                ? '이 브라우저는 마이크를 지원하지 않습니다.'
+                : 'Microphone not supported in this browser.');
+            subtitlesEnabled = false;
+            return;
+        }
+        try {
+            subtitleMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            recordAndTranscribeChunk();
+        } catch(e) {
+            alert(currentLang === 'ko' ? '마이크 권한이 필요합니다.' : 'Microphone permission required.');
+            subtitlesEnabled = false;
+        }
+    }
+
+    function recordAndTranscribeChunk() {
+        if (!subtitlesEnabled || !subtitleMicStream) return;
+
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+                       : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                       : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4'
+                       : '';
+
+        let recorder;
+        try {
+            recorder = new MediaRecorder(subtitleMicStream, mimeType ? { mimeType } : {});
+        } catch(e) {
+            recorder = new MediaRecorder(subtitleMicStream);
+        }
+
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+        recorder.onstop = async () => {
+            if (!subtitlesEnabled) return;
+            const blob = new Blob(chunks, { type: recorder.mimeType });
+            if (blob.size > 1500) await sendToWhisper(blob, recorder.mimeType);
+            if (subtitlesEnabled) recordAndTranscribeChunk();
+        };
+
+        recorder.start();
+        setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 4000);
+    }
+
+    async function sendToWhisper(blob, mimeType) {
+        if (!firebaseUser || !currentChannelName) return;
+        const ext = mimeType.includes('mp4') ? 'm4a' : 'webm';
+        const formData = new FormData();
+        formData.append('audio', blob, 'audio.' + ext);
+        formData.append('lang', mySubtitleLang);
+        try {
+            const res = await fetch(TOKEN_SERVER_URL + '/transcribe', { method: 'POST', body: formData });
+            if (!res.ok) return;
+            const data = await res.json();
+            const text = (data.text || '').trim();
+            if (!text) return;
+            await database.ref('subtitles/' + currentChannelName + '/' + firebaseUser.uid).set({
+                text, lang: mySubtitleLang, ts: Date.now()
+            });
+            displaySubtitle(firebaseUser.uid, text, null, true);
+        } catch(e) { console.warn('Whisper error:', e); }
+    }
+
+    function stopSubtitleRecognition() {
+        subtitlesEnabled = false;
+        if (subtitleMicStream) {
+            subtitleMicStream.getTracks().forEach(t => t.stop());
+            subtitleMicStream = null;
+        }
+    }
+
+    function listenSubtitles() {
+        if (!currentChannelName) return;
+        subtitleFbRef = database.ref('subtitles/' + currentChannelName);
+        subtitleFbRef.on('child_changed', async (snap) => {
+            const uid = snap.key;
+            if (firebaseUser && uid === firebaseUser.uid) return;
+            const data = snap.val();
+            if (!data || !data.text) return;
+
+            let translated = data.text;
+            if (data.lang !== targetSubtitleLang) {
+                translated = await translateSubtitleText(data.text, data.lang, targetSubtitleLang);
+            }
+            displaySubtitle(uid, data.text, translated, false);
+        });
+    }
+
+    function stopSubtitleListener() {
+        if (subtitleFbRef) { subtitleFbRef.off(); subtitleFbRef = null; }
+        if (firebaseUser && currentChannelName) {
+            database.ref('subtitles/' + currentChannelName + '/' + firebaseUser.uid).remove();
+        }
+    }
+
+    async function translateSubtitleText(text, from, to) {
+        try {
+            const url = 'https://api.mymemory.translated.net/get?q='
+                + encodeURIComponent(text) + '&langpair=' + from + '|' + to;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.responseStatus === 200) return data.responseData.translatedText;
+            return text;
+        } catch(e) { return text; }
+    }
+
+    function displaySubtitle(uid, original, translated, isSelf) {
+        const list = document.getElementById('subtitle-list');
+        if (!list) return;
+        const animal = assignAnimal(isSelf ? (firebaseUser ? firebaseUser.uid : uid) : uid);
+        const item = document.createElement('div');
+        item.className = 'subtitle-item';
+
+        if (isSelf) {
+            item.innerHTML =
+                '<div class="subtitle-speaker">' + animal.emoji + ' ' + animal.label
+                + (currentLang === 'ko' ? ' (나)' : ' (me)') + '</div>'
+                + '<div class="subtitle-self-text">' + original + '</div>';
+        } else {
+            const showOriginal = translated && original !== translated;
+            item.innerHTML =
+                '<div class="subtitle-speaker">' + animal.emoji + ' ' + animal.label + '</div>'
+                + (showOriginal ? '<div class="subtitle-original">' + original + '</div>' : '')
+                + '<div class="subtitle-translated">' + (translated || original) + '</div>';
+        }
+
+        list.appendChild(item);
+        while (list.children.length > 6) list.removeChild(list.firstChild);
+        list.scrollTop = list.scrollHeight;
     }
 
     function updateRoomParticipants() {
