@@ -2138,6 +2138,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         if (roomParticipants.length === 0) {
             container.innerHTML = `<div style="font-size:12px; color:rgba(255,255,255,0.3); text-align:center; padding:10px;">Waiting for peers...</div>`;
+            updateRoomParticipants();
             return;
         }
 
