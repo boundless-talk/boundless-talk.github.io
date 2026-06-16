@@ -1496,6 +1496,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             waitingRef.set(true);
             waitingRef.onDisconnect().remove();
 
+            // 로그인 즉시 bar 표시 (Firebase 응답 전에도 보이도록)
+            document.getElementById('waiting-count-bar').style.display = 'flex';
+            document.getElementById('waiting-count-text').textContent = textData[currentLang].waitingNone;
+
             // 전체 대기자 수 실시간 리스닝
             database.ref('waiting').on('value', (snap) => {
                 const data = snap.val() || {};
@@ -2711,7 +2715,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             // 모달 렌더 후 동물 맵 초기화
             uidToAnimal = {};
 
-        } catch (error) { console.error("Error occurred while leaving room:", error); }
+        } catch (error) {
+            console.error("Error occurred while leaving room:", error);
+            // 에러가 나도 UI는 반드시 정리
+            isJoined = false;
+            isJoining = false;
+            if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).set(true);
+            hideRoomScreen();
+            document.getElementById('join-btn').style.display = "block";
+            document.getElementById('join-btn').disabled = false;
+            document.getElementById('leave-btn').style.display = "none";
+            document.getElementById('report-btn').style.display = "none";
+            try { document.getElementById('participants-box').style.display = "none"; } catch(e) {}
+            try { document.getElementById('max-people-group').style.display = "flex"; } catch(e) {}
+            try { document.getElementById('my-animal-tag').style.display = "none"; } catch(e) {}
+            document.getElementById('matching-status').innerText = "";
+        }
     };
 
     // AI 대화 요약 함수 — summarize.js Netlify Function 호출
