@@ -993,6 +993,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         <div id="talk-controls" style="display: none; width: 100%;">
 
+
+        <div id="live-topics-bar" style="display:none; margin-bottom:10px;">
+    <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#ff4d4d;"></span>
+        <span id="live-topics-label">지금 대화 중인 주제</span>
+    </div>
+    <div id="live-topics-tags" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
+</div>
+            
         <div class="input-group">
             <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
         </div>
@@ -1430,6 +1439,27 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (user) {
             // presence 로직은 setupPresence()로 분리 — 인증 완료 후 별도 호출
             setupPresence(user.uid);
+            // 실시간 대화 주제 태그
+database.ref('channels').on('value', (snap) => {
+    const data = snap.val() || {};
+    const topics = [];
+    Object.values(data).forEach(ch => {
+        if (ch.topic && !ch.topic.startsWith('\uD83D\uDD12_') && ch.memberCount > 0) {
+            if (!topics.includes(ch.topic)) topics.push(ch.topic);
+        }
+    });
+    const bar = document.getElementById('live-topics-bar');
+    const tagsEl = document.getElementById('live-topics-tags');
+    if (!bar || !tagsEl) return;
+    if (topics.length > 0 && !isJoined) {
+        bar.style.display = 'block';
+        tagsEl.innerHTML = topics.slice(0,6).map(t =>
+            `<button onclick="document.getElementById('topic-input').value='${t}'" style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;">${t}</button>`
+        ).join('');
+    } else {
+        bar.style.display = 'none';
+    }
+});
 
                 // 이메일 저장 (관리자 패널에서 식별용)
     if (user.email) {
@@ -2168,6 +2198,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
                 // 퇴장 시 자동 삭제
                 database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+                if (finalTopic && !finalTopic.startsWith('🔒_')) {
+    database.ref('activeTopics/' + safeAgoraChannelId).set({ topic: finalTopic, ts: firebase.database.ServerValue.TIMESTAMP });
+    database.ref('activeTopics/' + safeAgoraChannelId).onDisconnect().remove();
+}
             }
 
             // 아고라 채널 퍼블리시
@@ -2359,6 +2393,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     function hideRoomScreen() {
         document.getElementById('room-screen').classList.remove('active');
+        document.getElementById('topic-input').style.visibility = 'visible';
         stopSubtitleRecognition();
         stopSubtitleListener();
         subtitlesEnabled = false;
@@ -3229,10 +3264,10 @@ async function connectToFriend(friendUid) {
     const privateChannelId = `🔒_${channelToken}`;
 
     closeFriendsModal();
-    alert(textData[currentLang].privateChannelAlert(`Friend(${friendUid.substring(0,8)})`));
 
     const topicInput = document.getElementById('topic-input');
     topicInput.value = privateChannelId;
+    topicInput.style.visibility = 'hidden';
     document.getElementById('join-btn').click();
 }
 
