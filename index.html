@@ -2443,21 +2443,24 @@ subtitleMicStream._analyser = analyser;
         const chunks = [];
         recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
 
-        recorder.onstop = async () => {
-            if (!subtitlesEnabled) return;
-            const blob = new Blob(chunks, { type: recorder.mimeType });
-            // 음량 체크
+        let maxVolume = 0;
 const analyser = subtitleMicStream && subtitleMicStream._analyser;
-let hasSound = false;
+let volumeInterval = null;
 if (analyser) {
     const data = new Uint8Array(analyser.frequencyBinCount);
-    analyser.getByteFrequencyData(data);
-    const avg = data.reduce((a, b) => a + b, 0) / data.length;
-    hasSound = avg > 8;
-} else {
-    hasSound = blob.size > 15000;
+    volumeInterval = setInterval(() => {
+        analyser.getByteFrequencyData(data);
+        const avg = data.reduce((a, b) => a + b, 0) / data.length;
+        if (avg > maxVolume) maxVolume = avg;
+    }, 100);
 }
-if (hasSound) await sendToWhisper(blob, recorder.mimeType);
+
+recorder.onstop = async () => {
+    if (volumeInterval) clearInterval(volumeInterval);
+    if (!subtitlesEnabled) return;
+    const blob = new Blob(chunks, { type: recorder.mimeType });
+    const hasSound = analyser ? maxVolume > 15 : blob.size > 15000;
+    if (hasSound) await sendToWhisper(blob, recorder.mimeType);
             if (subtitlesEnabled) recordAndTranscribeChunk();
         };
 
