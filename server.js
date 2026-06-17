@@ -62,7 +62,7 @@ app.post('/transcribe', (req, res) => {
 
     bb.on('close', async () => {
         try {
-            if (!audioBuffer || audioBuffer.length < 1000) {
+            if (!audioBuffer || audioBuffer.length < 8000) {
                 return res.json({ text: '' });
             }
 
@@ -76,7 +76,17 @@ app.post('/transcribe', (req, res) => {
                 response_format: 'text'
             });
 
-            const text = typeof transcription === 'string' ? transcription.trim() : (transcription.text || '').trim();
+            const raw = typeof transcription === 'string' ? transcription.trim() : (transcription.text || '').trim();
+
+            // Filter common Whisper hallucinations on silence
+            const hallucinations = [
+                '시청해주셔서 감사합니다', '구독', '좋아요', 'thank you for watching',
+                'thanks for watching', 'please subscribe', 'performance data collection',
+                'MBC', 'KBS', 'subtitles by'
+            ];
+            const isHallucination = hallucinations.some(h => raw.toLowerCase().includes(h.toLowerCase()));
+            const text = isHallucination ? '' : raw;
+
             res.json({ text });
         } catch (err) {
             console.error('Transcription error:', err.message);
