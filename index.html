@@ -1440,14 +1440,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             // presence 로직은 setupPresence()로 분리 — 인증 완료 후 별도 호출
             setupPresence(user.uid);
             // 실시간 대화 주제 태그
-database.ref('channels').on('value', (snap) => {
+database.ref('activeTopics').on('value', (snap) => {
     const data = snap.val() || {};
-    const topics = [];
-    Object.values(data).forEach(ch => {
-        if (ch.topic && !ch.topic.startsWith('\uD83D\uDD12_') && ch.memberCount > 0) {
-            if (!topics.includes(ch.topic)) topics.push(ch.topic);
-        }
-    });
+    const topics = [...new Set(Object.values(data).map(ch => ch.topic).filter(Boolean))];
+    
     const bar = document.getElementById('live-topics-bar');
     const tagsEl = document.getElementById('live-topics-tags');
     if (!bar || !tagsEl) return;
@@ -2402,6 +2398,7 @@ database.ref('channels').on('value', (snap) => {
         document.getElementById('subtitle-lang-row').style.display = 'none';
         document.getElementById('subtitle-list').style.display = 'none';
         document.getElementById('subtitle-list').innerHTML = '';
+        if (currentChannelName) database.ref('activeTopics/' + currentChannelName).remove();
     }
 
     // ── 번역 자막 시스템 (Whisper) ──
