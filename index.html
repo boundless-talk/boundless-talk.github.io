@@ -2799,7 +2799,7 @@ return text;
             // 대화방 나가기 → 다시 대기자로 등록
             const _cu = auth.currentUser;
             if (_cu) database.ref('waiting/' + _cu.uid).set(true);
-            if (_cu) database.ref(`channels/${safeAgoraChannelId}/members/${_cu.uid}`).remove();
+            if (_cu) await database.ref(`channels/${safeAgoraChannelId}/members/${_cu.uid}`).remove();
             hideRoomScreen();
             document.getElementById('join-btn').style.display = "block";
             document.getElementById('join-btn').disabled = false;
