@@ -1450,7 +1450,7 @@ database.ref('activeTopics').on('value', (snap) => {
     if (topics.length > 0 && !isJoined) {
         bar.style.display = 'block';
         tagsEl.innerHTML = topics.slice(0,6).map(t =>
-            `<button onclick="document.getElementById('topic-input').value='${t}'" style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;">${t}</button>`
+            `<button onclick="document.getElementById('topic-input').value='${t}'" style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;width:auto;">${t}</button>`
         ).join('');
     } else {
         bar.style.display = 'none';
@@ -2185,9 +2185,14 @@ database.ref('activeTopics').on('value', (snap) => {
             const myAnimal = assignAnimal(firebaseUser ? firebaseUser.uid : myUid);
             document.getElementById('my-animal-label').innerText = `${myAnimal.emoji} ${myAnimal.label}`;
             document.getElementById('my-animal-tag').style.display = "block";
-            alert(currentLang === 'ko'
-                ? `🐾 당신은 오늘 [${myAnimal.emoji} ${myAnimal.label}]입니다!\n상대방도 고유한 동물로 표시됩니다.`
-                : `🐾 You are [${myAnimal.emoji} ${myAnimal.label}] today!\nPeers will also have unique animal names.`);
+           const toastMsg = currentLang === 'ko'
+    ? `🐾 당신은 오늘 [${myAnimal.emoji} ${myAnimal.label}]입니다!\n상대방도 고유한 동물로 표시됩니다.`
+    : `🐾 You are [${myAnimal.emoji} ${myAnimal.label}] today!\nPeers will also have unique animal names.`;
+const toast = document.createElement('div');
+toast.style.cssText = 'position:fixed;top:30px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.4);color:#fff;padding:14px 22px;border-radius:16px;font-size:14px;z-index:9999;text-align:center;white-space:pre-line;backdrop-filter:blur(10px);';
+toast.textContent = toastMsg;
+document.body.appendChild(toast);
+setTimeout(() => toast.remove(), 4000);
 
             // 내 Agora UID → Firebase UID 매핑을 채널 경로에 등록 (상대방이 참조용)
             if (firebaseUser) {
