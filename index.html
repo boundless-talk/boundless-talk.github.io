@@ -854,6 +854,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 </head>
 <body>
 
+    <div id="invite-banner" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(13,14,18,0.95); border:1px solid rgba(0,229,255,0.4); border-radius:16px; padding:18px 24px; z-index:9999; text-align:center; min-width:280px;">
+    <div id="invite-text" style="font-size:14px; color:#fff; margin-bottom:14px;">친구가 대화를 요청했어요! 🎉</div>
+    <div style="display:flex; gap:10px; justify-content:center;">
+        <button onclick="respondInvite('accepted')" style="background:rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.5); color:#00e5ff; border-radius:20px; padding:8px 22px; cursor:pointer; font-size:13px;">좋아</button>
+        <button onclick="respondInvite('rejected')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.5); border-radius:20px; padding:8px 22px; cursor:pointer; font-size:13px;">나중에</button>
+    </div>
+</div>
+
     <!-- 영구정지 오버레이 -->
     <div id="ban-overlay">
         <h1 id="ban-title">ACCESS DENIED</h1>
@@ -1439,6 +1447,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (user) {
             // presence 로직은 setupPresence()로 분리 — 인증 완료 후 별도 호출
             setupPresence(user.uid);
+            database.ref(`invites/${user.uid}`).on('value', (snap) => {
+    const data = snap.val();
+    if (data && data.status === 'pending') {
+        currentInviteData = data;
+        document.getElementById('invite-banner').style.display = 'block';
+        document.getElementById('invite-text').textContent = currentLang === 'ko'
+            ? '친구가 대화를 요청했어요! 🎉'
+            : 'A friend wants to talk! 🎉';
+    } else {
+        document.getElementById('invite-banner').style.display = 'none';
+    }
+});
             // 실시간 대화 주제 태그
 database.ref('activeTopics').on('value', (snap) => {
     const data = snap.val() || {};
@@ -2779,6 +2799,7 @@ return text;
             // 대화방 나가기 → 다시 대기자로 등록
             const _cu = auth.currentUser;
             if (_cu) database.ref('waiting/' + _cu.uid).set(true);
+            if (_cu) database.ref(`channels/${safeAgoraChannelId}/members/${_cu.uid}`).remove();
             hideRoomScreen();
             document.getElementById('join-btn').style.display = "block";
             document.getElementById('join-btn').disabled = false;
@@ -3240,58 +3261,93 @@ function closeFriendsModal() {
     }
 }
 
-// 3. 친구와 재연결 실행 (AI 우회 및 다이렉트 방 개설)
 async function connectToFriend(friendUid) {
     if (!auth.currentUser) return;
     const myUid = auth.currentUser.uid;
 
-    // 통화 전 친구의 온라인 상태를 Firebase에서 실시간 재조회
     const presenceSnap = await database.ref(`users/${friendUid}/presence/online`).once('value');
-    const isOnline = presenceSnap.val() === true;
-
-    if (!isOnline) {
-        const msg = currentLang === 'ko'
-            ? "친구가 현재 오프라인 상태입니다. 온라인일 때 다시 시도해 주세요."
-            : "This friend is currently offline. Please try again when they are online.";
-        alert(msg);
+    if (presenceSnap.val() !== true) {
+        alert(currentLang === 'ko' ? "친구가 현재 오프라인 상태입니다." : "This friend is currently offline.");
         return;
     }
 
-    // 나와 상대방 모두의 친구 목록에서 lastTalked 시간을 동시에 갱신 (양방향 반영)
-    const updates = {};
-    updates[`users/${myUid}/friends/${friendUid}/lastTalked`] = firebase.database.ServerValue.TIMESTAMP;
-    updates[`users/${friendUid}/friends/${myUid}/lastTalked`] = firebase.database.ServerValue.TIMESTAMP;
-    database.ref().update(updates);
-
-    // 보안 강화: 예측 불가능한 랜덤 채널 토큰을 Firebase에 저장하고 공유
     const pairKey = [myUid, friendUid].sort().join("_");
     const privateChannelRef = database.ref(`privateChannels/${pairKey}`);
-
     let channelToken;
     const existingSnap = await privateChannelRef.once('value');
     const existing = existingSnap.val();
-
     if (existing && existing.token && existing.expiresAt > Date.now()) {
         channelToken = existing.token;
     } else {
         const randomBytes = new Uint8Array(16);
         crypto.getRandomValues(randomBytes);
         channelToken = Array.from(randomBytes).map(b => b.toString(16).padStart(2,'0')).join('');
-        await privateChannelRef.set({
-            token: channelToken,
-            expiresAt: Date.now() + 3600000,
-            participants: [myUid, friendUid]
-        });
+        await privateChannelRef.set({ token: channelToken, expiresAt: Date.now() + 3600000, participants: [myUid, friendUid] });
     }
 
     const privateChannelId = `🔒_${channelToken}`;
 
+    // 초대 전송
+    await database.ref(`invites/${friendUid}`).set({
+        fromUid: myUid,
+        privateChannelId,
+        ts: firebase.database.ServerValue.TIMESTAMP,
+        status: 'pending'
+    });
+
     closeFriendsModal();
 
-    const topicInput = document.getElementById('topic-input');
-    topicInput.value = privateChannelId;
-    topicInput.style.visibility = 'hidden';
-    document.getElementById('join-btn').click();
+    // A는 응답 대기
+    const toast = document.createElement('div');
+    toast.id = 'invite-waiting-toast';
+    toast.style.cssText = 'position:fixed;top:30px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#fff;padding:12px 22px;border-radius:16px;font-size:13px;z-index:9999;';
+    toast.textContent = currentLang === 'ko' ? '친구에게 대화 요청을 보냈어요... ⏳' : 'Invite sent, waiting...';
+    document.body.appendChild(toast);
+
+    const inviteRef = database.ref(`invites/${friendUid}`);
+    const timeout = setTimeout(async () => {
+        inviteRef.off('value');
+        await database.ref(`invites/${friendUid}`).remove();
+        toast.remove();
+        alert(currentLang === 'ko' ? '친구가 응답하지 않았어요.' : 'No response from friend.');
+    }, 30000);
+
+    inviteRef.on('value', async (snap) => {
+        const data = snap.val();
+        if (!data) return;
+        if (data.status === 'accepted') {
+            inviteRef.off('value');
+            clearTimeout(timeout);
+            toast.remove();
+            await database.ref(`invites/${friendUid}`).remove();
+            const topicInput = document.getElementById('topic-input');
+            topicInput.value = privateChannelId;
+            topicInput.style.visibility = 'hidden';
+            document.getElementById('join-btn').click();
+        } else if (data.status === 'rejected') {
+            inviteRef.off('value');
+            clearTimeout(timeout);
+            toast.remove();
+            await database.ref(`invites/${friendUid}`).remove();
+            alert(currentLang === 'ko' ? '친구가 나중에 하자고 했어요.' : 'Friend declined.');
+        }
+    });
+}
+
+let currentInviteData = null;
+
+async function respondInvite(response) {
+    if (!currentInviteData) return;
+    const myUid = auth.currentUser.uid;
+    await database.ref(`invites/${myUid}`).update({ status: response });
+    document.getElementById('invite-banner').style.display = 'none';
+    if (response === 'accepted') {
+        const topicInput = document.getElementById('topic-input');
+        topicInput.value = currentInviteData.privateChannelId;
+        topicInput.style.visibility = 'hidden';
+        document.getElementById('join-btn').click();
+    }
+    currentInviteData = null;
 }
 
 // ── 인트로 화면 제어 ──
