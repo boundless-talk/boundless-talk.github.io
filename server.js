@@ -3,7 +3,6 @@ const cors = require('cors');
 const { RtcTokenBuilder, RtcRole } = require('agora-token');
 const Busboy = require('busboy');
 const OpenAI = require('openai');
-const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
 app.use(cors());
@@ -134,20 +133,29 @@ app.post('/summarize', (req, res) => {
                 return res.status(400).json({ error: '오디오 파일이 없습니다.' });
             }
 
-            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
             const prompt = lang === 'ko'
                 ? '이 음성 대화를 듣고 주요 내용을 3문장 이내로 요약해 주세요. 대화가 아니라면 "소음만 감지되었습니다"라고 응답해 주세요.'
                 : 'Listen to this conversation and summarize the main points in under 3 sentences. If there is no speech, reply with "Only noise detected."';
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-1.5-flash',
-                contents: [
-                    prompt,
-                    { inlineData: { data: audioBuffer.toString('base64'), mimeType: audioMime } }
-                ]
-            });
+            const geminiRes = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                { inline_data: { mime_type: audioMime, data: audioBuffer.toString('base64') } }
+                            ]
+                        }]
+                    })
+                }
+            );
 
-            res.json({ summary: response.text });
+            const geminiData = await geminiRes.json();
+            const summary = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            res.json({ summary });
         } catch (err) {
             console.error('Summarize error:', err.message);
             res.status(500).json({ error: err.message });
