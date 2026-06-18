@@ -3599,7 +3599,7 @@ function showSuspendOverlay(until, reason, uid) {
 
   // iOS Safari 배너
   if (isIOS && !isInStandaloneMode && !localStorage.getItem('iosBannerDismissed')) {
-    const lang = typeof currentLang !== 'undefined' ? currentLang : 'ko';
+    const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : (navigator.language || '').startsWith('ko') ? 'ko' : 'en';
     if (lang === 'en') {
       document.getElementById('ios-title').textContent = 'Add to Home Screen for quick and easy chatting.';
       document.getElementById('ios-desc').innerHTML = 'Tap the share button (⬆) below,<br>then select <strong style="color:rgba(255,255,255,0.7);">"Add to Home Screen"</strong>.';
@@ -3612,7 +3612,7 @@ function showSuspendOverlay(until, reason, uid) {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    const lang = typeof currentLang !== 'undefined' ? currentLang : 'ko';
+    const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : (navigator.language || '').startsWith('ko') ? 'ko' : 'en';
     if (lang === 'en') {
       document.getElementById('pwa-title').textContent = 'Add to Home Screen for quick and easy chatting.';
       document.getElementById('pwa-desc').textContent = 'Launch like an app and connect instantly with one tap.';
