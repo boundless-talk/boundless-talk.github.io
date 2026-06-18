@@ -717,16 +717,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             flex: 1;
         }
         .icebreaker-box {
-            background: rgba(0,229,255,0.05);
-            border: 1px solid rgba(0,229,255,0.18);
-            border-radius: 16px;
-            padding: 22px 20px 18px;
+            background: rgba(0,229,255,0.04);
+            border: 1px solid rgba(0,229,255,0.14);
+            border-radius: 12px;
+            padding: 12px 16px;
             text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .icebreaker-emoji {
-            font-size: 34px;
-            margin-bottom: 10px;
-            display: block;
+            font-size: 20px;
+            flex-shrink: 0;
             animation: wave-hand 0.6s ease-in-out 0.8s 3;
         }
         @keyframes wave-hand {
@@ -735,24 +737,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             70%     { transform: rotate(18deg); }
         }
         .icebreaker-label {
-            font-size: 10px;
+            font-size: 9px;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: rgba(0,229,255,0.6);
-            margin-bottom: 8px;
+            color: rgba(0,229,255,0.5);
+            margin-bottom: 3px;
         }
         .icebreaker-text {
-            font-size: 15px;
-            font-weight: 600;
-            color: #fff;
-            line-height: 1.7;
-            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.5;
             white-space: pre-line;
+            text-align: left;
         }
         .icebreaker-sub {
-            font-size: 12px;
-            color: rgba(255,255,255,0.4);
-            line-height: 1.5;
+            display: none;
         }
         .room-participants-section {
             display: flex;
@@ -1057,11 +1057,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
    <div class="reputation-board" id="reputation-section" style="display: none;">
         <div class="reputation-title" id="rep-title">TALK INDEX</div>
         <div class="badge-list">
-            <div class="badge-item">👍 <span id="label-manner">Manner</span>: <strong id="score-manner">0</strong></div>
-            <div class="badge-item">🧠 <span id="label-logic">Logic</span>: <strong id="score-logic">0</strong></div>
-            <div class="badge-item">🤣 <span id="label-humor">Humor</span>: <strong id="score-humor">0</strong></div>
-            <div class="badge-item">🤗 <span id="label-empathy">Empathy</span>: <strong id="score-empathy">0</strong></div>
-            <div class="badge-item">🔥 <span id="label-passion">Passion</span>: <strong id="score-passion">0</strong></div>
+            <div class="badge-item">👍 <span id="label-manner">NICE</span>: <strong id="score-manner">0</strong></div>
+            <div class="badge-item">🧠 <span id="label-logic">LOGIC</span>: <strong id="score-logic">0</strong></div>
+            <div class="badge-item">🤣 <span id="label-humor">FUN</span>: <strong id="score-humor">0</strong></div>
+            <div class="badge-item">🤗 <span id="label-empathy">WARM</span>: <strong id="score-empathy">0</strong></div>
+            <div class="badge-item">🔥 <span id="label-passion">BOLD</span>: <strong id="score-passion">0</strong></div>
         </div>
     </div>
 
@@ -1082,11 +1082,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div class="target-select-list" id="vote-target-container"></div>
 
             <div class="badge-select-grid">
-                <button class="badge-vote-btn" id="btn-vote-manner" onclick="executeVote('manner')" disabled>👍 <span id="vote-manner">Good Manners</span></button>
-                <button class="badge-vote-btn" id="btn-vote-logic" onclick="executeVote('logic')" disabled>🧠 <span id="vote-logic">Highly Logical</span></button>
-                <button class="badge-vote-btn" id="btn-vote-humor" onclick="executeVote('humor')" disabled>🤣 <span id="vote-humor">Very Humorous</span></button>
-                <button class="badge-vote-btn" id="btn-vote-empathy" onclick="executeVote('empathy')" disabled>🤗 <span id="vote-empathy">Great Listener</span></button>
-                <button class="badge-vote-btn" id="btn-vote-passion" onclick="executeVote('passion')" disabled>🔥 <span id="vote-passion">Very Passionate</span></button>
+                <button class="badge-vote-btn" id="btn-vote-manner" onclick="executeVote('manner')" disabled>👍 <span id="vote-manner">NICE</span></button>
+                <button class="badge-vote-btn" id="btn-vote-logic" onclick="executeVote('logic')" disabled>🧠 <span id="vote-logic">LOGIC</span></button>
+                <button class="badge-vote-btn" id="btn-vote-humor" onclick="executeVote('humor')" disabled>🤣 <span id="vote-humor">FUN</span></button>
+                <button class="badge-vote-btn" id="btn-vote-empathy" onclick="executeVote('empathy')" disabled>🤗 <span id="vote-empathy">WARM</span></button>
+                <button class="badge-vote-btn" id="btn-vote-passion" onclick="executeVote('passion')" disabled>🔥 <span id="vote-passion">BOLD</span></button>
                 <button class="badge-vote-btn" id="btn-add-friend" onclick="executeAddFriend()" style="background: rgba(0, 229, 255, 0.05); border-color: rgba(0, 229, 255, 0.4);" disabled>
         <span id="label-add-friend">➕ 친구 추가</span>
     </button>
@@ -1295,10 +1295,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             toggleBtn: "한국어",
             opt3: "3 members", opt4: "4 members (recommended)", opt6: "6 members",
             repTitle: "TALK INDEX",
-            badgeManner: "Manners", badgeLogic: "Logic", badgeHumor: "Humor", badgeEmpathy: "Empathy", badgePassion: "Passion",
+            badgeManner: "NICE", badgeLogic: "LOGIC", badgeHumor: "FUN", badgeEmpathy: "WARM", badgePassion: "BOLD",
             mTitle: "Conversation Report",
             mDesc: "Check out what AI noted, and gift a peer badge!",
-            vManner: "Good Manners", vLogic: "Highly Logical", vHumor: "Very Humorous", vEmpathy: "Great Listener", vPassion: "Very Passionate", vSkip: "Skip & Close",
+            vManner: "NICE", vLogic: "LOGIC", vHumor: "FUN", vEmpathy: "WARM", vPassion: "BOLD", vSkip: "Skip & Close",
             aiLoading: "AI Chat Summary Loading...",
             aiHeadline: "Today's Dialogue Highlights",
             aiSample: "• Discussed the core values of chosen topic dynamically.<br>• Respectful conversation flows detected by AI engine.<br>• Peer validation phase ready.",
@@ -1348,7 +1348,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         friendAdded: "🎉 Added to your friend list!",
         privateChannelAlert: (name) => `Connecting to private channel with ${name}...`,
         roomHeaderLabel: "Conversation Topic",
-        icebrkLabel: "Icebreaking Suggestion",
+        icebrkLabel: "Icebreaker",
         roomPartTitle: "Participants",
         roomLeaveBtn: "🚪 LEAVE",
         roomReportBtn: "🚨 Report",
@@ -1371,10 +1371,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             toggleBtn: "EN",
             opt3: "3명", opt4: "4명 (권장)", opt6: "6명",
             repTitle: "대화지수",
-            badgeManner: "매너", badgeLogic: "논리", badgeHumor: "유머", badgeEmpathy: "공감", badgePassion: "열정",
+            badgeManner: "나이스", badgeLogic: "논리", badgeHumor: "펀", badgeEmpathy: "따뜻", badgePassion: "열정",
             mTitle: "대화 분석 리포트",
             mDesc: "AI가 요약한 대화 내용을 파악하고 함께 대화한 상대방에게 배지를 선물해 보세요.",
-            vManner: "매너가 좋았어요", vLogic: "논리적이었어요", vHumor: "유머러스했어요", vEmpathy: "공감을 잘해줬어요", vPassion: "열정적이었어요", vSkip: "닫기 및 건너뛰기",
+            vManner: "나이스했어요", vLogic: "논리적이었어요", vHumor: "펀했어요", vEmpathy: "따뜻했어요", vPassion: "열정적이었어요", vSkip: "닫기 및 건너뛰기",
             aiLoading: "AI가 대화 요약본을 추출하는 중...",
             aiHeadline: "오늘의 대화 핵심 쟁점 분석 결과",
             aiSample: "• 참여자들이 설정한 주제에 부합하는 소통이 정상적으로 이루어졌습니다.<br>• 외모나 조건 없는 목소리 기반의 긍정적 티키타카가 감지되었습니다.<br>• 상호 평판 배지 수여가 가능합니다.",
@@ -2216,7 +2216,7 @@ const toast = document.createElement('div');
 toast.style.cssText = 'position:fixed;top:30px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.4);color:#fff;padding:14px 22px;border-radius:16px;font-size:14px;z-index:9999;text-align:center;white-space:pre-line;backdrop-filter:blur(10px);';
 toast.textContent = toastMsg;
 document.body.appendChild(toast);
-setTimeout(() => toast.remove(), 4000);
+setTimeout(() => toast.remove(), 10000);
 
             // 내 Agora UID → Firebase UID 매핑을 채널 경로에 등록 (상대방이 참조용)
             if (firebaseUser) {
@@ -2700,11 +2700,11 @@ return text;
             if (!data) return;
 
             const badgeNames = {
-                manner:  currentLang === 'ko' ? "매너" : "Manners",
-                logic:   currentLang === 'ko' ? "논리" : "Logic",
-                empathy: currentLang === 'ko' ? "공감" : "Empathy",
-                passion: currentLang === 'ko' ? "열정" : "Passion",
-                humor:  currentLang === 'ko' ? "유머" : "Humor"
+                manner:  currentLang === 'ko' ? "나이스" : "NICE",
+                logic:   currentLang === 'ko' ? "논리" : "LOGIC",
+                empathy: currentLang === 'ko' ? "따뜻" : "WARM",
+                passion: currentLang === 'ko' ? "열정" : "BOLD",
+                humor:  currentLang === 'ko' ? "펀" : "FUN"
             };
             alert(currentLang === 'ko'
                 ? `✨ 다른 참여자가 나에게 [${badgeNames[data.badgeType]}] 배지를 선물했습니다!`
