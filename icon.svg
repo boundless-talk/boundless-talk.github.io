@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 80 80">
+  <rect x="0" y="0" width="80" height="80" rx="20" fill="#0b1520"/>
+  <rect x="3" y="3" width="74" height="74" rx="18" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
+  <text x="40" y="45" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="30" font-weight="800" fill="#00e5ff">B</text>
+  <line x1="27" y1="52" x2="53" y2="52" stroke="#00e5ff" stroke-width="1.2" stroke-linecap="round" opacity="0.3"/>
+  <text x="40" y="64" text-anchor="middle" font-family="'Segoe UI',Arial,sans-serif" font-size="8.5" font-weight="600" fill="rgba(0,229,255,0.45)" letter-spacing="5">TALK</text>
+</svg>
