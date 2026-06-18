@@ -1049,13 +1049,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="user-action-buttons">
     <button id="btn-talk-again" style="margin: 0; display: none;">🗣️ 또 대화하기</button>
-    <button id="toggle-rep-btn" style="display: none;">📊 내 바이브</button>
+    <button id="toggle-rep-btn" style="display: none;">📊 대화지수</button>
     <button id="logout-btn" style="display: none;">로그아웃</button>
           </div>
 
 
    <div class="reputation-board" id="reputation-section" style="display: none;">
-        <div class="reputation-title" id="rep-title">MY VIBE</div>
+        <div class="reputation-title" id="rep-title">TALK INDEX</div>
         <div class="badge-list">
             <div class="badge-item">👍 <span id="label-manner">Manner</span>: <strong id="score-manner">0</strong></div>
             <div class="badge-item">🧠 <span id="label-logic">Logic</span>: <strong id="score-logic">0</strong></div>
@@ -1294,7 +1294,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             alertJoin: (topic, max) => `Joined [${topic}] channel! (${max} people max) Waiting for peers...`,
             toggleBtn: "한국어",
             opt3: "3 members", opt4: "4 members (recommended)", opt6: "6 members",
-            repTitle: "MY VIBE",
+            repTitle: "TALK INDEX",
             badgeManner: "Manners", badgeLogic: "Logic", badgeHumor: "Humor", badgeEmpathy: "Empathy", badgePassion: "Passion",
             mTitle: "Conversation Report",
             mDesc: "Check out what AI noted, and gift a peer badge!",
@@ -1312,7 +1312,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             reportTitle: "🚨 Report Toxic User",
             reportDesc: "Select the user you wish to report. The past 1 minute of voice dialogue will be uploaded and audited by AI Safeguard.",
             reportSuccess: "Report Submitted. The target is being evaluated under AI surveillance.",
-            badgeSuccess: "Vibe successfully transferred!",
+            badgeSuccess: "INDEX successfully transferred!",
             emailPlaceholder: "Email address (e.g., test@gmail.com)",
             passwordPlaceholder: "Password (minimum 6 characters)",
             emailLogin: "Login",
@@ -1339,9 +1339,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMatch: "✓ Passwords match.",
         introDesc: `<strong>No barriers</strong> of nationality, age, or gender.<br><br>Connect with someone, somewhere in the world<br>through nothing but <strong>words</strong>.<br><br>Ready for a conversation<br><strong>unlike any you've had before?</strong>`,
         introBtn: "Start",
-        talkAgainBtn: "🗣️ Talk Again",
-        addFriendBtn: "➕ Add Friend",
-        friendsModalTitle: "My Friends List",
+        talkAgainBtn: "🗣️ TALK AGAIN",
+        addFriendBtn: "➕ ADD FRIEND",
+        friendsModalTitle: "MY FRIEND LIST",
         noFriends: "No friends added yet. Make some friends after a talk!",
         lastTalked: "Last talked:",
         callBtn: "Call",
@@ -1350,7 +1350,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         roomHeaderLabel: "Conversation Topic",
         icebrkLabel: "Icebreaking Suggestion",
         roomPartTitle: "Participants",
-        roomLeaveBtn: "🚪 Leave Room",
+        roomLeaveBtn: "🚪 LEAVE",
         roomReportBtn: "🚨 Report",
         roomWaiting: "Waiting for others...",
         waitingNone: "No one is looking for a conversation partner right now.",
@@ -1370,8 +1370,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             alertJoin: (topic, max) => `[${topic}] 채널에 입장했습니다! (정원 ${max}명) 다른 사람을 기다리는 중...`,
             toggleBtn: "EN",
             opt3: "3명", opt4: "4명 (권장)", opt6: "6명",
-            repTitle: "나의 바이브",
-            badgeManner: "매너 좋음", badgeLogic: "논리적임", badgeHumor: "유머러스", badgeEmpathy: "공감능력", badgePassion: "열정적임",
+            repTitle: "대화지수",
+            badgeManner: "매너", badgeLogic: "논리", badgeHumor: "유머", badgeEmpathy: "공감", badgePassion: "열정",
             mTitle: "대화 분석 리포트",
             mDesc: "AI가 요약한 대화 내용을 파악하고 함께 대화한 상대방에게 배지를 선물해 보세요.",
             vManner: "매너가 좋았어요", vLogic: "논리적이었어요", vHumor: "유머러스했어요", vEmpathy: "공감을 잘해줬어요", vPassion: "열정적이었어요", vSkip: "닫기 및 건너뛰기",
@@ -1388,7 +1388,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             reportTitle: "🚨 불량 유저 신고하기",
             reportDesc: "신고 대상을 선택해 주세요. 신고 시점 기준 '최근 1분간'의 실시간 음성 스트림 결합 데이터가 AI 유해성 감별 백엔드로 전송됩니다.",
             reportSuccess: "신고 완료. 유해 발언이 확인되면 즉시 강력 영구 처분이 단행됩니다.",
-            badgeSuccess: "상대방에게 바이브를 성공적으로 전달했습니다!",
+            badgeSuccess: "상대방에게 대화지수를 성공적으로 전달했습니다!",
             emailPlaceholder: "이메일 주소 (예: test@naver.com)",
             passwordPlaceholder: "비밀번호 (6자리 이상)",
             emailLogin: "로그인",
@@ -1630,9 +1630,9 @@ database.ref('activeTopics').on('value', (snap) => {
 
         // 토글 버튼 텍스트 다국어 처리
         if (currentLang === 'ko') {
-            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 바이브 접기" : "📊 내 바이브";
+            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 대화지수 접기" : "📊 대화지수";
         } else {
-            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 HIDE MY VIBE" : "📊 MY VIBE";
+            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 HIDE TALK INDEX" : "📊 TALK INDEX";
         }
 
         if (appTitle) appTitle.innerText = lang.title;
@@ -1687,7 +1687,7 @@ database.ref('activeTopics').on('value', (snap) => {
         if (document.getElementById('google-login-text')) {
             document.getElementById('google-login-text').innerText = (currentLang === 'en') ? "Sign in with Google" : "구글 로그인";
         }
-        document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "Logout" : "로그아웃";
+        document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "LOGOUT" : "로그아웃";
         document.getElementById('email-login-btn-main').innerText = (currentLang === 'en') ? "Email Login" : "이메일 로그인";
         document.getElementById('email-signup-btn-main').innerText = (currentLang === 'en') ? "Sign Up with Email" : "이메일로 회원가입";
 
@@ -1770,10 +1770,10 @@ database.ref('activeTopics').on('value', (snap) => {
 
         if (repSection.style.display === "none") {
             repSection.style.display = "block";
-            btn.innerText = (currentLang === 'ko') ? "📊 내 바이브 접기" : "📊 HIDE MY VIBE";
+            btn.innerText = (currentLang === 'ko') ? "📊 대화지수 접기" : "📊 HIDE TALK INDEX";
         } else {
             repSection.style.display = "none";
-            btn.innerText = (currentLang === 'ko') ? "📊 내 바이브" : "📊 MY VIBE";
+            btn.innerText = (currentLang === 'ko') ? "📊 대화지수" : "📊 TALK INDEX";
         }
     });
     // ── 이메일 로그인 토글 ──
@@ -2700,11 +2700,11 @@ return text;
             if (!data) return;
 
             const badgeNames = {
-                manner:  currentLang === 'ko' ? "매너 좋음" : "Manners",
-                logic:   currentLang === 'ko' ? "논리적임" : "Logic",
-                empathy: currentLang === 'ko' ? "공감능력" : "Empathy",
-                passion: currentLang === 'ko' ? "열정적임" : "Passion",
-                humor:  currentLang === 'ko' ? "유머러스함" : "Humor"
+                manner:  currentLang === 'ko' ? "매너" : "Manners",
+                logic:   currentLang === 'ko' ? "논리" : "Logic",
+                empathy: currentLang === 'ko' ? "공감" : "Empathy",
+                passion: currentLang === 'ko' ? "열정" : "Passion",
+                humor:  currentLang === 'ko' ? "유머" : "Humor"
             };
             alert(currentLang === 'ko'
                 ? `✨ 다른 참여자가 나에게 [${badgeNames[data.badgeType]}] 배지를 선물했습니다!`
