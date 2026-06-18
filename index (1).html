@@ -1,0 +1,3428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B-TALK</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
+
+    <style>
+        :root {
+            --bg-gradient: radial-gradient(circle at center, #1a1d24 0%, #0d0e12 100%);
+            --accent-color: #00e5ff;
+            --accent-glow: rgba(0, 229, 255, 0.2);
+            --danger-color: #ff3b30;
+            --danger-glow: rgba(255, 59, 48, 0.2);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+            padding: 20px;
+        }
+
+
+        /* ── 인트로 화면 ── */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-gradient);
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 30px;
+            opacity: 1;
+        }
+        @keyframes fadeInIntro {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #intro-screen.hide {
+            animation: fadeOutIntro 0.5s ease forwards;
+        }
+        @keyframes fadeOutIntro {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        .intro-title {
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2);
+            margin-bottom: 40px;
+        }
+        .intro-desc {
+            font-size: 16px;
+            color: rgba(255,255,255,0.65);
+            line-height: 2;
+            max-width: 360px;
+            margin-bottom: 60px;
+            letter-spacing: 0.3px;
+        }
+        .intro-desc strong {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        .intro-start-btn {
+            width: auto !important;
+            padding: 16px 48px !important;
+            background: var(--accent-color) !important;
+            color: #000 !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            border-radius: 50px !important;
+            border: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 20px rgba(0,229,255,0.35) !important;
+            transition: all 0.2s ease !important;
+            letter-spacing: 1px;
+        }
+        .intro-start-btn:hover {
+            background: #00cce0 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 28px rgba(0,229,255,0.45) !important;
+        }
+        .intro-pulse {
+            width: 6px; height: 6px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 4px;
+            animation: pulse-dot 1.5s infinite;
+        }
+        .intro-pulse:nth-child(2) { animation-delay: 0.2s; }
+        .intro-pulse:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* 영구 정지 스크린 */
+        #ban-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #0d0e12;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+        }
+        #ban-overlay h1 { font-size: 42px; color: var(--danger-color); margin-bottom: 15px; letter-spacing: 2px; }
+        #ban-overlay > p { font-size: 16px; color: #a0aec0; max-width: 500px; line-height: 1.6; }
+        #appeal-textarea:focus { border-color: rgba(255,59,48,0.5); box-shadow: 0 0 12px rgba(255,59,48,0.15); }
+
+        .lang-container { position: fixed; top: 20px; right: 20px; z-index: 500; }
+        .lang-btn {
+            background: transparent; border: 1px solid rgba(255,255,255,0.15);
+            color: rgba(255,255,255,0.6); padding: 6px 14px; font-size: 12px; font-weight: 600;
+            border-radius: 20px; cursor: pointer; transition: all 0.2s;
+        }
+        .lang-btn:hover { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0,229,255,0.05); }
+
+        .reputation-board {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            padding: 15px 30px; border-radius: 16px; margin-bottom: 25px; text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2); backdrop-filter: blur(10px);
+            width: 100%; max-width: 400px;
+        }
+        .reputation-title { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin-bottom: 10px; }
+        .badge-list { display: flex; gap: 12px; justify-content: center; }
+        .badge-item { font-size: 13px; background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); font-weight: 500; }
+
+        #main-container {
+            width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+            justify-content: center;
+            padding: 40px 0;
+        }
+
+        .title-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 130px;
+        }
+
+        h2 { font-size: 36px; font-weight: 700; letter-spacing: 8px; margin-bottom: 10px; text-transform: uppercase; text-align: center; color: #fff; text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2); }
+
+        /* 추가된 서브타이틀 스타일 */
+        .sub-title { font-size: 14px; color: rgba(255,255,255,0.6); text-align: center; margin-top: -4px; margin-bottom: 0; letter-spacing: 1px; }
+
+        .input-group {
+            width: 100%;
+            position: relative;
+            margin-bottom: 24px; /* 주제 입력창 아래 간격 */
+        }
+        input {
+            width: 100%; padding: 16px 20px; background-color: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-size: 14px; color: #ffffff; transition: all 0.3s ease;
+        }
+        input:focus { border-color: var(--accent-color); box-shadow: 0 0 15px var(--accent-glow); outline: none; }
+
+ .select-group {
+    width: 100%;
+    background: transparent; border: none;
+    padding: 0 4px; display: flex; justify-content: center; align-items: center; gap: 8px;
+    margin-top: -40px;
+    margin-bottom: 28px;
+}
+.select-group label { font-size: 11px; color: rgba(255,255,255,0.35); }
+select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; cursor: pointer; outline: none; font-size: 11px; }
+        button { width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; border: none; transition: all 0.2s ease; }
+
+        /* ── 인증 섹션 ── */
+        #auth-section {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 25px;
+        }
+
+        /* 버튼 3개 그룹 */
+        .auth-btn-group {
+            width: 48%;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            align-self: center;
+        }
+
+        #google-login-btn {
+            background-color: rgba(255,255,255,0.85);
+            color: #111111;
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            font-size: 12.5px;
+            padding: 11px 14px;
+            font-weight: 500;
+            opacity: 0.75;
+        }
+        #google-login-btn:hover { background-color: #ffffff; transform: translateY(-1px); opacity: 1; }
+
+        #email-login-btn-main {
+            background-color: rgba(36,41,51,0.7);
+            color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            margin: 0 0 12px 0;
+            font-size: 12.5px;
+            padding: 11px 14px;
+            font-weight: 500;
+            opacity: 0.75;
+        }
+        #email-login-btn-main:hover { background-color: #2f3644; color: #fff; transform: translateY(-1px); opacity: 1; }
+
+        #email-signup-btn-main {
+            background-color: transparent;
+            color: rgba(0,229,255,0.6);
+            border: 1px solid rgba(0,229,255,0.2);
+            margin: 0 0 12px 0;
+            font-size: 12.5px;
+            padding: 11px 14px;
+            font-weight: 500;
+            opacity: 0.75;
+        }
+        #email-signup-btn-main:hover { background-color: rgba(0,229,255,0.06); color: var(--accent-color); border-color: rgba(0,229,255,0.4); transform: translateY(-1px); opacity: 1; }
+
+        /* 인라인 폼 패널 */
+        .auth-form-panel {
+            width: 300px;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s ease;
+            margin-top: 0;
+            align-self: center;
+        }
+        .auth-form-panel.open {
+            max-height: 320px;
+            opacity: 1;
+            margin-top: 14px;
+        }
+
+        .auth-form-inner {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-form-inner .form-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 2px;
+        }
+
+        .auth-form-inner input {
+            margin-bottom: 0;
+        }
+
+        .auth-form-inner .form-hint {
+            font-size: 11.5px;
+            color: rgba(255,255,255,0.3);
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            margin: 0;
+        }
+        .auth-submit-btn.primary {
+            background-color: var(--accent-color);
+            color: #000;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        .auth-submit-btn.primary:hover { background-color: #00cce0; transform: translateY(-1px); }
+        .auth-submit-btn.primary:disabled {
+            background-color: rgba(0,229,255,0.2);
+            color: rgba(255,255,255,0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 이메일 인증 스텝 표시 */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.35);
+            letter-spacing: 0.5px;
+        }
+        .step-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            transition: background 0.3s;
+        }
+        .step-dot.active { background: var(--accent-color); }
+
+        /* 비밀번호 찾기 버튼 스타일 */
+#find-pw-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 11.5px;
+    text-align: right;
+    cursor: pointer;
+    margin-top: -6px;
+    margin-bottom: 4px;
+    padding: 0;
+    transition: color 0.2s ease;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+#find-pw-btn:hover {
+    color: var(--accent-color);
+}
+
+/* 3. 로그아웃 버튼 스타일 (평판 버튼과 100% 동일한 형태) */
+        #logout-btn {
+            width: auto;                  /* 가로 전체 차지 방지 */
+            display: none;
+            background: rgba(255, 255, 255, 0.03); /* 배경색 동일 */
+            border: 1px solid rgba(255, 255, 255, 0.12); /* 테두리 동일 */
+            color: rgba(255, 255, 255, 0.6); /* 글자색 동일 */
+            padding: 8px 16px;            /* 여백 동일 */
+            border-radius: 20px;          /* 둥글기 동일 */
+            cursor: pointer;
+            font-size: 12.5px;            /* 글자 크기 동일 */
+            transition: all 0.2s;
+        }
+        #logout-btn:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        #join-btn { background-color: var(--accent-color); color: #000000; font-size: 16px; box-shadow: 0 4px 15px var(--accent-glow); }
+        #join-btn:hover:not(:disabled) { background-color: #00b8cc; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,229,255,0.3); }
+        #join-btn:disabled { background-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); box-shadow: none; cursor: not-allowed; }
+
+        #leave-btn { background-color: transparent; color: var(--danger-color); border: 1px solid rgba(255,59,48,0.3); display: none; }
+        #leave-btn:hover:not(:disabled) { background-color: rgba(255,59,48,0.05); border-color: var(--danger-color); transform: translateY(-1px); }
+
+        #report-btn { background-color: #ff9500; color: #ffffff; display: none; box-shadow: 0 4px 12px rgba(255,149,0,0.15); }
+        #report-btn:hover:not(:disabled) { background-color: #e08400; transform: translateY(-1px); }
+
+        /* 대화방 활성화 시 매칭 상태 및 참여자 그리드 */
+        #matching-status {
+            font-size: 13px;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+            min-height: 20px;
+            font-weight: 500;
+
+            /* ── 여기부터 추가/변경되는 정렬 코드 ── */
+            display: flex;
+            justify-content: center;  /* 가로 기준 정중앙 정렬 */
+            align-items: center;      /* 세로 기준 정중앙 정렬 */
+            text-align: center;       /* 글자가 줄바꿈되어도 가운데 정렬 */
+            width: 100%;              /* 부모 너비를 100% 꽉 채워서 정중앙 정렬 기준 생성 */
+        }
+        #participants-box { margin-bottom: 24px; }
+        .part-title { font-size: 12px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; text-align: center;}
+        .part-list { display: flex; flex-direction: column; gap: 8px; }
+        .part-item { background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; font-size: 13.5px; display: flex; align-items: center; gap: 10px; border-left: 3px solid var(--accent-color); }
+        .part-item.speaking { border-left-color: #34c759; animation: pulse 1.5s infinite; }
+
+        #channel-debug { font-size: 11px; color: rgba(255,255,255,0.2); letter-spacing: 1px; margin-top: 15px; text-align: center; }
+
+        /* 모달 레이아웃 고도화 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            padding: 20px;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: #161920; border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); padding: 30px;
+            border-radius: 20px; text-align: center; width: 100%; max-width: 440px;
+            transform: scale(0.95); transition: all 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-content h3 { margin-top: 0; font-weight: 400; letter-spacing: 1px; font-size: 20px; }
+        .modal-content p { color: rgba(255,255,255,0.5); font-size: 13.5px; margin-bottom: 20px; line-height: 1.5; }
+
+        .ai-summary-box {
+            background: rgba(0,229,255,0.03); border: 1px dashed rgba(0,229,255,0.2);
+            border-radius: 12px; padding: 15px; margin-bottom: 20px;
+            text-align: left; font-size: 13px; line-height: 1.6; color: #e0e6ed;
+        }
+        .ai-summary-box strong { color: var(--accent-color); }
+
+        .target-select-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 160px; overflow-y: auto; }
+        .target-btn {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 12px; border-radius: 8px; text-align: left; font-size: 13.5px; cursor: pointer; transition: all 0.2s;
+        }
+        .target-btn:hover { background: rgba(0,229,255,0.08); border-color: var(--accent-color); color: var(--accent-color); }
+        .target-btn.selected { background: rgba(0,229,255,0.15); border-color: var(--accent-color); color: var(--accent-color); font-weight: 600; }
+
+        .badge-select-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .badge-vote-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; padding: 12px; border-radius: 8px; font-size: 14px;
+            text-align: center; cursor: pointer; transition: all 0.2s; width: 100%; margin: 0;
+        }
+        .badge-vote-btn:hover:not(:disabled) { background: rgba(0,229,255,0.08); border-color: var(--accent-color); color: var(--accent-color); }
+        .badge-vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(52, 199, 89, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+        }
+
+        #toggle-rep-btn {
+            width: auto;
+            display: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12.5px;
+            transition: all 0.2s;
+        }
+        #toggle-rep-btn:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background: rgba(0, 229, 255, 0.05);
+        }
+        /* 조그만 '또 대화하기' 버튼 스타일 */
+#btn-talk-again {
+    width: auto;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+#btn-talk-again:hover {
+    border-color: #34c759;
+    color: #34c759;
+    background: rgba(52, 199, 89, 0.05);
+
+    #user-action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center; /* 핵심 */
+    gap: 12px;
+    margin: 20px 0;
+}
+}
+
+#btn-talk-again,
+#toggle-rep-btn,
+#logout-btn {
+    width: auto;
+    height: 42px;
+    padding: 0 18px;
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 20px;
+    font-size: 12.5px;
+}
+
+/* 친구 리스트 아이템 디자인 */
+.friend-item-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+.friend-info { display: flex; flex-direction: column; gap: 4px; }
+.friend-name { font-size: 13.5px; color: #fff; font-weight: 500; }
+.friend-date { font-size: 11px; color: rgba(255,255,255,0.4); }
+.friend-call-btn {
+    background: var(--accent-color);
+    color: #000;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0;
+    width: auto;
+}
+
+#user-action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+/* 친구 닉네임 입력 모달 */
+.nickname-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 2000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    padding: 20px;
+}
+.nickname-modal-overlay.active { opacity: 1; visibility: visible; }
+.nickname-modal-box {
+    background: #161920; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 28px 24px; width: 100%; max-width: 380px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.nickname-modal-box h3 { margin: 0 0 6px 0; font-size: 18px; font-weight: 500; }
+.nickname-modal-box p { color: rgba(255,255,255,0.45); font-size: 13px; margin: 0 0 18px 0; line-height: 1.5; }
+.nickname-modal-box input {
+    width: 100%; padding: 13px 16px; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 10px;
+    color: #fff; font-size: 14px; margin-bottom: 14px;
+}
+.nickname-modal-box input:focus { border-color: var(--accent-color); outline: none; box-shadow: 0 0 12px var(--accent-glow); }
+.nickname-modal-actions { display: flex; gap: 10px; }
+.nickname-modal-actions button { flex: 1; padding: 13px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; margin: 0; }
+.nm-confirm-btn { background: var(--accent-color); color: #000; }
+.nm-confirm-btn:hover { background: #00cce0; }
+.nm-cancel-btn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1) !important; }
+.nm-cancel-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* 친구 요청 수신 알림 배너 */
+#friend-request-banner {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    background: #1a1f2e; border: 1px solid rgba(0,229,255,0.35);
+    border-radius: 16px; padding: 16px 20px; z-index: 3000;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: calc(100% - 32px); max-width: 400px;
+    display: none; flex-direction: column; gap: 12px;
+}
+#friend-request-banner.show { display: flex; }
+.frb-top { display: flex; flex-direction: column; gap: 4px; }
+.frb-title { font-size: 14px; font-weight: 600; color: var(--accent-color); }
+.frb-desc { font-size: 12.5px; color: rgba(255,255,255,0.55); line-height: 1.4; }
+.frb-nickname-row { display: flex; align-items: center; gap: 8px; }
+.frb-nickname-row input {
+    flex: 1; padding: 10px 13px; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
+    color: #fff; font-size: 13px;
+}
+.frb-nickname-row input:focus { border-color: var(--accent-color); outline: none; }
+.frb-actions { display: flex; gap: 8px; }
+.frb-actions button { flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; margin: 0; }
+.frb-accept-btn { background: var(--accent-color); color: #000; }
+.frb-accept-btn:hover { background: #00cce0; }
+.frb-reject-btn { background: rgba(255,59,48,0.1); color: var(--danger-color); border: 1px solid rgba(255,59,48,0.25) !important; }
+.frb-reject-btn:hover { background: rgba(255,59,48,0.18); }
+
+/* 친구 목록 아이템 — 닉네임 편집 버튼 */
+.friend-edit-btn {
+    background: transparent; border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.4); padding: 4px 9px; border-radius: 6px;
+    font-size: 11px; cursor: pointer; margin: 0; width: auto;
+}
+.friend-edit-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+.friend-action-group { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+
+/* 동물 닉네임 참여자 카드 */
+.part-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    transition: all 0.2s ease;
+    margin-bottom: 6px;
+}
+.part-item .animal-avatar { font-size: 22px; line-height: 1; transition: transform 0.15s ease; }
+.part-item .animal-name { font-weight: 500; letter-spacing: 0.3px; }
+.part-item.speaking {
+    border-color: var(--accent-color);
+    background: rgba(0, 229, 255, 0.07);
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.18);
+    color: #fff;
+}
+.part-item.speaking .animal-avatar { animation: pulse-avatar 0.6s ease infinite alternate; }
+@keyframes pulse-avatar {
+    from { transform: scale(1.1); }
+    to   { transform: scale(1.3); }
+}
+.part-item .speaking-bar { margin-left: auto; display: flex; align-items: center; gap: 2px; opacity: 0; transition: opacity 0.2s; }
+.part-item.speaking .speaking-bar { opacity: 1; }
+.speaking-bar span { display: inline-block; width: 3px; background: var(--accent-color); border-radius: 2px; animation: bar-bounce 0.5s ease infinite alternate; }
+.speaking-bar span:nth-child(1) { height: 6px;  animation-delay: 0s;   }
+.speaking-bar span:nth-child(2) { height: 12px; animation-delay: 0.1s; }
+.speaking-bar span:nth-child(3) { height: 8px;  animation-delay: 0.2s; }
+.speaking-bar span:nth-child(4) { height: 14px; animation-delay: 0.05s;}
+@keyframes bar-bounce {
+    from { transform: scaleY(0.5); }
+    to   { transform: scaleY(1.2); }
+}
+
+        /* ── 대화방 입장 화면 ── */
+        #room-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-gradient);
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            opacity: 0;
+            transform: translateY(30px);
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        #room-screen.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .room-header {
+            width: 100%;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 28px 24px 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .room-header-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            color: rgba(255,255,255,0.35);
+        }
+        .room-topic-display {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-shadow: 0 0 24px rgba(0,229,255,0.4);
+            text-align: center;
+            letter-spacing: 0.5px;
+            max-width: 340px;
+            line-height: 1.3;
+        }
+        .room-body {
+            width: 100%;
+            max-width: 420px;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+        .icebreaker-box {
+            background: rgba(0,229,255,0.05);
+            border: 1px solid rgba(0,229,255,0.18);
+            border-radius: 16px;
+            padding: 22px 20px 18px;
+            text-align: center;
+        }
+        .icebreaker-emoji {
+            font-size: 34px;
+            margin-bottom: 10px;
+            display: block;
+            animation: wave-hand 0.6s ease-in-out 0.8s 3;
+        }
+        @keyframes wave-hand {
+            0%,100% { transform: rotate(0deg); }
+            30%     { transform: rotate(-18deg); }
+            70%     { transform: rotate(18deg); }
+        }
+        .icebreaker-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(0,229,255,0.6);
+            margin-bottom: 8px;
+        }
+        .icebreaker-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.7;
+            margin-bottom: 6px;
+            white-space: pre-line;
+        }
+        .icebreaker-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            line-height: 1.5;
+        }
+        .room-participants-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .room-part-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .room-part-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.38);
+        }
+        .room-part-count {
+            font-size: 11px;
+            color: rgba(0,229,255,0.6);
+            font-weight: 600;
+        }
+        .room-waiting {
+            font-size: 12px;
+            color: rgba(255,255,255,0.28);
+            text-align: center;
+            padding: 12px 0;
+        }
+        .room-footer {
+            width: 100%;
+            max-width: 420px;
+            padding: 12px 20px 36px;
+            display: flex;
+            gap: 10px;
+        }
+        .room-leave-btn {
+            flex: 1;
+            padding: 13px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid rgba(255,59,48,0.35);
+            color: var(--danger-color);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0;
+        }
+        .room-leave-btn:hover { background: rgba(255,59,48,0.07); border-color: var(--danger-color); }
+        .room-report-btn {
+            flex: 1;
+            padding: 13px;
+            border-radius: 10px;
+            background: rgba(255,149,0,0.08);
+            border: 1px solid rgba(255,149,0,0.28);
+            color: #ff9500;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0;
+        }
+        .room-report-btn:hover { background: rgba(255,149,0,0.16); }
+
+        /* ── 번역 자막 ── */
+        .subtitle-section { width: 100%; max-width: 520px; padding: 0 4px; }
+        .subtitle-ctrl { display: flex; align-items: center; gap: 8px; padding: 12px 0 6px; flex-wrap: wrap; }
+        .subtitle-toggle-btn {
+            font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 20px;
+            border: 1px solid rgba(0,229,255,0.3); background: transparent;
+            color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+        }
+        .subtitle-toggle-btn.on {
+            background: rgba(0,229,255,0.12); border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+        .subtitle-lang-row { display: none; align-items: center; gap: 6px; margin-top: 4px; width: 100%; justify-content: center; }
+        .subtitle-lang-select {
+            background: #0d0e12; color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 3px 8px; border-radius: 6px; cursor: pointer;
+            outline: none; font-size: 11px;
+        }
+        .subtitle-arrow { color: rgba(255,255,255,0.35); font-size: 13px; }
+        .subtitle-list {
+            display: none; flex-direction: column; gap: 6px;
+            max-height: 160px; overflow-y: auto; padding-bottom: 4px;
+        }
+        .subtitle-item {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px; padding: 8px 12px;
+        }
+        .subtitle-speaker { font-size: 11px; color: var(--accent-color); margin-bottom: 3px; font-weight: 600; }
+        .subtitle-original { font-size: 11px; color: rgba(255,255,255,0.3); margin-bottom: 2px; }
+        .subtitle-translated { font-size: 14px; color: rgba(255,255,255,0.88); font-weight: 500; line-height: 1.4; }
+        .subtitle-self-text { font-size: 12px; color: rgba(255,255,255,0.35); font-style: italic; }
+        .subtitle-loading { font-size: 12px; color: rgba(255,255,255,0.3); font-style: italic; }
+    </style>
+</head>
+<body>
+
+    <div id="invite-banner" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(13,14,18,0.95); border:1px solid rgba(0,229,255,0.4); border-radius:16px; padding:18px 24px; z-index:9999; text-align:center; min-width:280px;">
+    <div id="invite-text" style="font-size:14px; color:#fff; margin-bottom:14px;">친구가 대화를 요청했어요! 🎉</div>
+    <div style="display:flex; gap:10px; justify-content:center;">
+        <button onclick="respondInvite('accepted')" style="background:rgba(0,229,255,0.15); border:1px solid rgba(0,229,255,0.5); color:#00e5ff; border-radius:20px; padding:8px 22px; cursor:pointer; font-size:13px;">좋아</button>
+        <button onclick="respondInvite('rejected')" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.5); border-radius:20px; padding:8px 22px; cursor:pointer; font-size:13px;">나중에</button>
+    </div>
+</div>
+
+    <!-- 영구정지 오버레이 -->
+    <div id="ban-overlay">
+        <h1 id="ban-title">ACCESS DENIED</h1>
+        <p id="ban-desc">AI 정밀 분석 결과, 지속적인 규정 위반(욕설, 성희롱 등 유해 패턴)이 적발되어 이 계정은 서비스 이용이 영구 정지되었습니다.</p>
+        <div id="appeal-section" style="margin-top:30px; width:100%; max-width:460px;">
+            <div id="appeal-form-wrap">
+                <p style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:14px;">정지가 억울하다고 생각하신다면 이의신청을 남겨주세요.</p>
+                <textarea id="appeal-textarea" placeholder="이의신청 사유를 구체적으로 입력해 주세요. (최대 500자)" maxlength="500"
+                    style="width:100%; min-height:100px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);
+                    border-radius:12px; padding:14px; color:#fff; font-size:13px; resize:vertical; outline:none; font-family:inherit;"></textarea>
+                <button id="appeal-submit-btn" onclick="submitAppeal()"
+                    style="margin-top:12px; width:100%; padding:14px; background:rgba(255,59,48,0.15); border:1px solid rgba(255,59,48,0.4);
+                    color:#ff6b6b; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+                    이의신청 제출하기
+                </button>
+            </div>
+            <div id="appeal-done-msg" style="display:none; padding:16px; background:rgba(0,229,255,0.07); border:1px solid rgba(0,229,255,0.25);
+                border-radius:12px; font-size:13.5px; color:var(--accent-color); line-height:1.6; text-align:center;">
+                ✅ 이의신청이 접수되었습니다.<br>영업일 기준 1~3일 내 검토 후 결과를 안내드립니다.
+            </div>
+        </div>
+    </div>
+
+    <!-- 24시간 정지 오버레이 -->
+    <div id="suspend-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%;
+        background:#0d0e12; z-index:9998; display:none; flex-direction:column;
+        align-items:center; justify-content:center; text-align:center; padding:30px;">
+        <h1 style="font-size:36px; color:#ff9500; margin-bottom:15px; letter-spacing:2px;">⏸ 일시 정지</h1>
+        <p id="suspend-desc" style="font-size:15px; color:#a0aec0; max-width:460px; line-height:1.7;"></p>
+        <p id="suspend-timer" style="font-size:28px; font-weight:700; color:#ff9500; margin-top:20px; letter-spacing:2px;"></p>
+        <div style="margin-top:30px; width:100%; max-width:460px;">
+            <p style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:12px;">억울하신가요? 이의신청을 남겨주세요.</p>
+            <textarea id="suspend-appeal-textarea" placeholder="이의신청 사유 입력 (최대 500자)" maxlength="500"
+                style="width:100%; min-height:90px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12);
+                border-radius:12px; padding:14px; color:#fff; font-size:13px; resize:vertical; outline:none; font-family:inherit;"></textarea>
+            <button onclick="submitSuspendAppeal()"
+                style="margin-top:10px; width:100%; padding:13px; background:rgba(255,149,0,0.12); border:1px solid rgba(255,149,0,0.35);
+                color:#ff9500; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+                이의신청 제출
+            </button>
+            <div id="suspend-appeal-done" style="display:none; margin-top:12px; font-size:13px; color:var(--accent-color);">
+                ✅ 이의신청이 접수되었습니다.
+            </div>
+        </div>
+    </div>
+
+    <!-- 인트로 화면 -->
+    <div id="intro-screen">
+        <button onclick="toggleLangFromIntro()" style="position:absolute; top:20px; right:20px; background:transparent; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.6); padding:6px 14px; font-size:12px; font-weight:600; border-radius:20px; cursor:pointer; width:auto; margin:0;" id="intro-lang-btn">EN</button>
+        <div class="intro-title">BOUNDLESS TALK</div>
+        <p class="intro-desc" id="intro-desc">국적도, 나이도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>주제</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?</p>
+        <div style="margin-bottom: 40px;">
+            <span class="intro-pulse"></span>
+            <span class="intro-pulse"></span>
+            <span class="intro-pulse"></span>
+        </div>
+        <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">시작하기</button>
+    </div>
+
+    <div class="lang-container">
+        <button id="lang-toggle-btn" class="lang-btn">EN</button>
+    </div>
+
+
+    <div id="main-container">
+        <div class="title-block">
+            <h2 id="app-title">BOUNDLESS TALK</h2>
+            <p id="app-subtitle" class="sub-title">talk about anything with anyone!</p>
+        </div>
+
+        <div id="auth-section">
+
+            <div class="auth-btn-group">
+                <button id="google-login-btn">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18L12.048 13.562c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+                        <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                    </svg>
+                    <span id="google-login-text">Sign in with Google</span>
+                </button>
+
+                <button id="email-login-btn-main">✉️ 이메일 로그인</button>
+
+                <div class="auth-form-panel" id="login-form-panel">
+                    <div class="auth-form-inner">
+                        <div class="form-title" id="login-form-title">이메일 로그인</div>
+                        <input type="email" id="email-input" placeholder="이메일 주소">
+                        <input type="password" id="password-input" placeholder="비밀번호 (6자 이상)">
+                        <button type="button" id="find-pw-btn">비밀번호를 잊으셨나요?</button>
+                        <button class="auth-submit-btn primary" id="email-login-btn">로그인</button>
+                    </div>
+                </div>
+
+                <button id="email-signup-btn-main">✨ 이메일로 회원가입</button>
+
+                <div class="auth-form-panel" id="signup-form-panel">
+                    <div class="auth-form-inner">
+
+                        <div class="step-indicator">
+                            <div class="step-dot active" id="step-dot-1"></div>
+                            <div style="width:20px; height:1px; background:rgba(255,255,255,0.1);"></div>
+                            <div class="step-dot" id="step-dot-2"></div>
+                            <div style="width:20px; height:1px; background:rgba(255,255,255,0.1);"></div>
+                            <div class="step-dot" id="step-dot-3"></div>
+                            <span id="step-label" style="margin-left:6px;">이메일 입력</span>
+                        </div>
+
+                        <div id="signup-step-1">
+                            <input type="email" id="signup-email-input" placeholder="가입할 이메일 주소" style="margin-bottom:0;">
+                            <div class="form-hint" id="signup-hint-1" style="margin-top:8px;">인증 메일을 발송해 드립니다.</div>
+                            <button class="auth-submit-btn primary" id="send-verify-btn" style="margin-top:10px;">인증 메일 발송</button>
+                        </div>
+
+                        <div id="signup-step-2" style="display:none; text-align:center;">
+                            <div style="font-size:32px; margin-bottom:8px;">📬</div>
+                            <div class="form-hint" id="signup-hint-2">이메일로 발송된 6자리 코드를 입력하세요.</div>
+                            <input type="text" id="verify-code-input" placeholder="인증 코드 6자리" maxlength="6" style="text-align:center; letter-spacing:6px; font-size:18px; margin-top:10px;">
+                            <button class="auth-submit-btn primary" id="check-verify-btn" style="margin-top:12px;">인증 확인</button>
+                            <button style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; margin-top:6px; width:100%; padding:6px;" id="resend-verify-btn">코드 재전송</button>
+                        </div>
+
+                        <div id="signup-step-3" style="display:none;">
+                            <input type="password" id="signup-pw-input" placeholder="비밀번호 (6자 이상)" style="margin-bottom:0;">
+                            <input type="password" id="signup-pw-confirm-input" placeholder="비밀번호 확인 (재입력)" style="margin-bottom:0; margin-top:10px;">
+                            <div class="form-hint" id="pw-match-hint" style="margin-top:6px; min-height:16px;"></div>
+                            <button class="auth-submit-btn primary" id="email-signup-btn" style="margin-top:4px;" disabled>가입 완료</button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="talk-controls" style="display: none; width: 100%;">
+
+
+        <div id="live-topics-bar" style="display:none; margin-bottom:10px;">
+    <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#00e5ff; animation:pulse-dot 1.4s infinite;"></span>
+        <span id="live-topics-label">지금 대화 중인 주제</span>
+    </div>
+    <div id="live-topics-tags" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
+</div>
+            
+        <div class="input-group">
+            <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
+        </div>
+
+        <div id="matching-status"></div>
+        <div id="debug-log" style="display:none;font-size:11px;color:#ff6b6b;margin-top:8px;word-break:break-all;max-width:100%;text-align:left;padding:0 10px;"></div>
+
+        <div class="select-group" id="max-people-group">
+            <label for="max-people-select" id="maxpeople">Max People:</label>
+            <select id="max-people-select">
+                <option value="3" id="opt-3">3 Members</option>
+                <option value="4" id="opt-4" selected>4 Members (Recommended)</option>
+                <option value="6" id="opt-6">6 Members</option>
+            </select>
+        </div>
+
+       <div id="participants-box" style="display:none;">
+       <div class="part-title" id="part-title-label">Active Channel Participants</div>
+            <!-- 내 동물 닉네임 표시 태그 -->
+            <div id="my-animal-tag" style="display:none; font-size:12px; color:rgba(255,255,255,0.4); text-align:center; margin-bottom:8px; letter-spacing:0.5px;">
+                나는 <span id="my-animal-label" style="color:var(--accent-color); font-weight:600;"></span>
+            </div>
+            <div class="part-list" id="part-list-container">
+            </div>
+        </div>
+
+        <button id="join-btn" disabled>Start Talk</button>
+        <div id="waiting-count-bar" style="display:none; align-items:center; justify-content:center; gap:8px; margin-top:10px; font-size:13px; color:rgba(255,255,255,0.45);">
+            <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#00e5ff; animation:pulse-dot 1.4s infinite;"></span>
+            <span id="waiting-count-text">현재 대화 상대를 찾는 중인 사람이 없어요.</span>
+        </div>
+        <button id="report-btn">🚨 Report Toxic User</button>
+        <button id="leave-btn">Leave Room</button>
+
+        <div id="channel-debug"></div>
+    </div>
+
+    <div id="user-action-buttons">
+    <button id="btn-talk-again" style="margin: 0; display: none;">🗣️ 또 대화하기</button>
+    <button id="toggle-rep-btn" style="display: none;">📊 대화지수</button>
+    <button id="logout-btn" style="display: none;">로그아웃</button>
+          </div>
+
+
+   <div class="reputation-board" id="reputation-section" style="display: none;">
+        <div class="reputation-title" id="rep-title">TALK INDEX</div>
+        <div class="badge-list">
+            <div class="badge-item">👍 <span id="label-manner">NICE</span>: <strong id="score-manner">0</strong></div>
+            <div class="badge-item">🧠 <span id="label-logic">LOGIC</span>: <strong id="score-logic">0</strong></div>
+            <div class="badge-item">🤣 <span id="label-humor">FUN</span>: <strong id="score-humor">0</strong></div>
+            <div class="badge-item">🤗 <span id="label-empathy">WARM</span>: <strong id="score-empathy">0</strong></div>
+            <div class="badge-item">🔥 <span id="label-passion">BOLD</span>: <strong id="score-passion">0</strong></div>
+        </div>
+    </div>
+
+
+    </div>
+
+
+    <div class="modal-overlay" id="badge-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Conversation Report</h3>
+            <p id="modal-desc">Here is your AI conversation summary. Choose a peer to gift a badge!</p>
+
+            <div class="ai-summary-box">
+                💡 <strong id="summary-headline">AI Chat Summary Loading...</strong><br>
+                <span id="summary-content" style="color: rgba(255,255,255,0.7);">Analyzing the dialogue pattern...</span>
+            </div>
+
+            <div class="target-select-list" id="vote-target-container"></div>
+
+            <div class="badge-select-grid">
+                <button class="badge-vote-btn" id="btn-vote-manner" onclick="executeVote('manner')" disabled>👍 <span id="vote-manner">NICE</span></button>
+                <button class="badge-vote-btn" id="btn-vote-logic" onclick="executeVote('logic')" disabled>🧠 <span id="vote-logic">LOGIC</span></button>
+                <button class="badge-vote-btn" id="btn-vote-humor" onclick="executeVote('humor')" disabled>🤣 <span id="vote-humor">FUN</span></button>
+                <button class="badge-vote-btn" id="btn-vote-empathy" onclick="executeVote('empathy')" disabled>🤗 <span id="vote-empathy">WARM</span></button>
+                <button class="badge-vote-btn" id="btn-vote-passion" onclick="executeVote('passion')" disabled>🔥 <span id="vote-passion">BOLD</span></button>
+                <button class="badge-vote-btn" id="btn-add-friend" onclick="executeAddFriend()" style="background: rgba(0, 229, 255, 0.05); border-color: rgba(0, 229, 255, 0.4);" disabled>
+        <span id="label-add-friend">➕ 친구 추가</span>
+    </button>
+                <button class="badge-vote-btn" onclick="closeModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-weight:400; margin-top: 10px;" id="vote-skip">Skip Feedback</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="friends-modal">
+    <div class="modal-content">
+        <h3 id="friends-m-title">나의 친구 목록</h3>
+        <div class="target-select-list" id="friends-list-container" style="max-height: 250px; text-align: left;"></div>
+        <button onclick="closeFriendsModal()" style="background: rgba(255,255,255,0.05); color: #fff; margin-top: 10px; width: 100%;">닫기</button>
+    </div>
+    </div>
+
+    <!-- 친구 추가 닉네임 입력 모달 -->
+    <div class="nickname-modal-overlay" id="nickname-modal">
+        <div class="nickname-modal-box">
+            <h3>👤 친구 닉네임 설정</h3>
+            <p>이 친구를 어떤 이름으로 저장할까요?<br>나만 볼 수 있는 이름입니다.</p>
+            <input type="text" id="nickname-input" placeholder="닉네임 입력 (최대 12자)" maxlength="12">
+            <div class="nickname-modal-actions">
+                <button class="nm-cancel-btn" onclick="closeNicknameModal()">취소</button>
+                <button class="nm-confirm-btn" onclick="confirmFriendRequest()">친구 요청 보내기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 친구 요청 수신 배너 -->
+    <div id="friend-request-banner">
+        <div class="frb-top">
+            <div class="frb-title">👋 친구 요청이 왔어요!</div>
+            <div class="frb-desc" id="frb-desc">익명의 사용자가 친구 요청을 보냈습니다.<br>수락하면 서로 친구가 됩니다. 상대방 닉네임을 정해주세요.</div>
+        </div>
+        <div class="frb-nickname-row">
+            <input type="text" id="frb-nickname-input" placeholder="상대방 닉네임 (나만 보임)" maxlength="12">
+        </div>
+        <div class="frb-actions">
+            <button class="frb-reject-btn" onclick="rejectFriendRequest()">거절</button>
+            <button class="frb-accept-btn" onclick="acceptFriendRequest()">수락하기</button>
+        </div>
+    </div>
+
+
+    <!-- 대화방 입장 화면 -->
+    <div id="room-screen">
+        <div class="room-header">
+            <div class="room-header-label" id="room-header-label">대화 주제</div>
+            <div class="room-topic-display" id="room-topic-display">—</div>
+        </div>
+        <div class="room-body">
+            <div class="icebreaker-box">
+                <span class="icebreaker-emoji" id="icebreaker-emoji">👋</span>
+                <div class="icebreaker-label" id="icebreaker-label">아이스브레이킹 제안</div>
+                <div class="icebreaker-text" id="icebreaker-text">"만나서 반가워요!" 라고
+인사해보시겠어요?</div>
+                <div class="icebreaker-sub" id="icebreaker-sub">낯선 만남도 첫 인사 한 마디면 금방 가까워져요 😊</div>
+            </div>
+            <div class="subtitle-section" id="subtitle-section">
+                <div class="subtitle-ctrl">
+                    <button class="subtitle-toggle-btn" id="subtitle-toggle-btn" onclick="toggleSubtitles()">💬 번역 자막</button>
+                    <div class="subtitle-lang-row" id="subtitle-lang-row">
+                        <select class="subtitle-lang-select" id="my-lang-select">
+                            <option value="ko">한국어</option>
+                            <option value="en">English</option>
+                            <option value="ja">日本語</option>
+                            <option value="zh-CN">中文</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                        </select>
+                        <span class="subtitle-arrow">→</span>
+                        <select class="subtitle-lang-select" id="target-lang-select">
+                            <option value="en">English</option>
+                            <option value="ko">한국어</option>
+                            <option value="ja">日本語</option>
+                            <option value="zh-CN">中文</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="subtitle-list" id="subtitle-list"></div>
+            </div>
+
+            <div class="room-participants-section">
+                <div class="room-part-header">
+                    <div class="room-part-title" id="room-part-title">참여자</div>
+                    <div class="room-part-count" id="room-part-count">나 포함 1명</div>
+                </div>
+                <div id="room-part-list"></div>
+            </div>
+        </div>
+        <div class="room-footer">
+            <button class="room-leave-btn" id="room-leave-btn">🚪 대화방 나가기</button>
+            <button class="room-report-btn" id="room-report-btn">🚨 신고하기</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-content">
+            <h3 style="color: var(--danger-color);" id="rep-m-title">🚨 Report Toxic User</h3>
+            <p id="rep-m-desc">Select the user you wish to report. The past 60 seconds of audio data will be audited by the Safeguard AI.</p>
+
+            <div class="target-select-list" id="report-target-container"></div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="rep-m-submit" style="background: var(--danger-color); color: #fff;" onclick="executeReport()" disabled>Submit Report</button>
+                <button style="background: rgba(255,255,255,0.05); color: #fff;" onclick="closeReportModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // 1. Firebase Core Configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSy" + "AvnzYiPbSoY0HN6WWLTa1Ge2yB0sGm02I",
+        authDomain: "b-talk-login.firebaseapp.com",
+        databaseURL: "https://b-talk-login-default-rtdb.firebaseio.com/",
+        projectId: "b-talk-login",
+        storageBucket: "b-talk-login.appspot.com",
+        messagingSenderId: "1041735787374",
+        appId: "1:1041735787374:web:b32df90d336d69fba7577f"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    const auth = firebase.auth();
+    const database = firebase.database();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // 2. Global State Management
+    let currentLang = "ko";
+    const AGORA_APP_ID = "71b6f8c1cb424be1b2b5480d447e69e2";
+    const TOKEN_SERVER_URL = "https://b-talk-0gi0.onrender.com";
+    const SIGNAL_SERVER_URL = "https://kvdb.io/YAPuhyeXZWiNidFcsstzqK/";
+
+    let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+    let localAudioTrack = null;
+    let isJoined = false;
+    let isJoining = false; // 입장 처리 진행 중 플래그 (중복 클릭 방지)
+    let currentChannelName = "";
+    let safeAgoraChannelId = ""; // 전역으로 저장 — 저장/조회 시 항상 동일한 값 보장
+    let myUid = null;
+    let signalTimer = null;
+
+    // 다중 참여자 목록 추적 (본인 제외)
+    let roomParticipants = []; // 현재 방에 있는 참여자 (나간 사람은 제거됨)
+    let sessionParticipants = []; // 세션 중 한번이라도 참여한 모든 사람 (평가용, 먼저 나간 사람 포함)
+    let agoraToFirebaseUid = {}; // Agora UID → Firebase UID 매핑 테이블
+    let selectedVoteTarget = null;
+    let selectedReportTarget = null;
+
+    // 동물 닉네임 시스템 — UID 해시 기반으로 결정론적 배정 (어느 기기에서 봐도 동일)
+    const ANIMALS = [
+        { emoji: "🦊", name: "여우" }, { emoji: "🐻", name: "곰" },
+        { emoji: "🐯", name: "호랑이" }, { emoji: "🐧", name: "펭귄" },
+        { emoji: "🦁", name: "사자" }, { emoji: "🐸", name: "개구리" },
+        { emoji: "🐨", name: "코알라" }, { emoji: "🐺", name: "늑대" },
+        { emoji: "🦝", name: "너구리" }, { emoji: "🐮", name: "소" },
+        { emoji: "🐼", name: "판다" }, { emoji: "🦄", name: "유니콘" },
+        { emoji: "🐬", name: "돌고래" }, { emoji: "🦋", name: "나비" },
+        { emoji: "🦊", name: "여우" }, { emoji: "🐙", name: "문어" },
+    ];
+    const COLORS = ["파란", "빨간", "초록", "보라", "노란", "주황", "하늘", "민트", "분홍", "하얀"];
+    let uidToAnimal = {};
+
+    // UID 문자열을 숫자로 해시 → 항상 같은 UID = 항상 같은 동물
+    function hashUid(uid) {
+        let hash = 0;
+        for (let i = 0; i < uid.length; i++) {
+            hash = (hash * 31 + uid.charCodeAt(i)) >>> 0;
+        }
+        return hash;
+    }
+
+    function assignAnimal(uid) {
+        if (uidToAnimal[uid]) return uidToAnimal[uid];
+        const hash = hashUid(String(uid));
+        const animal = ANIMALS[hash % ANIMALS.length];
+        const color = COLORS[(hash >>> 4) % COLORS.length];
+        uidToAnimal[uid] = { emoji: animal.emoji, label: `${color} ${animal.name}` };
+        return uidToAnimal[uid];
+    }
+
+    // 60초 롤링 녹음을 위한 Web Audio API 및 Buffer 오브젝트
+    let audioCtx = null;
+    let audioDest = null;
+    let mediaRecorder = null;
+    let audioSlices = []; // 10초 단위 녹음 슬라이스 관리 배열 (최대 6개 = 60초)
+    let sliceInterval = null;
+
+    // 다국어 데이터 사전 사전 정의
+    const textData = {
+        en: {
+            title: "Boundless Talk",
+            subtitle: "Talk about anything with anyone!",
+            placeholder: "What's on your mind? (e.g., love, chit-chat, counseling...)",
+            maxPeopleLabel: "Max People:",
+            startBtn: "Start Talk",
+            joinBtn: "In Conversation...",
+            leaveBtn: "Leave Room",
+            reportBtn: "🚨 Report Toxic User",
+            alertInput: "Please enter a topic!",
+            alertJoin: (topic, max) => `Joined [${topic}] channel! (${max} people max) Waiting for peers...`,
+            toggleBtn: "한국어",
+            opt3: "3 members", opt4: "4 members (recommended)", opt6: "6 members",
+            repTitle: "TALK INDEX",
+            badgeManner: "NICE", badgeLogic: "LOGIC", badgeHumor: "FUN", badgeEmpathy: "WARM", badgePassion: "BOLD",
+            mTitle: "Conversation Report",
+            mDesc: "Check out what AI noted, and gift a peer badge!",
+            vManner: "NICE", vLogic: "LOGIC", vHumor: "FUN", vEmpathy: "WARM", vPassion: "BOLD", vSkip: "Skip & Close",
+            aiLoading: "AI Chat Summary Loading...",
+            aiHeadline: "Today's Dialogue Highlights",
+            aiSample: "• Discussed the core values of chosen topic dynamically.<br>• Respectful conversation flows detected by AI engine.<br>• Peer validation phase ready.",
+            matchingLoading: "🤖 AI is analyzing and assigning the best matched channel...",
+            matchingDone: (topic) => `✅ Connected to topic channel: [${topic}]`,
+            matchingFail: "⚠️ AI service delayed. Matching via raw keyword.",
+            partLabel: "Active Room Channels",
+            banTitle: "ACCESS PERMANENTLY BANNED",
+            banDesc: "Following a formal AI investigation of reported interaction logs, your account has been blacklisted for violating safety guidelines (profanity/sexual harassment). Access denied.",
+            selectTargetMsg: "Select a participant",
+            reportTitle: "🚨 Report Toxic User",
+            reportDesc: "Select the user you wish to report. The past 1 minute of voice dialogue will be uploaded and audited by AI Safeguard.",
+            reportSuccess: "Report Submitted. The target is being evaluated under AI surveillance.",
+            badgeSuccess: "INDEX successfully transferred!",
+            emailPlaceholder: "Email address (e.g., test@gmail.com)",
+            passwordPlaceholder: "Password (minimum 6 characters)",
+            emailLogin: "Login",
+            emailSignup: "Sign Up",
+            // ── 이메일 인증/가입 확장 다국어 ──
+            loginFormTitle: "Email Login",
+            loginBtnText: "Login",
+            signupFormTitle: "Email Sign Up",
+            signupEmailPlaceholder: "Email address to register",
+            signupHint1: "We will send you a verification email.",
+            sendVerifyBtnText: "Send Verification Email",
+            sendVerifyBtnLoading: "Sending...",
+            signupHint2: "Please check your email and click the verification link.<br>Once done, click the button below.",
+            checkVerifyBtnText: "Confirm Verification",
+            checkVerifyBtnLoading: "Checking...",
+            resendVerifyBtnText: "Resend Email",
+            signupPwPlaceholder: "Password (6+ characters)",
+            signupPwConfirmPlaceholder: "Confirm Password (re-enter)",
+            emailSignupBtnText: "Complete Sign Up",
+            emailSignupBtnLoading: "Processing...",
+            stepLabels: ["Enter Email", "Verify Email", "Set Password"],
+            pwHintMin: "Password must be at least 6 characters.",
+            pwHintMismatch: "Passwords do not match.",
+            pwHintMatch: "✓ Passwords match.",
+        introDesc: `<strong>No barriers</strong> of nationality, age, or gender.<br><br>Connect with someone, somewhere in the world<br>through nothing but <strong>words</strong>.<br><br>Ready for a conversation<br><strong>unlike any you've had before?</strong>`,
+        introBtn: "Start",
+        talkAgainBtn: "🗣️ TALK AGAIN",
+        addFriendBtn: "➕ ADD FRIEND",
+        friendsModalTitle: "MY FRIEND LIST",
+        noFriends: "No friends added yet. Make some friends after a talk!",
+        lastTalked: "Last talked:",
+        callBtn: "Call",
+        friendAdded: "🎉 Added to your friend list!",
+        privateChannelAlert: (name) => `Connecting to private channel with ${name}...`,
+        roomHeaderLabel: "Conversation Topic",
+        icebrkLabel: "Icebreaker",
+        roomPartTitle: "Participants",
+        roomLeaveBtn: "🚪 LEAVE",
+        roomReportBtn: "🚨 Report",
+        roomWaiting: "Waiting for others...",
+        waitingNone: "No one is looking for a conversation partner right now.",
+        waitingOne: "1 person is also looking for a conversation partner!",
+        waitingMany: (n) => `${n} people are looking for a conversation partner!`,
+        },
+        ko: {
+            title: "Boundless Talk",
+            subtitle: "지금껏 없던 대화를 경험하세요!",
+            placeholder: "어떤 이야기할래요? (예: 사랑, 일상, 고민상담...)",
+            maxPeopleLabel: "최대 인원:",
+            startBtn: "대화 시작하기",
+            joinBtn: "연결 및 대화 중...",
+            leaveBtn: "대화방 나가기",
+            reportBtn: "🚨 불량 유저 신고하기",
+            alertInput: "소통하고 싶은 주제를 입력해주세요!",
+            alertJoin: (topic, max) => `[${topic}] 채널에 입장했습니다! (정원 ${max}명) 다른 사람을 기다리는 중...`,
+            toggleBtn: "EN",
+            opt3: "3명", opt4: "4명 (권장)", opt6: "6명",
+            repTitle: "대화지수",
+            badgeManner: "나이스", badgeLogic: "논리", badgeHumor: "펀", badgeEmpathy: "따뜻", badgePassion: "열정",
+            mTitle: "대화 분석 리포트",
+            mDesc: "AI가 요약한 대화 내용을 파악하고 함께 대화한 상대방에게 배지를 선물해 보세요.",
+            vManner: "나이스했어요", vLogic: "논리적이었어요", vHumor: "펀했어요", vEmpathy: "따뜻했어요", vPassion: "열정적이었어요", vSkip: "닫기 및 건너뛰기",
+            aiLoading: "AI가 대화 요약본을 추출하는 중...",
+            aiHeadline: "오늘의 대화 핵심 쟁점 분석 결과",
+            aiSample: "• 참여자들이 설정한 주제에 부합하는 소통이 정상적으로 이루어졌습니다.<br>• 외모나 조건 없는 목소리 기반의 긍정적 티키타카가 감지되었습니다.<br>• 상호 평판 배지 수여가 가능합니다.",
+            matchingLoading: "🤖 AI가 대화 평판도 및 주제를 통합 분석하여 매칭하는 중...",
+            matchingDone: (topic) => `✅ 최적화된 [${topic}] 채널로 정밀 매칭되었습니다.`,
+            matchingFail: "⚠️ AI 서버 혼잡. 입력 키워드로 다이렉트 매칭을 처리합니다.",
+            partLabel: "현재 채널 내 오디오 참여자",
+            banTitle: "🚫 서비스 영구 정지 안내",
+            banDesc: "신고 접수에 따른 AI 정밀 오디오 판독 결과, 규정 위반 항목(성희롱, 모욕, 악성 발언)이 명백히 식별되어 본 계정은 전 서비스 공간에 대한 접근 및 이용이 영구적으로 불가합니다.",
+            selectTargetMsg: "대상 참여자를 선택하세요",
+            reportTitle: "🚨 불량 유저 신고하기",
+            reportDesc: "신고 대상을 선택해 주세요. 신고 시점 기준 '최근 1분간'의 실시간 음성 스트림 결합 데이터가 AI 유해성 감별 백엔드로 전송됩니다.",
+            reportSuccess: "신고 완료. 유해 발언이 확인되면 즉시 강력 영구 처분이 단행됩니다.",
+            badgeSuccess: "상대방에게 대화지수를 성공적으로 전달했습니다!",
+            emailPlaceholder: "이메일 주소 (예: test@naver.com)",
+            passwordPlaceholder: "비밀번호 (6자리 이상)",
+            emailLogin: "로그인",
+            emailSignup: "회원가입",
+            // ── 이메일 인증/가입 확장 다국어 ──
+            loginFormTitle: "이메일 로그인",
+            loginBtnText: "로그인",
+            signupFormTitle: "이메일 회원가입",
+            signupEmailPlaceholder: "가입할 이메일 주소",
+            signupHint1: "인증 메일을 발송해 드립니다.",
+            sendVerifyBtnText: "인증 메일 발송",
+            sendVerifyBtnLoading: "발송 중...",
+            signupHint2: "이메일을 확인하고 인증 링크를 클릭하세요.<br>완료 후 아래 버튼을 눌러주세요.",
+            checkVerifyBtnText: "인증 완료 확인",
+            checkVerifyBtnLoading: "확인 중...",
+            resendVerifyBtnText: "메일 재전송",
+            signupPwPlaceholder: "비밀번호 (6자 이상)",
+            signupPwConfirmPlaceholder: "비밀번호 확인 (재입력)",
+            emailSignupBtnText: "가입 완료",
+            emailSignupBtnLoading: "처리 중...",
+            stepLabels: ["이메일 입력", "메일 인증", "비밀번호 설정"],
+            pwHintMin: "비밀번호는 6자 이상이어야 합니다.",
+            pwHintMismatch: "비밀번호가 일치하지 않습니다.",
+            pwHintMatch: "✓ 비밀번호가 일치합니다.",
+        introDesc: `국적도, 나이도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>주제</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?`,
+        introBtn: "시작하기",
+        talkAgainBtn: "🗣️ 또 대화하기",
+        addFriendBtn: "➕ 친구 추가",
+        friendsModalTitle: "나의 친구 목록",
+        noFriends: "아직 추가된 친구가 없습니다. 대화 후 친구를 맺어보세요!",
+        lastTalked: "마지막 대화:",
+        callBtn: "연결",
+        friendAdded: "🎉 친구 목록에 추가되었습니다!",
+        privateChannelAlert: (name) => `${name} 님과의 비밀 채널로 연결합니다...`,
+        roomHeaderLabel: "대화 주제",
+        icebrkLabel: "아이스브레이킹 제안",
+        roomPartTitle: "참여자",
+        roomLeaveBtn: "🚪 대화방 나가기",
+        roomReportBtn: "🚨 신고하기",
+        roomWaiting: "다른 참여자를 기다리는 중...",
+        waitingNone: "현재 대화 상대를 찾는 중인 사람이 없어요.",
+        waitingOne: "1명이 대화 상대를 찾고 있어요!",
+        waitingMany: (n) => `${n}명이 대화 상대를 찾고 있어요!`,
+        }
+    };
+
+    // 3. Authentication & Security Middleware
+    auth.onAuthStateChanged((user) => {
+        const googleBtn = document.getElementById("google-login-btn");
+        const logoutBtn = document.getElementById("logout-btn");
+        const reputationSection = document.getElementById("reputation-section");
+        const startBtn = document.getElementById("join-btn");
+        const loginSection = document.getElementById("auth-section");
+        const talkControls = document.getElementById("talk-controls");
+
+        if (user) {
+            // presence 로직은 setupPresence()로 분리 — 인증 완료 후 별도 호출
+            setupPresence(user.uid);
+            database.ref(`invites/${user.uid}`).on('value', (snap) => {
+    const data = snap.val();
+    if (data && data.status === 'pending') {
+        currentInviteData = data;
+        document.getElementById('invite-banner').style.display = 'block';
+        document.getElementById('invite-text').textContent = currentLang === 'ko'
+            ? '친구가 대화를 요청했어요! 🎉'
+            : 'A friend wants to talk! 🎉';
+    } else {
+        document.getElementById('invite-banner').style.display = 'none';
+    }
+});
+            // 실시간 대화 주제 태그
+database.ref('activeTopics').on('value', (snap) => {
+    const data = snap.val() || {};
+    const topics = [];
+    Object.values(data).forEach(channelUsers => {
+        const entry = Object.values(channelUsers || {})[0];
+        if (entry && entry.topic && !topics.includes(entry.topic)) topics.push(entry.topic);
+    });
+    
+    const bar = document.getElementById('live-topics-bar');
+    const tagsEl = document.getElementById('live-topics-tags');
+    if (!bar || !tagsEl) return;
+    if (topics.length > 0 && !isJoined) {
+        bar.style.display = 'block';
+        tagsEl.innerHTML = topics.slice(0,6).map(t =>
+            `<button onclick="document.getElementById('topic-input').value='${t}'" style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;width:auto;">${t}</button>`
+        ).join('');
+    } else {
+        bar.style.display = 'none';
+    }
+});
+
+                // 이메일 저장 (관리자 패널에서 식별용)
+    if (user.email) {
+        database.ref('users/' + user.uid).update({ email: user.email });
+    }
+
+            // [보안 핵심] 로그인 즉시 Realtime DB에서 제재 상태 실시간 리스닝
+            database.ref('users/' + user.uid).on('value', (snapshot) => {
+                const userData = snapshot.val() || {};
+
+                // 영구정지 체크
+                if (userData.banned === true) {
+                    sessionStorage.setItem('bannedUid', user.uid); // 이의신청용 UID 저장
+                    document.getElementById("ban-overlay").style.display = "flex";
+                    auth.signOut();
+                    return;
+                }
+
+                // 24시간 정지 체크
+                if (userData.suspendedUntil && userData.suspendedUntil > Date.now()) {
+                    sessionStorage.setItem('suspendedUid', user.uid); // 이의신청용 UID 저장
+                    showSuspendOverlay(userData.suspendedUntil, userData.suspendReason, user.uid);
+                    auth.signOut();
+                    return;
+                }
+
+                // 1차 경고 알림 (로그인 시 1회만)
+                if (userData.warnedAt && !sessionStorage.getItem('warnShown_' + user.uid)) {
+                    sessionStorage.setItem('warnShown_' + user.uid, '1');
+                    const warnMsg = currentLang === 'ko'
+                        ? "⚠️ 경고 알림\n\n규정 위반 신고가 접수되어 1차 경고가 발송되었습니다.\n\n반복 위반 시 24시간 정지 → 영구정지 순으로 제재가 강화됩니다.\n\n건강한 대화 문화를 함께 만들어 주세요."
+                        : "⚠️ Warning Notice\n\nA violation report has been received and a first warning has been issued.\n\nRepeated violations will result in 24h suspension → permanent ban.\n\nPlease help us maintain a healthy community.";
+                    setTimeout(() => alert(warnMsg), 500);
+                    // 경고 표시 후 warnedAt 초기화 (다음 로그인에선 안 뜨게)
+                    database.ref('users/' + user.uid + '/warnedAt').remove();
+                }
+            });
+
+            document.getElementById("auth-section").style.display = "none";
+            if (logoutBtn) logoutBtn.style.display = "inline-block";
+            if (talkControls) talkControls.style.display = "block";
+            if (startBtn && !isJoined) startBtn.disabled = false;
+            document.getElementById("toggle-rep-btn").style.display = "inline-block";
+            if (reputationSection) reputationSection.style.display = "none";
+            document.getElementById("btn-talk-again").style.display = "inline-block";
+            // 로그인 시 이전 세션의 잔류 상태 메시지 초기화
+            document.getElementById("matching-status").innerText = "";
+
+
+            // 평판 데이터 연동 (배지 수 누적 리스닝)
+            database.ref('users/' + user.uid + '/badges').on('value', (snapshot) => {
+                const badges = snapshot.val() || {};
+                document.getElementById('score-manner').innerText = badges.manner || 0;
+                document.getElementById('score-logic').innerText = badges.logic || 0;
+                document.getElementById('score-humor').innerText = badges.humor || 0;
+                document.getElementById('score-empathy').innerText = badges.empathy || 0;
+                document.getElementById('score-passion').innerText = badges.passion || 0;
+            });
+
+            // 친구 요청 실시간 수신 리스너 시작
+            startFriendRequestListener();
+
+            // 대기자 presence 설정 (대화방 밖에 있을 때 waiting 노드에 등록)
+            const waitingRef = database.ref('waiting/' + user.uid);
+            waitingRef.set(true);
+            waitingRef.onDisconnect().remove();
+
+            // 로그인 즉시 bar 표시 (Firebase 응답 전에도 보이도록)
+            document.getElementById('waiting-count-bar').style.display = 'flex';
+            document.getElementById('waiting-count-text').textContent = textData[currentLang].waitingNone;
+
+            // 전체 대기자 수 실시간 리스닝
+            database.ref('waiting').on('value', (snap) => {
+                const data = snap.val() || {};
+                const count = Object.keys(data).filter(k => k !== user.uid).length;
+                const bar = document.getElementById('waiting-count-bar');
+                const txt = document.getElementById('waiting-count-text');
+                const lang = textData[currentLang];
+                if (!isJoined) {
+                    bar.style.display = 'flex';
+                    if (count === 0) txt.textContent = lang.waitingNone;
+                    else if (count === 1) txt.textContent = lang.waitingOne;
+                    else txt.textContent = lang.waitingMany(count);
+                } else {
+                    bar.style.display = 'none';
+                }
+            });
+
+        } else {
+            document.getElementById("auth-section").style.display = "flex";
+            if (logoutBtn) logoutBtn.style.display = "none";
+            if (talkControls) talkControls.style.display = "none";
+            document.getElementById("btn-talk-again").style.display = "none";
+
+            document.getElementById("toggle-rep-btn").style.display = "none";
+            if (reputationSection) reputationSection.style.display = "none";
+
+            if (startBtn) startBtn.disabled = true;
+            document.getElementById("ban-overlay").style.display = "none";
+        }
+    });
+
+    // presence 독립 함수 — onAuthStateChanged 타이밍과 분리하여 배포 환경에서도 안정적으로 동작
+    function setupPresence(uid) {
+        const myPresenceRef = database.ref('users/' + uid + '/presence');
+        const connectedRef = database.ref('.info/connected');
+
+        // 기존 리스너 중복 방지
+        connectedRef.off('value');
+
+        connectedRef.on('value', (snap) => {
+            if (snap.val() !== true) return;
+
+            // 브라우저 종료/연결 끊김 시 오프라인으로 자동 기록
+            myPresenceRef.onDisconnect().set({
+                online: false,
+                last_changed: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                // 연결 확인 후 온라인으로 즉시 기록
+                myPresenceRef.set({
+                    online: true,
+                    last_changed: firebase.database.ServerValue.TIMESTAMP
+                }).catch(e => console.error("Presence write failed:", e));
+            }).catch(e => console.error("onDisconnect setup failed:", e));
+        });
+    }
+
+    // 세션 유지 설정
+    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch((error) => {
+        console.error("Persistence configuration error:", error);
+    });
+
+    // 4. UI 갱신 & 다국어 바인딩 매핑 로직
+    function updateUI() {
+        const lang = textData[currentLang];
+        const appTitle = document.getElementById('app-title');
+        const appSubtitle = document.getElementById('app-subtitle');
+        const isRepOpen = document.getElementById('reputation-section').style.display === "block";
+
+        document.getElementById('btn-talk-again').innerText = lang.talkAgainBtn;
+        // 인트로 화면 다국어
+        const introDescEl = document.getElementById('intro-desc');
+        const introBtnEl = document.getElementById('intro-start-btn');
+        if (introDescEl) introDescEl.innerHTML = lang.introDesc;
+        if (introBtnEl) introBtnEl.textContent = lang.introBtn;
+        if(document.getElementById('label-add-friend')) document.getElementById('label-add-friend').innerText = lang.addFriendBtn;
+        if(document.getElementById('friends-m-title')) document.getElementById('friends-m-title').innerText = lang.friendsModalTitle;
+
+        // 토글 버튼 텍스트 다국어 처리
+        if (currentLang === 'ko') {
+            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 대화지수 접기" : "📊 대화지수";
+        } else {
+            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 HIDE TALK INDEX" : "📊 TALK INDEX";
+        }
+
+        if (appTitle) appTitle.innerText = lang.title;
+        if (appSubtitle) appSubtitle.innerText = lang.subtitle;
+        document.getElementById('app-title').innerText = lang.title;
+        document.getElementById('topic-input').placeholder = lang.placeholder;
+        document.getElementById('maxpeople').innerText = lang.maxPeopleLabel;
+        document.getElementById('leave-btn').innerText = lang.leaveBtn;
+        document.getElementById('report-btn').innerText = lang.reportBtn;
+        document.getElementById('lang-toggle-btn').innerText = lang.toggleBtn;
+        document.getElementById('opt-3').innerText = lang.opt3;
+        document.getElementById('opt-4').innerText = lang.opt4;
+        document.getElementById('opt-6').innerText = lang.opt6;
+        document.getElementById('rep-title').innerText = lang.repTitle;
+        document.getElementById('label-manner').innerText = lang.badgeManner;
+        document.getElementById('label-logic').innerText = lang.badgeLogic;
+        document.getElementById('label-humor').innerText = lang.badgeHumor;
+        document.getElementById('label-empathy').innerText = lang.badgeEmpathy;
+        document.getElementById('label-passion').innerText = lang.badgePassion;
+        document.getElementById('modal-title').innerText = lang.mTitle;
+        document.getElementById('modal-desc').innerText = lang.mDesc;
+        document.getElementById('vote-manner').innerText = lang.vManner;
+        document.getElementById('vote-logic').innerText = lang.vLogic;
+        document.getElementById('vote-humor').innerText = lang.vHumor;
+        document.getElementById('vote-empathy').innerText = lang.vEmpathy;
+        document.getElementById('vote-passion').innerText = lang.vPassion;
+        document.getElementById('vote-skip').innerText = lang.vSkip;
+        document.getElementById('part-title-label').innerText = lang.partLabel;
+        document.getElementById('ban-title').innerText = lang.banTitle;
+        document.getElementById('ban-desc').innerText = lang.banDesc;
+        document.getElementById('rep-m-title').innerText = lang.reportTitle;
+        document.getElementById('rep-m-desc').innerText = lang.reportDesc;
+
+        // room screen 라벨 업데이트
+        document.getElementById('room-header-label').innerText = lang.roomHeaderLabel;
+        document.getElementById('icebreaker-label').innerText = lang.icebrkLabel;
+        document.getElementById('room-part-title').innerText = lang.roomPartTitle;
+        document.getElementById('room-leave-btn').innerText = lang.roomLeaveBtn;
+        document.getElementById('room-report-btn').innerText = lang.roomReportBtn;
+        updateRoomParticipants();
+
+        // 자막 버튼 텍스트 언어 동기화
+        const stBtn = document.getElementById('subtitle-toggle-btn');
+        if (stBtn) {
+            if (subtitlesEnabled) {
+                stBtn.textContent = currentLang === 'ko' ? '💬 자막 켜짐 ●' : '💬 Subtitles ON ●';
+            } else {
+                stBtn.textContent = currentLang === 'ko' ? '💬 번역 자막' : '💬 Subtitles';
+            }
+        }
+
+        if (document.getElementById('google-login-text')) {
+            document.getElementById('google-login-text').innerText = (currentLang === 'en') ? "Sign in with Google" : "구글 로그인";
+        }
+        document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "LOGOUT" : "로그아웃";
+        document.getElementById('email-login-btn-main').innerText = (currentLang === 'en') ? "Email Login" : "이메일 로그인";
+        document.getElementById('email-signup-btn-main').innerText = (currentLang === 'en') ? "Sign Up with Email" : "이메일로 회원가입";
+
+        // ── 이메일 로그인/회원가입 패널 내부 요소 번역 반영 ──
+        document.getElementById('login-form-title').innerText = lang.loginFormTitle;
+        document.getElementById('email-input').placeholder = lang.emailPlaceholder;
+        document.getElementById('password-input').placeholder = lang.passwordPlaceholder;
+        document.getElementById('email-login-btn').innerText = lang.loginBtnText;
+
+        document.getElementById('signup-email-input').placeholder = lang.signupEmailPlaceholder;
+        document.getElementById('signup-hint-1').innerText = lang.signupHint1;
+
+        const sendBtn = document.getElementById('send-verify-btn');
+        if (sendBtn.disabled && (sendBtn.innerText === "발송 중..." || sendBtn.innerText === "Sending...")) {
+            sendBtn.innerText = lang.sendVerifyBtnLoading;
+        } else {
+            sendBtn.innerText = lang.sendVerifyBtnText;
+        }
+
+        document.getElementById('signup-hint-2').innerHTML = lang.signupHint2;
+
+        const checkBtn = document.getElementById('check-verify-btn');
+        if (checkBtn.disabled && (checkBtn.innerText === "확인 중..." || checkBtn.innerText === "Checking...")) {
+            checkBtn.innerText = lang.checkVerifyBtnLoading;
+        } else {
+            checkBtn.innerText = lang.checkVerifyBtnText;
+        }
+
+        document.getElementById('resend-verify-btn').innerText = lang.resendVerifyBtnText;
+        document.getElementById('signup-pw-input').placeholder = lang.signupPwPlaceholder;
+        document.getElementById('signup-pw-confirm-input').placeholder = lang.signupPwConfirmPlaceholder;
+
+        const signupBtn = document.getElementById('email-signup-btn');
+        if (signupBtn.disabled && (signupBtn.innerText === "처리 중..." || signupBtn.innerText === "Processing...")) {
+            signupBtn.innerText = lang.emailSignupBtnLoading;
+        } else {
+            signupBtn.innerText = lang.emailSignupBtnText;
+        }
+
+        // 현재 스텝 인디케이터 라벨 실시간 갱신
+        let currentStep = 1;
+        if (document.getElementById('signup-step-2').style.display === 'block') currentStep = 2;
+        if (document.getElementById('signup-step-3').style.display === 'block') currentStep = 3;
+        document.getElementById('step-label').innerText = lang.stepLabels[currentStep - 1];
+
+        // 실시간 비밀번호 검증 텍스트 갱신
+        checkPwMatch();
+
+        if (!document.getElementById('badge-modal').classList.contains('active')) {
+            document.getElementById('summary-headline').innerText = lang.aiLoading;
+        }
+        document.getElementById('join-btn').innerText = isJoined ? lang.joinBtn : lang.startBtn;
+    }
+
+    // 구글 로그인: 기본은 Popup 방식 (authDomain과 사이트 도메인이 달라도 안정적으로 동작).
+    // Popup이 차단되는 인앱 브라우저(카카오, 인스타 등) WebView에서는 Redirect로 자동 전환.
+    document.getElementById('google-login-btn').addEventListener('click', () => {
+        auth.signInWithPopup(provider).catch((error) => {
+            if (error && (error.code === 'auth/popup-blocked' ||
+                          error.code === 'auth/operation-not-supported-in-this-environment' ||
+                          error.code === 'auth/popup-closed-by-user')) {
+                auth.signInWithRedirect(provider).catch((e) => console.error(e));
+            } else {
+                console.error(error);
+            }
+        });
+    });
+
+    // 페이지 로드 시 Redirect 결과 처리 (Redirect 방식으로 로그인한 경우 돌아왔을 때 처리)
+    auth.getRedirectResult().catch((error) => {
+        if (error && error.code !== 'auth/no-current-user') {
+            console.error('Redirect login error:', error);
+        }
+    });
+
+    // 💡 새롭게 추가하는 토글 클릭 이벤트 리스너
+    document.getElementById('toggle-rep-btn').addEventListener('click', () => {
+        const repSection = document.getElementById('reputation-section');
+        const btn = document.getElementById('toggle-rep-btn');
+
+        if (repSection.style.display === "none") {
+            repSection.style.display = "block";
+            btn.innerText = (currentLang === 'ko') ? "📊 대화지수 접기" : "📊 HIDE TALK INDEX";
+        } else {
+            repSection.style.display = "none";
+            btn.innerText = (currentLang === 'ko') ? "📊 대화지수" : "📊 TALK INDEX";
+        }
+    });
+    // ── 이메일 로그인 토글 ──
+    let loginFormOpen = false;
+    let signupFormOpen = false;
+
+    document.getElementById('email-login-btn-main').addEventListener('click', () => {
+        loginFormOpen = !loginFormOpen;
+        document.getElementById('login-form-panel').classList.toggle('open', loginFormOpen);
+        // 회원가입 폼은 닫기
+        if (loginFormOpen && signupFormOpen) {
+            signupFormOpen = false;
+            document.getElementById('signup-form-panel').classList.remove('open');
+        }
+    });
+
+    document.getElementById('email-signup-btn-main').addEventListener('click', () => {
+        signupFormOpen = !signupFormOpen;
+        document.getElementById('signup-form-panel').classList.toggle('open', signupFormOpen);
+        // 로그인 폼은 닫기
+        if (signupFormOpen && loginFormOpen) {
+            loginFormOpen = false;
+            document.getElementById('login-form-panel').classList.remove('open');
+        }
+        if (signupFormOpen) {
+        // ✨ [코드 추가] 새 가입을 진행하므로, 기존에 남아있던 유저 세션을 깨끗이 지웁니다.
+        auth.signOut().catch(err => console.log("기존 세션 정리 중 예외 발생:", err));
+
+        resetSignupSteps();
+    }
+    });
+
+    // ── 이메일 로그인 제출 ──
+    document.getElementById('email-login-btn').addEventListener('click', () => {
+        const email = document.getElementById('email-input').value.trim();
+        const password = document.getElementById('password-input').value;
+        if (!email || !password) {
+            alert(currentLang === 'ko' ? "이메일과 비밀번호를 입력해 주세요." : "Please enter email and password.");
+            return;
+        }
+        auth.signInWithEmailAndPassword(email, password)
+            .catch(() => {
+                alert(currentLang === 'ko' ? "로그인 실패: 이메일이나 비밀번호를 확인해주세요." : "Login failed: Check your email and password.");
+            });
+    });
+
+    document.getElementById('find-pw-btn').addEventListener('click', async () => {
+    const email = document.getElementById('email-input').value.trim();
+    const lang = textData[currentLang]; // 기존 다국어 팩 활용
+
+    // 이메일 칸이 비어있는지 확인
+    if (!email) {
+        alert(currentLang === 'ko'
+            ? "비밀번호를 재설정할 이메일 주소를 위 칸에 먼저 입력해 주세요."
+            : "Please enter your email address above to reset your password.");
+        document.getElementById('email-input').focus();
+        return;
+    }
+
+    try {
+        // Firebase 비밀번호 재설정 메일 발송 API 호출
+        await auth.sendPasswordResetEmail(email);
+        alert(currentLang === 'ko'
+            ? "✅ 비밀번호 재설정 메일이 발송되었습니다! 메일함을 확인해 주세요."
+            : "✅ Password reset email sent! Please check your inbox.");
+    } catch (error) {
+        console.error("Password reset error:", error);
+
+        // 에러 코드에 따른 안내 분기
+        if (error.code === 'auth/user-not-found') {
+            alert(currentLang === 'ko' ? "가입되지 않은 이메일 주소입니다." : "User not found with this email.");
+        } else if (error.code === 'auth/invalid-email') {
+            alert(currentLang === 'ko' ? "유효하지 않은 이메일 형식입니다." : "Invalid email format.");
+        } else {
+            alert(currentLang === 'ko' ? "오류가 발생했습니다. 잠시 후 다시 시도해 주세요." : "An error occurred. Please try again later.");
+        }
+    }
+});
+
+    // ── 회원가입 단계별 로직 ──
+    let signupVerifiedEmail = null;
+    let tempSignupUser = null;
+
+    function resetSignupSteps() {
+        signupVerifiedEmail = null;
+        tempSignupUser = null;
+        showSignupStep(1);
+        document.getElementById('signup-email-input').value = "";
+        document.getElementById('signup-pw-input').value = "";
+        document.getElementById('signup-pw-confirm-input').value = "";
+        document.getElementById('pw-match-hint').innerText = "";
+        document.getElementById('email-signup-btn').disabled = true;
+    }
+
+    function showSignupStep(step) {
+        document.getElementById('signup-step-1').style.display = step === 1 ? 'block' : 'none';
+        document.getElementById('signup-step-2').style.display = step === 2 ? 'block' : 'none';
+        document.getElementById('signup-step-3').style.display = step === 3 ? 'block' : 'none';
+        ['step-dot-1','step-dot-2','step-dot-3'].forEach((id, i) => {
+            document.getElementById(id).classList.toggle('active', i < step);
+        });
+        const lang = textData[currentLang];
+        document.getElementById('step-label').innerText = lang.stepLabels[step - 1];
+    }
+
+    // ── 회원가입 인증 코드 관리 ──
+    let signupVerifyCode = null;       // 생성한 6자리 코드
+    let signupVerifyEmail = null;      // 인증 대상 이메일
+
+    // Step 1: 인증 코드 발송 (Netlify 함수 경유)
+    document.getElementById('send-verify-btn').addEventListener('click', async () => {
+        const email = document.getElementById('signup-email-input').value.trim();
+        if (!email) {
+            alert(currentLang === 'ko' ? "이메일을 입력해 주세요." : "Please enter your email.");
+            return;
+        }
+
+        const btn = document.getElementById('send-verify-btn');
+        btn.disabled = true;
+        btn.innerText = textData[currentLang].sendVerifyBtnLoading;
+
+        try {
+            // 이미 가입된 이메일인지 먼저 확인 (로그인 시도 → 성공하면 이미 존재)
+            // fetchSignInMethodsForEmail으로 체크
+            const methods = await auth.fetchSignInMethodsForEmail(email);
+            if (methods.length > 0) {
+                alert(currentLang === 'ko' ? "이미 가입된 이메일입니다. 이메일 로그인을 이용해 주세요." : "Email already in use. Please log in instead.");
+                btn.disabled = false;
+                btn.innerText = textData[currentLang].sendVerifyBtnText;
+                return;
+            }
+
+            // 6자리 인증 코드 생성 후 Netlify 함수로 메일 발송
+            signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+            signupVerifyEmail = email;
+
+            const res = await fetch("/.netlify/functions/sendVerifyEmail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, code: signupVerifyCode })
+            });
+
+            if (!res.ok) throw new Error("메일 발송 실패");
+
+            showSignupStep(2);
+        } catch (error) {
+            alert("오류: " + error.message);
+            btn.disabled = false;
+            btn.innerText = textData[currentLang].sendVerifyBtnText;
+        }
+    });
+
+    // Step 2: 인증 코드 확인
+    document.getElementById('check-verify-btn').addEventListener('click', () => {
+        const inputCode = document.getElementById('verify-code-input')?.value.trim();
+        if (!inputCode) {
+            alert(currentLang === 'ko' ? "인증 코드를 입력해 주세요." : "Please enter the verification code.");
+            return;
+        }
+        if (inputCode === signupVerifyCode) {
+            showSignupStep(3);
+        } else {
+            alert(currentLang === 'ko' ? "인증 코드가 올바르지 않습니다. 다시 확인해 주세요." : "Incorrect code. Please try again.");
+        }
+    });
+
+    // Step 2: 코드 재전송
+    document.getElementById('resend-verify-btn').addEventListener('click', async () => {
+        if (!signupVerifyEmail) return;
+        signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+        try {
+            await fetch("/.netlify/functions/sendVerifyEmail", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: signupVerifyEmail, code: signupVerifyCode })
+            });
+            alert(currentLang === 'ko' ? "인증 코드를 재전송했습니다." : "Verification code resent.");
+        } catch(e) {
+            alert("재전송 실패: " + e.message);
+        }
+    });
+
+    // Step 3: 비밀번호 입력 실시간 확인
+    function checkPwMatch() {
+        const pw = document.getElementById('signup-pw-input').value;
+        const pw2 = document.getElementById('signup-pw-confirm-input').value;
+        const hint = document.getElementById('pw-match-hint');
+        const btn = document.getElementById('email-signup-btn');
+        const lang = textData[currentLang];
+
+        if (!pw2) { hint.innerText = ""; btn.disabled = true; return; }
+        if (pw.length < 6) {
+            hint.style.color = "#ff6b6b";
+            hint.innerText = lang.pwHintMin;
+            btn.disabled = true;
+        } else if (pw !== pw2) {
+            hint.style.color = "#ff6b6b";
+            hint.innerText = lang.pwHintMismatch;
+            btn.disabled = true;
+        } else {
+            hint.style.color = "#34c759";
+            hint.innerText = lang.pwHintMatch;
+            btn.disabled = false;
+        }
+    }
+    document.getElementById('signup-pw-input').addEventListener('input', checkPwMatch);
+    document.getElementById('signup-pw-confirm-input').addEventListener('input', checkPwMatch);
+
+    // Step 3: 가입 완료 — 여기서 처음으로 계정 생성 (자동 로그인 없음)
+    document.getElementById('email-signup-btn').addEventListener('click', async () => {
+        if (!signupVerifyEmail) return;
+        const pw = document.getElementById('signup-pw-input').value;
+        const btn = document.getElementById('email-signup-btn');
+        btn.disabled = true;
+        btn.innerText = textData[currentLang].emailSignupBtnLoading;
+
+        try {
+            // 이 시점에 계정 생성 → Firebase 자동 로그인되지만 이미 완료 단계라 자연스러움
+            await auth.createUserWithEmailAndPassword(signupVerifyEmail, pw);
+            alert(currentLang === 'ko' ? "🎉 회원가입이 완료되었습니다! 환영합니다." : "🎉 Signup complete! Welcome.");
+            signupFormOpen = false;
+            signupVerifyCode = null;
+            signupVerifyEmail = null;
+            document.getElementById('signup-form-panel').classList.remove('open');
+        } catch(e) {
+            alert("오류: " + e.message);
+            btn.disabled = false;
+            btn.innerText = textData[currentLang].emailSignupBtnText;
+        }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        auth.signOut();
+    });
+
+    document.getElementById('lang-toggle-btn').addEventListener('click', () => {
+        currentLang = (currentLang === "en") ? "ko" : "en";
+        // 언어 토글 버튼 텍스트 업데이트
+        document.getElementById('lang-toggle-btn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
+        // 인트로 화면 언어 업데이트
+        const introDescEl = document.getElementById('intro-desc');
+        const introBtnEl = document.getElementById('intro-start-btn');
+        if (introDescEl) introDescEl.innerHTML = textData[currentLang].introDesc;
+        if (introBtnEl) introBtnEl.textContent = textData[currentLang].introBtn;
+        updateUI();
+        if (isJoined) {
+            renderParticipantsUI();
+            // icebreaker 텍스트를 새 언어로 재추첨
+            const list = ICEBREAKERS[currentLang] || ICEBREAKERS.ko;
+            const pick = list[Math.floor(Math.random() * list.length)];
+            document.getElementById('icebreaker-emoji').textContent = pick.emoji;
+            document.getElementById('icebreaker-text').textContent = pick.text;
+            document.getElementById('icebreaker-sub').textContent = pick.sub;
+        }
+    });
+
+// 5. Netlify AI Serverless Function 연동 매칭 엔진
+    async function getAIMatchedTopic(userInput) {
+        const statusEl = document.getElementById('matching-status');
+        const lang = textData[currentLang];
+        statusEl.innerText = lang.matchingLoading;
+
+        try {
+            const response = await fetch("/.netlify/functions/getTopic", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userInput: userInput, uid: auth.currentUser ? auth.currentUser.uid : "anon" })
+            });
+            if (!response.ok) throw new Error("Backend response error");
+            const data = await response.json();
+            let topic = data.topic ? data.topic.trim().toLowerCase() : "general"; // 소문자 정규화로 대소문자 무관 매칭
+            if(!topic) topic = "general";
+            statusEl.innerText = lang.matchingDone(topic);
+            return topic;
+        } catch (error) {
+            console.error("AI matching failed, moving to fallback route:", error);
+            // 최신 언어 선택 상태를 원자적으로 강제 반영하기 위해 textData[currentLang] 직접 참조
+            statusEl.innerText = textData[currentLang].matchingFail;
+            // 💡 에러 발생 시 유저가 입력한 주제를 소문자로 정규화하여 반환합니다!
+            return userInput.trim().toLowerCase() || "general";
+        }
+    }
+
+    // 6. 60초 최신 대화 오디오 롤링 버퍼 및 녹음 아키텍처 (Web Audio API 기반)
+    function setupRollingAudioRecorder() {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            audioDest = audioCtx.createMediaStreamDestination();
+            audioSlices = [];
+
+            // 내 오디오 트랙을 믹서에 병합 연결
+            if (localAudioTrack) {
+                const localStream = new MediaStream([localAudioTrack.getMediaStreamTrack()]);
+                const localSource = audioCtx.createMediaStreamSource(localStream);
+                localSource.connect(audioDest);
+            }
+
+            mediaRecorder = new MediaRecorder(audioDest.stream, { mimeType: 'audio/webm' });
+            let currentChunks = [];
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) currentChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(currentChunks, { type: 'audio/webm' });
+                audioSlices.push(blob);
+                // [정밀 규칙 관리] 10초 단위 슬라이스 배열 관리, 최대 6개 블록 유지 (=총 1분 보관)
+                if (audioSlices.length > 6) {
+                    audioSlices.shift();
+                }
+                currentChunks = [];
+                // 통화 참여가 유지되는 중이라면 녹음 계속 순환 순방향 재시작
+                if (isJoined && mediaRecorder) {
+                    try { mediaRecorder.start(); } catch(e){}
+                }
+            };
+
+            // 10초 단위로 오디오 데이터를 청크 슬라이싱 처리
+            mediaRecorder.start();
+            sliceInterval = setInterval(() => {
+                if (mediaRecorder && mediaRecorder.state === "recording") {
+                    mediaRecorder.stop();
+                }
+            }, 10000);
+
+        } catch (e) {
+            console.error("Failed to build Audio Context Security Safeguard Node:", e);
+        }
+    }
+
+    function stopRollingAudioRecorder() {
+        if (sliceInterval) { clearInterval(sliceInterval); sliceInterval = null; }
+        if (mediaRecorder) {
+            try { mediaRecorder.onstop = null; mediaRecorder.stop(); } catch(e){}
+            mediaRecorder = null;
+        }
+        if (audioCtx) { try { audioCtx.close(); } catch(e){} audioCtx = null; }
+    }
+
+// 7. Agora RTC 소통 엔진 핵심 제어 로직
+    document.getElementById('join-btn').onclick = async function() {
+        // 🚨 [수정] 중복 실행 방지 — 이미 입장했거나 연결 중이면 무시 (Agora "already connected" 에러 방지)
+        if (isJoined || isJoining ||
+            client.connectionState === "CONNECTING" ||
+            client.connectionState === "CONNECTED" ||
+            client.connectionState === "RECONNECTING") {
+            return;
+        }
+        isJoining = true;
+
+        const topicInput = document.getElementById('topic-input');
+        const rawTopic = String(topicInput.value).normalize('NFC').trim();
+        if (!rawTopic) {
+            alert(textData[currentLang].alertInput);
+            topicInput.focus();
+            isJoining = false;
+            return;
+        }
+
+        const maxPeople = parseInt(document.getElementById('max-people-select').value);
+        document.getElementById('join-btn').disabled = true;
+
+        let finalTopic;
+        if (rawTopic.startsWith("🔒_")) {
+            finalTopic = rawTopic; // 친구 1:1 방은 AI를 거치지 않고 다이렉트 패스
+            document.getElementById('matching-status').innerText = (currentLang === 'ko') ? "🔒 1:1 비밀 채널 개설 완료!" : "🔒 Private Channel Connected!";
+        } else {
+            finalTopic = rawTopic.trim().toLowerCase(); // AI 없이 입력 키워드 직접 사용
+            document.getElementById('matching-status').innerText = "";
+        }
+
+        // 💡 UI 표시용 한글 채널 이름 설정
+        currentChannelName = finalTopic;
+
+        // 🚨 전역 변수에 저장 — 저장/조회 시 항상 동일값 보장
+        safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 64);
+
+        document.getElementById('channel-debug').innerText = `Channel Name: ${currentChannelName}`;
+
+        const dbg = (msg) => { document.getElementById('debug-log').innerText += msg + '\n'; };
+        try {
+            dbg('1. 시작');
+            // iOS Safari: getUserMedia로 직접 스트림 획득 후 Agora custom track으로 사용
+            let micStream;
+            try {
+                dbg('2. getUserMedia 시도');
+                micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                dbg('3. getUserMedia 성공');
+            } catch(permErr) {
+                dbg('마이크 권한 실패: ' + permErr.message);
+                alert(currentLang === 'ko'
+                    ? '마이크 권한을 허용해 주세요.'
+                    : 'Please allow microphone access.');
+                isJoining = false;
+                document.getElementById('join-btn').disabled = false;
+                return;
+            }
+            dbg('4. custom audio track 생성 시도');
+            const micTrack = micStream.getAudioTracks()[0];
+            localAudioTrack = AgoraRTC.createCustomAudioTrack({ mediaStreamTrack: micTrack });
+            dbg('5. 마이크 트랙 생성 성공: ' + (localAudioTrack ? 'OK' : 'NULL'));
+
+            const firebaseUser = auth.currentUser;
+            const agoraUid = firebaseUser ? firebaseUser.uid : null;
+
+            // 💡 토큰 서버에서 Agora 토큰 발급 후 접속
+            let agoraToken = null;
+            try {
+                dbg('6. 토큰 요청 중...');
+                const tokenRes = await fetch(`${TOKEN_SERVER_URL}/token?channelName=${encodeURIComponent(safeAgoraChannelId)}&uid=0`);
+                const tokenData = await tokenRes.json();
+                agoraToken = tokenData.token;
+                dbg('7. 토큰 받음: ' + (agoraToken ? '성공' : '없음'));
+            } catch(e) {
+                dbg('토큰 실패: ' + e.message);
+                console.error("Token fetch failed:", e);
+                throw new Error("토큰 서버 연결 실패. 잠시 후 다시 시도해 주세요.");
+            }
+            dbg('8. Agora join 시도');
+            myUid = await client.join(AGORA_APP_ID, safeAgoraChannelId, agoraToken, 0);
+            dbg('9. join 성공');
+            isJoined = true;
+            // 대화 시작 → 대기자 목록에서 제거
+            if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).remove();
+            document.getElementById('waiting-count-bar').style.display = 'none';
+            roomParticipants = [];
+            sessionParticipants = [];
+            agoraToFirebaseUid = {};
+            uidToAnimal = {};
+
+            // 내 동물 배정 (Firebase UID 해시 기반 — 상대방이 보는 내 동물과 항상 일치)
+            const myAnimal = assignAnimal(firebaseUser ? firebaseUser.uid : myUid);
+            document.getElementById('my-animal-label').innerText = `${myAnimal.emoji} ${myAnimal.label}`;
+            document.getElementById('my-animal-tag').style.display = "block";
+           const toastMsg = currentLang === 'ko'
+    ? `🐾 당신은 오늘 [${myAnimal.emoji} ${myAnimal.label}]입니다!\n상대방도 고유한 동물로 표시됩니다.`
+    : `🐾 You are [${myAnimal.emoji} ${myAnimal.label}] today!\nPeers will also have unique animal names.`;
+const toast = document.createElement('div');
+toast.style.cssText = 'position:fixed;top:30px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.4);color:#fff;padding:14px 22px;border-radius:16px;font-size:14px;z-index:9999;text-align:center;white-space:pre-line;backdrop-filter:blur(10px);';
+toast.textContent = toastMsg;
+document.body.appendChild(toast);
+setTimeout(() => toast.remove(), 10000);
+
+            // 내 Agora UID → Firebase UID 매핑을 채널 경로에 등록 (상대방이 참조용)
+            if (firebaseUser) {
+                await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
+                // 퇴장 시 자동 삭제
+                database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+                if (finalTopic && !finalTopic.startsWith('🔒_')) {
+    database.ref('activeTopics/' + safeAgoraChannelId + '/' + myUid).set({ topic: finalTopic, ts: firebase.database.ServerValue.TIMESTAMP });
+database.ref('activeTopics/' + safeAgoraChannelId + '/' + myUid).onDisconnect().remove();
+}
+            }
+
+            // 아고라 채널 퍼블리시
+            dbg('10. publish 시도');
+            await client.publish([localAudioTrack]);
+            dbg('11. publish 성공');
+
+            // 오디오 보안 롤링 시스템 즉시 실행
+            setupRollingAudioRecorder();
+            startSignalPolling();
+            startVolumeIndicator(); // 발화자 감지 시작
+
+            document.getElementById('join-btn').style.display = "none";
+            document.getElementById('leave-btn').style.display = "inline-block";
+            document.getElementById('report-btn').style.display = "inline-block";
+            document.getElementById('participants-box').style.display = "block";
+            const maxPeopleGroup = document.getElementById('max-people-group');
+            maxPeopleGroup.style.display = "none";
+            maxPeopleGroup.style.visibility = "hidden";
+            maxPeopleGroup.style.opacity = "0";
+            maxPeopleGroup.style.pointerEvents = "none";
+            topicInput.disabled = true;
+
+            renderParticipantsUI();
+            showRoomScreen(finalTopic);
+
+            isJoining = false;
+
+        } catch (error) {
+            document.getElementById('debug-log').innerText += '❌ 에러: ' + error.message + '\n';
+            console.error("Agora room entry crashed:", error);
+            // 🚨 [수정] 실패 시 Agora 연결을 깨끗이 정리 (이걸 안 하면 다음 시도 때 "already connected" 에러 발생)
+            try {
+                if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack.close(); localAudioTrack = null; }
+            } catch (e) {}
+            try {
+                if (client.connectionState === "CONNECTED" ||
+                    client.connectionState === "CONNECTING" ||
+                    client.connectionState === "RECONNECTING") {
+                    await client.leave();
+                }
+            } catch (e) { console.error("cleanup leave failed:", e); }
+
+            isJoined = false;
+            isJoining = false;
+            myUid = null;
+            // 연결 해제 → 다시 대기자로 등록
+            if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).set(true);
+            stopSubtitleRecognition();
+            stopSubtitleListener();
+            subtitlesEnabled = false;
+
+            document.getElementById('join-btn').disabled = false;
+            document.getElementById('join-btn').style.display = "block";
+            document.getElementById('join-btn').innerText = textData[currentLang].startBtn;
+            document.getElementById('leave-btn').style.display = "none";
+            document.getElementById('report-btn').style.display = "none";
+            document.getElementById('participants-box').style.display = "none";
+            document.getElementById('my-animal-tag').style.display = "none";
+            const maxPeopleGroupErr = document.getElementById('max-people-group');
+            maxPeopleGroupErr.style.display = "flex";
+            maxPeopleGroupErr.style.visibility = "visible";
+            maxPeopleGroupErr.style.opacity = "1";
+            maxPeopleGroupErr.style.pointerEvents = "auto";
+            topicInput.disabled = false;
+            alert("마이크 권한을 허용했는지 확인해 주세요. (" + error.message + ")");
+        }
+    };
+
+    // Agora 원격 유저 서브스크립션 이벤트 핸들러
+    client.on("user-published", async (user, mediaType) => {
+        await client.subscribe(user, mediaType);
+        if (mediaType === "audio") {
+            user.audioTrack.play();
+
+            if (!roomParticipants.includes(user.uid)) {
+                roomParticipants.push(user.uid);
+                renderParticipantsUI(); // 일단 Agora UID로 먼저 렌더
+            }
+
+            // Agora UID → Firebase UID 조회
+            if (!agoraToFirebaseUid[user.uid]) {
+                const snap = await database.ref(`channels/${safeAgoraChannelId}/members/${user.uid}`).once('value');
+                const fbUid = snap.val();
+                if (fbUid) {
+                    agoraToFirebaseUid[user.uid] = fbUid;
+                    // Firebase UID로 동물 배정 → Agora UID도 같은 동물로 연결
+                    const animal = assignAnimal(fbUid);
+                    uidToAnimal[user.uid] = animal; // Agora UID도 같은 동물 참조
+                    renderParticipantsUI(); // Firebase UID 확보 후 재렌더
+                }
+            }
+
+            // 세션 전체 참여자 목록 (Firebase UID 기준)
+            const fbUidForSession = agoraToFirebaseUid[user.uid] || String(user.uid);
+            if (!sessionParticipants.includes(fbUidForSession)) {
+                sessionParticipants.push(fbUidForSession);
+            }
+
+            // Web Audio API 믹서 연결
+            if (audioCtx && audioDest) {
+                try {
+                    const remoteStream = new MediaStream([user.audioTrack.getMediaStreamTrack()]);
+                    const remoteSource = audioCtx.createMediaStreamSource(remoteStream);
+                    remoteSource.connect(audioDest);
+                } catch(e){ console.error("Error linking remote stream node into mixer:", e); }
+            }
+        }
+    });
+
+    client.on("user-left", (user) => {
+        roomParticipants = roomParticipants.filter(uid => uid !== user.uid);
+        renderParticipantsUI();
+    });
+
+    // 익명화된 참가자 리스트 UI 렌더링 (동물 닉네임 + 발화 감지)
+    function renderParticipantsUI() {
+        const container = document.getElementById('part-list-container');
+        container.innerHTML = "";
+
+        if (roomParticipants.length === 0) {
+            container.innerHTML = `<div style="font-size:12px; color:rgba(255,255,255,0.3); text-align:center; padding:10px;">Waiting for peers...</div>`;
+            updateRoomParticipants();
+            return;
+        }
+
+        roomParticipants.forEach((uid) => {
+            const animal = assignAnimal(uid);
+            const el = document.createElement('div');
+            el.className = "part-item";
+            el.id = `part-${uid}`;
+            const avatarSpan = document.createElement('span');
+            avatarSpan.className = 'animal-avatar';
+            avatarSpan.textContent = animal.emoji;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'animal-name';
+            nameSpan.textContent = animal.label;
+
+            const speakingBar = document.createElement('span');
+            speakingBar.className = 'speaking-bar';
+            for (let i = 0; i < 4; i++) speakingBar.appendChild(document.createElement('span'));
+
+            el.appendChild(avatarSpan);
+            el.appendChild(nameSpan);
+            el.appendChild(speakingBar);
+            container.appendChild(el);
+        });
+
+        // 룸 스크린 참여자 목록 동기화
+        updateRoomParticipants();
+    }
+
+    // ── 대화방 화면 제어 ──
+    const ICEBREAKERS = {
+        ko: [
+            { emoji: "👋", text: '"만나서 반가워요!" 라고\n인사해보시겠어요?', sub: "낯선 만남도 첫 인사 한 마디면 금방 가까워져요 😊" },
+            { emoji: "😊", text: '"오늘 기분이 어떠세요?" 라고\n먼저 물어봐보세요!', sub: "상대방의 하루가 궁금하다는 표현, 참 따뜻하죠 ☀️" },
+            { emoji: "🌟", text: '"이 주제 어떻게 생각하세요?" 라고\n의견을 물어봐요!', sub: "서로의 생각을 나누는 순간, 대화가 깊어져요 💬" },
+            { emoji: "🎵", text: '"요즘 어떻게 지내세요?" 라고\n시작해보는 건 어떨까요?', sub: "가벼운 안부 한 마디로 분위기를 풀어봐요 🍀" },
+        ],
+        en: [
+            { emoji: "👋", text: 'Try saying\n"Nice to meet you!" first!', sub: "A warm greeting makes every new connection easier 😊" },
+            { emoji: "😊", text: 'How about asking\n"How\'s your day going?"', sub: "Showing curiosity about someone\'s day is a great start ☀️" },
+            { emoji: "🌟", text: 'Try "What do you think\nabout this topic?"', sub: "Sharing perspectives makes conversations richer 💬" },
+            { emoji: "🎵", text: 'Start with\n"How have you been lately?"', sub: "A simple check-in sets a friendly tone right away 🍀" },
+        ]
+    };
+
+    function showRoomScreen(topic) {
+        document.getElementById('room-topic-display').textContent = topic || '—';
+
+        const list = ICEBREAKERS[currentLang] || ICEBREAKERS.ko;
+        const pick = list[Math.floor(Math.random() * list.length)];
+        document.getElementById('icebreaker-emoji').textContent = pick.emoji;
+        document.getElementById('icebreaker-text').textContent = pick.text;
+        document.getElementById('icebreaker-sub').textContent = pick.sub;
+
+        const lang = textData[currentLang];
+        document.getElementById('room-header-label').textContent = lang.roomHeaderLabel;
+        document.getElementById('icebreaker-label').textContent = lang.icebrkLabel;
+        document.getElementById('room-part-title').textContent = lang.roomPartTitle;
+        document.getElementById('room-leave-btn').textContent = lang.roomLeaveBtn;
+        document.getElementById('room-report-btn').textContent = lang.roomReportBtn;
+
+        updateRoomParticipants();
+        document.getElementById('room-screen').classList.add('active');
+    }
+
+    async function hideRoomScreen() {
+        document.getElementById('room-screen').classList.remove('active');
+        document.getElementById('topic-input').style.visibility = 'visible';
+        stopSubtitleRecognition();
+        stopSubtitleListener();
+        subtitlesEnabled = false;
+        document.getElementById('subtitle-toggle-btn').classList.remove('on');
+        document.getElementById('subtitle-toggle-btn').textContent = '💬 번역 자막';
+        document.getElementById('subtitle-lang-row').style.display = 'none';
+        document.getElementById('subtitle-list').style.display = 'none';
+        document.getElementById('subtitle-list').innerHTML = '';
+        if (currentChannelName && auth.currentUser) {
+    database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid).remove();
+}
+        database.ref('activeTopics').once('value').then(snap => {
+    const data = snap.val() || {};
+    const topics = [...new Set(Object.values(data).map(ch => ch.topic).filter(Boolean))];
+    const bar = document.getElementById('live-topics-bar');
+    const tagsEl = document.getElementById('live-topics-tags');
+    if (!bar || !tagsEl) return;
+    if (topics.length > 0) {
+        bar.style.display = 'block';
+        tagsEl.innerHTML = topics.slice(0,6).map(t =>
+            `<button onclick="document.getElementById('topic-input').value='${t}'" style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;width:auto;">${t}</button>`
+        ).join('');
+    } else {
+        bar.style.display = 'none';
+    }
+});
+    }
+
+    // ── 번역 자막 시스템 (Whisper) ──
+    let subtitleMicStream = null;
+    let subtitlesEnabled = false;
+    let mySubtitleLang = 'ko';
+    let targetSubtitleLang = 'en';
+    let subtitleFbRef = null;
+
+    function toggleSubtitles() {
+        subtitlesEnabled = !subtitlesEnabled;
+        const btn = document.getElementById('subtitle-toggle-btn');
+        const langRow = document.getElementById('subtitle-lang-row');
+        const list = document.getElementById('subtitle-list');
+        const isKo = currentLang === 'ko';
+
+        if (subtitlesEnabled) {
+            mySubtitleLang = document.getElementById('my-lang-select').value;
+            targetSubtitleLang = document.getElementById('target-lang-select').value;
+            btn.classList.add('on');
+            btn.textContent = isKo ? '💬 자막 켜짐 ●' : '💬 Subtitles ON ●';
+            langRow.style.display = 'flex';
+            list.style.display = 'flex';
+            startWhisperRecognition();
+            listenSubtitles();
+        } else {
+            btn.classList.remove('on');
+            btn.textContent = '💬 번역 자막';
+            langRow.style.display = 'none';
+            list.style.display = 'none';
+            stopSubtitleRecognition();
+            stopSubtitleListener();
+        }
+    }
+
+    async function startWhisperRecognition() {
+        if (!navigator.mediaDevices) {
+            alert(currentLang === 'ko'
+                ? '이 브라우저는 마이크를 지원하지 않습니다.'
+                : 'Microphone not supported in this browser.');
+            subtitlesEnabled = false;
+            return;
+        }
+        try {
+            subtitleMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const audioCtx = new AudioContext();
+const source = audioCtx.createMediaStreamSource(subtitleMicStream);
+const analyser = audioCtx.createAnalyser();
+analyser.fftSize = 256;
+source.connect(analyser);
+subtitleMicStream._analyser = analyser;
+            recordAndTranscribeChunk();
+        } catch(e) {
+            alert(currentLang === 'ko' ? '마이크 권한이 필요합니다.' : 'Microphone permission required.');
+            subtitlesEnabled = false;
+        }
+    }
+
+    function recordAndTranscribeChunk() {
+        if (!subtitlesEnabled || !subtitleMicStream) return;
+
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+                       : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                       : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4'
+                       : '';
+
+        let recorder;
+        try {
+            recorder = new MediaRecorder(subtitleMicStream, mimeType ? { mimeType } : {});
+        } catch(e) {
+            recorder = new MediaRecorder(subtitleMicStream);
+        }
+
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+        let maxVolume = 0;
+const analyser = subtitleMicStream && subtitleMicStream._analyser;
+let volumeInterval = null;
+if (analyser) {
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    volumeInterval = setInterval(() => {
+        analyser.getByteFrequencyData(data);
+        const avg = data.reduce((a, b) => a + b, 0) / data.length;
+        if (avg > maxVolume) maxVolume = avg;
+    }, 100);
+}
+
+recorder.onstop = async () => {
+    if (volumeInterval) clearInterval(volumeInterval);
+    if (!subtitlesEnabled) return;
+    const blob = new Blob(chunks, { type: recorder.mimeType });
+    const hasSound = analyser ? maxVolume > 30 : blob.size > 15000;
+    if (hasSound) await sendToWhisper(blob, recorder.mimeType);
+            if (subtitlesEnabled) recordAndTranscribeChunk();
+        };
+
+        recorder.start();
+        setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 4000);
+    }
+
+    async function sendToWhisper(blob, mimeType) {
+        const cu = auth.currentUser;
+        if (!cu || !currentChannelName) return;
+        const ext = mimeType.includes('mp4') ? 'm4a' : 'webm';
+        const formData = new FormData();
+        formData.append('audio', blob, 'audio.' + ext);
+        formData.append('lang', document.getElementById('my-lang-select').value);
+        try {
+            const res = await fetch(TOKEN_SERVER_URL + '/transcribe', { method: 'POST', body: formData });
+            if (!res.ok) return;
+            const data = await res.json();
+            const text = (data.text || '').trim();
+            if (!text) return;
+            await database.ref('subtitles/' + currentChannelName + '/' + cu.uid).set({
+                text, lang: mySubtitleLang, ts: Date.now()
+            });
+            displaySubtitle(cu.uid, text, null, true);
+        } catch(e) { console.warn('Whisper error:', e); }
+    }
+
+    function stopSubtitleRecognition() {
+        subtitlesEnabled = false;
+        if (subtitleMicStream) {
+            subtitleMicStream.getTracks().forEach(t => t.stop());
+            subtitleMicStream = null;
+        }
+    }
+
+    function listenSubtitles() {
+        if (!currentChannelName) return;
+        subtitleFbRef = database.ref('subtitles/' + currentChannelName);
+        subtitleFbRef.on('child_changed', async (snap) => {
+            const uid = snap.key;
+            const cu = auth.currentUser;
+            if (cu && uid === cu.uid) return;
+            const data = snap.val();
+            if (!data || !data.text) return;
+
+            let translated = data.text;
+            if (data.lang !== targetSubtitleLang) {
+                translated = await translateSubtitleText(data.text, data.lang, targetSubtitleLang);
+            }
+            displaySubtitle(uid, data.text, translated, false);
+        });
+    }
+
+    function stopSubtitleListener() {
+        if (subtitleFbRef) { subtitleFbRef.off(); subtitleFbRef = null; }
+        const cu = auth.currentUser;
+        if (cu && currentChannelName) {
+            database.ref('subtitles/' + currentChannelName + '/' + cu.uid).remove();
+        }
+    }
+
+    async function translateSubtitleText(text, from, to) {
+        try {
+            const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + from + '|' + to + '&de=freesia9353@gmail.com';
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.responseStatus === 200) {
+    const translated = data.responseData.translatedText;
+    if (translated && !translated.includes('MYMEMORY WARNING')) return translated;
+}
+return text;
+            return text;
+        } catch(e) { return text; }
+    }
+
+    function displaySubtitle(uid, original, translated, isSelf) {
+        const list = document.getElementById('subtitle-list');
+        if (!list) return;
+        const cu = auth.currentUser;
+        const animal = assignAnimal(isSelf ? (cu ? cu.uid : uid) : uid);
+        const item = document.createElement('div');
+        item.className = 'subtitle-item';
+
+        if (isSelf) {
+            item.innerHTML =
+                '<div class="subtitle-speaker">' + animal.emoji + ' ' + animal.label
+                + (currentLang === 'ko' ? ' (나)' : ' (me)') + '</div>'
+                + '<div class="subtitle-self-text">' + original + '</div>';
+        } else {
+            const showOriginal = translated && original !== translated;
+            item.innerHTML =
+                '<div class="subtitle-speaker">' + animal.emoji + ' ' + animal.label + '</div>'
+                + (showOriginal ? '<div class="subtitle-original">' + original + '</div>' : '')
+                + '<div class="subtitle-translated">' + (translated || original) + '</div>';
+        }
+
+        list.appendChild(item);
+        while (list.children.length > 6) list.removeChild(list.firstChild);
+        list.scrollTop = list.scrollHeight;
+    }
+
+    function updateRoomParticipants() {
+        const list = document.getElementById('room-part-list');
+        const countEl = document.getElementById('room-part-count');
+        if (!list) return;
+        list.innerHTML = '';
+
+        if (roomParticipants.length === 0) {
+            list.innerHTML = `<div class="room-waiting">${currentLang === 'ko' ? '다른 참여자를 기다리는 중...' : 'Waiting for others...'}</div>`;
+        } else {
+            roomParticipants.forEach((uid) => {
+                const animal = assignAnimal(uid);
+                const el = document.createElement('div');
+                el.className = 'part-item';
+                el.id = `room-part-${uid}`;
+                el.innerHTML = `<span class="animal-avatar">${animal.emoji}</span><span class="animal-name">${animal.label}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+                list.appendChild(el);
+            });
+        }
+
+        const total = roomParticipants.length + 1;
+        countEl.textContent = currentLang === 'ko' ? `나 포함 ${total}명` : `${total} including you`;
+    }
+
+    document.getElementById('room-leave-btn').onclick = function() {
+        document.getElementById('leave-btn').click();
+    };
+    document.getElementById('room-report-btn').onclick = function() {
+        document.getElementById('report-btn').click();
+    };
+
+    // 볼륨 감지 → 발화자 카드 하이라이트
+    function startVolumeIndicator() {
+        client.enableAudioVolumeIndicator();
+        client.on("volume-indicator", (volumes) => {
+            document.querySelectorAll('.part-item').forEach(el => el.classList.remove('speaking'));
+            volumes.forEach(({ uid, level }) => {
+                if (level > 25) {
+                    const el = document.getElementById(`part-${uid}`);
+                    if (el) el.classList.add('speaking');
+                    const roomEl = document.getElementById(`room-part-${uid}`);
+                    if (roomEl) roomEl.classList.add('speaking');
+                }
+            });
+        });
+    }
+
+    // 8. 실시간 평판 시그널링 — Firebase Realtime Database 기반 (KVDB 대체)
+    let signalListenerRef = null;
+
+    function startSignalPolling() {
+        if (signalListenerRef) { signalListenerRef.off(); signalListenerRef = null; }
+        if (!myUid) return;
+
+        signalListenerRef = database.ref(`signals/${myUid}`);
+        signalListenerRef.on('value', async (snap) => {
+            if (!isJoined) return;
+            const data = snap.val();
+            if (!data) return;
+
+            const badgeNames = {
+                manner:  currentLang === 'ko' ? "나이스" : "NICE",
+                logic:   currentLang === 'ko' ? "논리" : "LOGIC",
+                empathy: currentLang === 'ko' ? "따뜻" : "WARM",
+                passion: currentLang === 'ko' ? "열정" : "BOLD",
+                humor:  currentLang === 'ko' ? "펀" : "FUN"
+            };
+            alert(currentLang === 'ko'
+                ? `✨ 다른 참여자가 나에게 [${badgeNames[data.badgeType]}] 배지를 선물했습니다!`
+                : `✨ A peer has gifted you a [${badgeNames[data.badgeType]}] badge!`
+            );
+            // 수신 후 즉시 삭제
+            await database.ref(`signals/${myUid}`).remove();
+        });
+    }
+
+    // 9. 신고 모달 팝업 및 AI 1분 분석 유해 검사 제출 로직
+    document.getElementById('report-btn').onclick = function() {
+        if (roomParticipants.length === 0) {
+            alert(currentLang === 'ko' ? "신고할 원격 참여자가 방에 없습니다." : "No active participants to report.");
+            return;
+        }
+
+        const container = document.getElementById('report-target-container');
+        container.innerHTML = "";
+        selectedReportTarget = null;
+        document.getElementById('rep-m-submit').disabled = true;
+
+        roomParticipants.forEach((uid, index) => {
+            const btn = document.createElement('button');
+            btn.className = "target-btn";
+            const animal = uidToAnimal[uid] || { emoji: "👤", label: `참여자 ${index + 1}` };
+            btn.innerText = `${animal.emoji} ${animal.label}`;
+            btn.onclick = () => {
+                document.querySelectorAll('#report-target-container .target-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedReportTarget = uid;
+                document.getElementById('rep-m-submit').disabled = false;
+            };
+            container.appendChild(btn);
+        });
+
+        document.getElementById('report-modal').classList.add('active');
+    };
+
+    function closeReportModal() {
+        document.getElementById('report-modal').classList.remove('active');
+    }
+
+    async function executeReport() {
+        if (!selectedReportTarget) return;
+
+        // 롤링 버퍼에 존재하는 최근 1분간의 축적용 오디오 청크들을 하나의 대형 파일로 병합 병합
+        const fullReportBlob = new Blob(audioSlices, { type: 'audio/webm' });
+
+        // 실제 운영 배포 단계용 FormData 전송부 인프라 설계 구성 제공
+        const formData = new FormData();
+        formData.append("audioData", fullReportBlob);
+        formData.append("reportedUid", selectedReportTarget);
+        formData.append("reporterUid", myUid);
+        formData.append("channel", currentChannelName);
+
+        alert(currentLang === 'ko'
+            ? "🚨 최근 1분간의 대화 오디오 데이터를 추출하여 AI 검증 시스템에 업로드합니다."
+            : "🚨 Extracting the last 60 seconds of conversational audio and uploading to AI Safeguard.");
+
+        closeReportModal();
+
+        try {
+            // Netlify 백엔드 서버리스 AI 검사 엔드포인트 호출 연동
+            const response = await fetch("/.netlify/functions/reportUser", {
+                method: "POST",
+                body: formData
+            });
+
+            // 프로토타입 시뮬레이션용 가상 결과 출력 (백엔드 인프라가 미완성일 때를 대비한 분기 처리 정비)
+            setTimeout(() => {
+                alert(textData[currentLang].reportSuccess);
+            }, 1000);
+
+        } catch (err) {
+            console.error("Report execution network issue:", err);
+            alert(textData[currentLang].reportSuccess);
+        }
+    }
+
+    // 10. 통화방 퇴장 및 멀티 피어 평판 배지 기프트 모달 제어 시스템
+    document.getElementById('leave-btn').onclick = async function() {
+        try {
+            stopRollingAudioRecorder();
+            if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
+            if (signalListenerRef) { signalListenerRef.off(); signalListenerRef = null; }
+            if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack.close(); localAudioTrack = null; }
+            await client.leave();
+
+            isJoined = false;
+            isJoining = false;
+            // 대화방 나가기 → 다시 대기자로 등록
+            const _cu = auth.currentUser;
+            if (_cu) database.ref('waiting/' + _cu.uid).set(true);
+            
+            hideRoomScreen();
+            document.getElementById('join-btn').style.display = "block";
+            document.getElementById('join-btn').disabled = false;
+            document.getElementById('join-btn').innerText = textData[currentLang].startBtn;
+            document.getElementById('leave-btn').style.display = "none";
+            document.getElementById('report-btn').style.display = "none";
+            document.getElementById('participants-box').style.display = "none";
+            document.getElementById('max-people-group').style.display = "flex";
+            document.getElementById('my-animal-tag').style.display = "none"; // 내 동물 태그 숨김
+
+            const topicInput = document.getElementById('topic-input');
+            topicInput.disabled = false;
+            topicInput.value = "";
+            document.getElementById('matching-status').innerText = "";
+            // 주제가 비었으므로 '최대 인원' 선택란 다시 표시
+            document.getElementById('max-people-group').style.display = "flex";
+            document.getElementById('max-people-group').style.visibility = "visible";
+            document.getElementById('max-people-group').style.opacity = "1";
+            document.getElementById('max-people-group').style.pointerEvents = "auto";
+
+            // 피어 배지 전송 타겟 리스트박스 렌더링 구성 (uidToAnimal 초기화 전에 호출!)
+            setupVoteTargetsUI();
+
+            // AI 대화 요약본 분석 브리핑 레이아웃 활성화
+            document.getElementById('badge-modal').classList.add('active');
+            document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
+            document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
+
+            // 실제 AI 요약 호출 (비동기 — 모달은 즉시 열림)
+            requestAISummary();
+
+            // 모달 렌더 후 동물 맵 초기화
+            uidToAnimal = {};
+
+        } catch (error) {
+            console.error("Error occurred while leaving room:", error);
+            // 에러가 나도 UI는 반드시 정리
+            isJoined = false;
+            isJoining = false;
+            const cu = auth.currentUser;
+            if (cu) database.ref('waiting/' + cu.uid).set(true);
+            hideRoomScreen();
+            document.getElementById('join-btn').style.display = "block";
+            document.getElementById('join-btn').disabled = false;
+            document.getElementById('leave-btn').style.display = "none";
+            document.getElementById('report-btn').style.display = "none";
+            try { document.getElementById('participants-box').style.display = "none"; } catch(e) {}
+            try { document.getElementById('max-people-group').style.display = "flex"; } catch(e) {}
+            try { document.getElementById('my-animal-tag').style.display = "none"; } catch(e) {}
+            document.getElementById('matching-status').innerText = "";
+        }
+    };
+
+    // AI 대화 요약 함수 — summarize.js Netlify Function 호출
+    async function requestAISummary() {
+        try {
+            const fullBlob = new Blob(audioSlices, { type: 'audio/webm' });
+            if (fullBlob.size === 0) {
+                document.getElementById('summary-headline').innerText = textData[currentLang].aiHeadline;
+                document.getElementById('summary-content').innerHTML = textData[currentLang].aiSample;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('audioData', fullBlob);
+            formData.append('lang', currentLang);
+
+            const res = await fetch(TOKEN_SERVER_URL + '/summarize', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) throw new Error('summarize API error');
+            const data = await res.json();
+            const summary = data.summary || '';
+
+            document.getElementById('summary-headline').innerText = textData[currentLang].aiHeadline;
+            document.getElementById('summary-content').innerHTML = summary
+                .split('\n').filter(Boolean)
+                .map(line => `• ${line}`).join('<br>');
+
+        } catch (e) {
+            console.error('AI summary failed:', e);
+            document.getElementById('summary-headline').innerText = textData[currentLang].aiHeadline;
+            document.getElementById('summary-content').innerHTML = textData[currentLang].aiSample;
+        }
+    }
+
+    function setupVoteTargetsUI() {
+        const container = document.getElementById('vote-target-container');
+        container.innerHTML = "";
+        selectedVoteTarget = null;
+
+        toggleVoteBadgeButtons(false);
+
+        if (sessionParticipants.length === 0) {
+            container.innerHTML = `<div style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; padding:10px; line-height:1.4;">${currentLang === 'ko' ? "• 대화 시간이 짧거나 피어 참여자 기록이 확보되지 않아 배지 대상이 없습니다." : "• Call session was too brief or no peer connection logged."}</div>`;
+            return;
+        }
+
+        sessionParticipants.forEach((uid, index) => {
+            const btn = document.createElement('button');
+            btn.className = "target-btn";
+            btn.dataset.uid = uid;
+            const animal = uidToAnimal[uid] || { emoji: "👤", label: `참여자 ${index + 1}` };
+            btn.innerText = `${animal.emoji} ${animal.label}`;
+            btn.onclick = () => {
+                document.querySelectorAll('#vote-target-container .target-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedVoteTarget = uid;
+                toggleVoteBadgeButtons(true);
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    // 배지를 보낸 대상은 목록에서 제거하고, 다음 대상을 선택할 수 있도록 모달을 유지
+    function removeVoteTarget(uid) {
+        const btn = document.querySelector(`#vote-target-container .target-btn[data-uid="${uid}"]`);
+        if (btn) btn.remove();
+
+        selectedVoteTarget = null;
+        toggleVoteBadgeButtons(false);
+
+        const container = document.getElementById('vote-target-container');
+        if (container.children.length === 0) {
+            closeModal();
+        }
+    }
+
+    function toggleVoteBadgeButtons(enable) {
+        document.getElementById('btn-vote-manner').disabled = !enable;
+        document.getElementById('btn-vote-logic').disabled = !enable;
+        document.getElementById('btn-vote-humor').disabled = !enable;
+        document.getElementById('btn-vote-empathy').disabled = !enable;
+        document.getElementById('btn-vote-passion').disabled = !enable;
+        document.getElementById('btn-add-friend').disabled = !enable;
+    }
+
+    async function executeVote(badgeType) {
+        if (!selectedVoteTarget) return;
+
+        try {
+            // 1. Firebase로 배지 수신 알림 전송 (상대방 signals/{uid} 경로에 기록)
+            try {
+                await database.ref(`signals/${selectedVoteTarget}`).set({
+                    badgeType,
+                    senderId: String(myUid),
+                    timestamp: Date.now()
+                });
+            } catch(e) { console.warn('Signal write failed:', e); }
+
+            // 2. Firebase Database 트랜잭션 원자적 연산 - 상대방 UID에 점수 다이렉트 누적 처리
+            const targetBadgeRef = database.ref('users/' + selectedVoteTarget + '/badges/' + badgeType);
+            await targetBadgeRef.transaction((currentValue) => {
+                return (currentValue || 0) + 1;
+            });
+
+            alert(textData[currentLang].badgeSuccess);
+            removeVoteTarget(selectedVoteTarget);
+
+        } catch (err) {
+            console.error("Firebase transaction processing failure:", err);
+            removeVoteTarget(selectedVoteTarget);
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('badge-modal').classList.remove('active');
+    }
+
+    // 초기 실행 구동부 체인 링크
+    window.addEventListener('DOMContentLoaded', () => {
+        updateUI();
+
+        // 주제 입력과 무관하게 인원 선택창은 항상 표시
+    });
+
+    // 타임스탬프를 "YYYY.MM.DD" 포맷으로 변환하는 헬퍼 함수
+function formatDate(timestamp) {
+    if (!timestamp) return "";
+    const d = new Date(timestamp);
+    return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── 친구 추가 신규 시스템 ──
+let pendingFriendTargetUid = null;      // 요청 보낼 상대 UID
+let incomingRequestSenderUid = null;    // 수신한 요청의 발신자 UID
+let friendRequestListener = null;       // Firebase 리스너 참조
+
+// 1. 친구 추가 버튼 클릭 → 닉네임 입력 모달 열기
+async function executeAddFriend() {
+    if (!selectedVoteTarget || !auth.currentUser) return;
+    const myUid = auth.currentUser.uid;
+    if (selectedVoteTarget === myUid) return;
+
+    // 이미 친구인지 확인
+    const snap = await database.ref(`users/${myUid}/friends/${selectedVoteTarget}`).once('value');
+    if (snap.exists() && snap.val().status === 'accepted') {
+        alert(currentLang === 'ko' ? "이미 친구로 등록된 사용자입니다." : "Already your friend.");
+        return;
+    }
+    // 이미 보낸 요청이 있는지 확인
+    const sentSnap = await database.ref(`users/${selectedVoteTarget}/friendRequests/${myUid}`).once('value');
+    if (sentSnap.exists()) {
+        alert(currentLang === 'ko' ? "이미 친구 요청을 보낸 상태입니다." : "Friend request already sent.");
+        return;
+    }
+
+    pendingFriendTargetUid = selectedVoteTarget;
+    document.getElementById('nickname-input').value = "";
+    document.getElementById('nickname-modal').classList.add('active');
+}
+
+function closeNicknameModal() {
+    document.getElementById('nickname-modal').classList.remove('active');
+    pendingFriendTargetUid = null;
+}
+
+// 2. 닉네임 확정 → Firebase에 pending 요청 저장
+async function confirmFriendRequest() {
+    const nickname = document.getElementById('nickname-input').value.trim();
+    if (!nickname) {
+        alert(currentLang === 'ko' ? "닉네임을 입력해 주세요." : "Please enter a nickname.");
+        return;
+    }
+    if (!pendingFriendTargetUid || !auth.currentUser) return;
+
+    const myUid = auth.currentUser.uid;
+    const now = Date.now();
+
+    try {
+        // 내 쪽에 pending 상태로 저장 (닉네임 포함)
+        await database.ref(`users/${myUid}/friends/${pendingFriendTargetUid}`).set({
+            status: 'pending_sent',
+            nickname: nickname,
+            addedAt: now
+        });
+        // 상대방 수신함에 요청 등록
+        await database.ref(`users/${pendingFriendTargetUid}/friendRequests/${myUid}`).set({
+            from: myUid,
+            timestamp: now
+        });
+
+        alert(currentLang === 'ko' ? "✅ 친구 요청을 보냈습니다! 상대방이 수락하면 친구가 됩니다." : "✅ Friend request sent!");
+        closeNicknameModal();
+        document.getElementById('btn-add-friend').disabled = true;
+    } catch(e) {
+        console.error("Friend request failed:", e);
+    }
+}
+
+// 3. 로그인 후 / 앱 진입 시 수신된 친구 요청 실시간 감지
+function startFriendRequestListener() {
+    if (!auth.currentUser) return;
+    const myUid = auth.currentUser.uid;
+    if (friendRequestListener) friendRequestListener.off();
+
+    const reqRef = database.ref(`users/${myUid}/friendRequests`);
+    friendRequestListener = reqRef;
+
+    reqRef.on('child_added', async (snap) => {
+        const senderUid = snap.key;
+        const data = snap.val();
+        if (!data) return;
+
+        incomingRequestSenderUid = senderUid;
+        document.getElementById('frb-nickname-input').value = "";
+        document.getElementById('friend-request-banner').classList.add('show');
+    });
+}
+
+// 4. 친구 요청 수락
+async function acceptFriendRequest() {
+    const myUid = auth.currentUser ? auth.currentUser.uid : null;
+    if (!myUid || !incomingRequestSenderUid) return;
+
+    const nickname = document.getElementById('frb-nickname-input').value.trim();
+    if (!nickname) {
+        alert(currentLang === 'ko' ? "닉네임을 입력해 주세요." : "Please enter a nickname.");
+        return;
+    }
+
+    const now = Date.now();
+    try {
+        // 내 친구 목록에 수락 상태로 저장
+        await database.ref(`users/${myUid}/friends/${incomingRequestSenderUid}`).set({
+            status: 'accepted',
+            nickname: nickname,
+            addedAt: now,
+            lastTalked: now
+        });
+        // 요청 보낸 사람 쪽 상태도 accepted로 업데이트
+        await database.ref(`users/${incomingRequestSenderUid}/friends/${myUid}`).update({
+            status: 'accepted',
+            lastTalked: now
+        });
+        // 수신함에서 요청 삭제
+        await database.ref(`users/${myUid}/friendRequests/${incomingRequestSenderUid}`).remove();
+
+        document.getElementById('friend-request-banner').classList.remove('show');
+        incomingRequestSenderUid = null;
+        alert(currentLang === 'ko' ? "🎉 친구가 되었습니다!" : "🎉 You are now friends!");
+    } catch(e) {
+        console.error("Accept friend failed:", e);
+    }
+}
+
+// 5. 친구 요청 거절
+async function rejectFriendRequest() {
+    const myUid = auth.currentUser ? auth.currentUser.uid : null;
+    if (!myUid || !incomingRequestSenderUid) return;
+
+    try {
+        // 수신함에서 삭제
+        await database.ref(`users/${myUid}/friendRequests/${incomingRequestSenderUid}`).remove();
+        // 보낸 사람 쪽 pending 기록도 삭제
+        await database.ref(`users/${incomingRequestSenderUid}/friends/${myUid}`).remove();
+
+        document.getElementById('friend-request-banner').classList.remove('show');
+        incomingRequestSenderUid = null;
+    } catch(e) {
+        console.error("Reject friend failed:", e);
+    }
+}
+
+// 6. 친구 닉네임 편집
+async function editFriendNickname(friendUid) {
+    const newName = prompt(currentLang === 'ko' ? "새 닉네임을 입력하세요 (나만 보임):" : "Enter new nickname (only you can see):");
+    if (!newName || !newName.trim()) return;
+    const myUid = auth.currentUser.uid;
+    await database.ref(`users/${myUid}/friends/${friendUid}`).update({ nickname: newName.trim() });
+    // 목록 새로고침
+    loadFriendsList();
+}
+
+// 2. '또 대화하기' 버튼 클릭 시 친구 목록 열기 및 실시간 렌더링
+document.getElementById('btn-talk-again').addEventListener('click', () => {
+    document.getElementById('friends-modal').classList.add('active');
+    loadFriendsList();
+});
+
+// 1. 실시간 리스너들을 추적하고 해제하기 위한 전역 배열 변수
+let activePresenceRefs = [];
+
+function loadFriendsList() {
+    if (!auth.currentUser) return;
+    const myUid = auth.currentUser.uid;
+    const container = document.getElementById('friends-list-container');
+
+    // [개선 3] 데이터를 요청하기 직전에 화면에 로딩 상태를 즉시 표시
+    container.innerHTML = `<div style="padding: 20px; text-align: center; font-size: 13px; color: rgba(255,255,255,0.4);">불러오는 중...</div>`;
+
+    // [개선 1-1] 이전 모달 열기 시 등록되었던 리스너가 있다면 안전하게 먼저 종료
+    activePresenceRefs.forEach(ref => ref.off());
+    activePresenceRefs = [];
+
+    database.ref(`users/${myUid}/friends`).once('value', (snapshot) => {
+        container.innerHTML = ""; // 데이터가 도착하면 로딩 문구 제거
+        const friendsData = snapshot.val();
+
+        // accepted 상태인 친구만 필터
+        const accepted = friendsData
+            ? Object.entries(friendsData).filter(([, v]) => v.status === 'accepted')
+            : [];
+
+        if (accepted.length === 0) {
+            const noFriendsDiv = document.createElement('div');
+            noFriendsDiv.style.cssText = 'padding: 20px; text-align: center; font-size: 13px; color: rgba(255,255,255,0.4);';
+            noFriendsDiv.textContent = textData[currentLang].noFriends;
+            container.appendChild(noFriendsDiv);
+            return;
+        }
+
+        const sorted = accepted.sort((a, b) => (b[1].lastTalked || 0) - (a[1].lastTalked || 0));
+
+        sorted.forEach(([friendUid, info]) => {
+            const displayName = info.nickname || `익명 친구 (${friendUid.substring(0,8)})`;
+            const dateStr = formatDate(info.lastTalked);
+
+            const el = document.createElement('div');
+            el.className = "friend-item-box";
+            el.id = `friend-item-${friendUid}`;
+
+            // XSS 방어: 사용자 입력값(displayName, dateStr)은 textContent로만 삽입
+            const friendInfo = document.createElement('div');
+            friendInfo.className = 'friend-info';
+
+            const friendNameSpan = document.createElement('span');
+            friendNameSpan.className = 'friend-name';
+
+            const statusDot = document.createElement('span');
+            statusDot.id = `status-${friendUid}`;
+            statusDot.style.cssText = 'font-size: 10px; color: gray;';
+            statusDot.textContent = '⚫';
+
+            friendNameSpan.appendChild(statusDot);
+            friendNameSpan.appendChild(document.createTextNode(' 👤 '));
+            const nameNode = document.createElement('span');
+            nameNode.textContent = displayName;
+            friendNameSpan.appendChild(nameNode);
+
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'friend-date';
+            dateSpan.textContent = `${textData[currentLang].lastTalked} ${dateStr}`;
+
+            friendInfo.appendChild(friendNameSpan);
+            friendInfo.appendChild(dateSpan);
+
+            const actionGroup = document.createElement('div');
+            actionGroup.className = 'friend-action-group';
+
+            const callBtn = document.createElement('button');
+            callBtn.className = 'friend-call-btn';
+            callBtn.textContent = `📞 ${textData[currentLang].callBtn}`;
+            callBtn.onclick = () => connectToFriend(friendUid);
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'friend-edit-btn';
+            editBtn.textContent = '✏️ 이름 변경';
+            editBtn.onclick = () => editFriendNickname(friendUid);
+
+            actionGroup.appendChild(callBtn);
+            actionGroup.appendChild(editBtn);
+
+            el.appendChild(friendInfo);
+            el.appendChild(actionGroup);
+            container.appendChild(el);
+
+            // [개선 1-2] 친구의 접속 상태 경로를 변수에 저장하고 추적 배열에 삽입
+            const presenceRef = database.ref(`users/${friendUid}/presence/online`);
+            activePresenceRefs.push(presenceRef);
+
+            // 실시간 접속 상태 리스닝
+            presenceRef.on('value', (statusSnap) => {
+                const isOnline = statusSnap.val();
+                const statusDot = document.getElementById(`status-${friendUid}`);
+                if (statusDot) {
+                    if (isOnline) {
+                        statusDot.innerText = '🟢';
+                        statusDot.style.color = '#34c759';
+                    } else {
+                        statusDot.innerText = '⚪';
+                        statusDot.style.color = 'gray';
+                    }
+                }
+            });
+        });
+    });
+}
+
+function closeFriendsModal() {
+    document.getElementById('friends-modal').classList.remove('active');
+
+    // [개선 1-3] 모달이 닫힐 때 모든 친구의 실시간 접속 상태 관찰을 종료(.off())하여 메모리 누수 방지
+    if (activePresenceRefs.length > 0) {
+        activePresenceRefs.forEach(ref => ref.off());
+        activePresenceRefs = []; // 배열 비우기
+    }
+}
+
+async function connectToFriend(friendUid) {
+    if (!auth.currentUser) return;
+    const myUid = auth.currentUser.uid;
+
+    const presenceSnap = await database.ref(`users/${friendUid}/presence/online`).once('value');
+    if (presenceSnap.val() !== true) {
+        alert(currentLang === 'ko' ? "친구가 현재 오프라인 상태입니다." : "This friend is currently offline.");
+        return;
+    }
+
+    const pairKey = [myUid, friendUid].sort().join("_");
+    const privateChannelRef = database.ref(`privateChannels/${pairKey}`);
+    let channelToken;
+    const existingSnap = await privateChannelRef.once('value');
+    const existing = existingSnap.val();
+    if (existing && existing.token && existing.expiresAt > Date.now()) {
+        channelToken = existing.token;
+    } else {
+        const randomBytes = new Uint8Array(16);
+        crypto.getRandomValues(randomBytes);
+        channelToken = Array.from(randomBytes).map(b => b.toString(16).padStart(2,'0')).join('');
+        await privateChannelRef.set({ token: channelToken, expiresAt: Date.now() + 3600000, participants: [myUid, friendUid] });
+    }
+
+    const privateChannelId = `🔒_${channelToken}`;
+
+    // 초대 전송
+    await database.ref(`invites/${friendUid}`).set({
+        fromUid: myUid,
+        privateChannelId,
+        ts: firebase.database.ServerValue.TIMESTAMP,
+        status: 'pending'
+    });
+
+    closeFriendsModal();
+
+    // A는 응답 대기
+    const toast = document.createElement('div');
+    toast.id = 'invite-waiting-toast';
+    toast.style.cssText = 'position:fixed;top:30px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#fff;padding:12px 22px;border-radius:16px;font-size:13px;z-index:9999;';
+    toast.textContent = currentLang === 'ko' ? '친구에게 대화 요청을 보냈어요... ⏳' : 'Invite sent, waiting...';
+    document.body.appendChild(toast);
+
+    const inviteRef = database.ref(`invites/${friendUid}`);
+    const timeout = setTimeout(async () => {
+        inviteRef.off('value');
+        await database.ref(`invites/${friendUid}`).remove();
+        toast.remove();
+        alert(currentLang === 'ko' ? '친구가 응답하지 않았어요.' : 'No response from friend.');
+    }, 30000);
+
+    inviteRef.on('value', async (snap) => {
+        const data = snap.val();
+        if (!data) return;
+        if (data.status === 'accepted') {
+            inviteRef.off('value');
+            clearTimeout(timeout);
+            toast.remove();
+            await database.ref(`invites/${friendUid}`).remove();
+            const topicInput = document.getElementById('topic-input');
+            topicInput.value = privateChannelId;
+            topicInput.style.visibility = 'hidden';
+            document.getElementById('join-btn').click();
+        } else if (data.status === 'rejected') {
+            inviteRef.off('value');
+            clearTimeout(timeout);
+            toast.remove();
+            await database.ref(`invites/${friendUid}`).remove();
+            alert(currentLang === 'ko' ? '친구가 나중에 하자고 했어요.' : 'Friend declined.');
+        }
+    });
+}
+
+let currentInviteData = null;
+
+async function respondInvite(response) {
+    if (!currentInviteData) return;
+    const myUid = auth.currentUser.uid;
+    await database.ref(`invites/${myUid}`).update({ status: response });
+    document.getElementById('invite-banner').style.display = 'none';
+    if (response === 'accepted') {
+        const topicInput = document.getElementById('topic-input');
+        topicInput.value = currentInviteData.privateChannelId;
+        topicInput.style.visibility = 'hidden';
+        document.getElementById('join-btn').click();
+    }
+    currentInviteData = null;
+}
+
+// ── 인트로 화면 제어 ──
+    function toggleLangFromIntro() {
+        // 메인 언어 토글 버튼 클릭과 동일하게 동작
+        document.getElementById('lang-toggle-btn').click();
+        // 인트로 안 버튼 텍스트도 동기화
+        document.getElementById('intro-lang-btn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
+    }
+
+    function startFromIntro() {
+        const intro = document.getElementById('intro-screen');
+        intro.classList.add('hide');
+        setTimeout(() => { intro.style.display = 'none'; }, 500);
+    }
+
+// ── 영구정지 이의신청 제출 ──
+async function submitAppeal() {
+    const uid = sessionStorage.getItem('bannedUid');
+    const text = document.getElementById('appeal-textarea').value.trim();
+    if (!text) { alert('이의신청 내용을 입력해 주세요.'); return; }
+    try {
+        await database.ref(`appeals/${uid || 'unknown'}`).set({
+            type: 'ban', text, submittedAt: Date.now()
+        });
+        document.getElementById('appeal-form-wrap').style.display = 'none';
+        document.getElementById('appeal-done-msg').style.display = 'block';
+    } catch(e) {
+        alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        console.error('Appeal submit failed:', e);
+    }
+}
+
+// ── 24시간 정지 이의신청 제출 ──
+async function submitSuspendAppeal() {
+    const uid = sessionStorage.getItem('suspendedUid');
+    const text = document.getElementById('suspend-appeal-textarea').value.trim();
+    if (!text) { alert('이의신청 내용을 입력해 주세요.'); return; }
+    try {
+        await database.ref(`appeals/${uid || 'unknown'}`).set({
+            type: 'suspend', text, submittedAt: Date.now()
+        });
+        document.getElementById('suspend-appeal-done').style.display = 'block';
+        document.getElementById('suspend-appeal-textarea').disabled = true;
+    } catch(e) {
+        alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        console.error('Suspend appeal submit failed:', e);
+    }
+}
+
+// ── 24시간 정지 오버레이 표시 + 카운트다운 ──
+function showSuspendOverlay(until, reason, uid) {
+    const overlay = document.getElementById('suspend-overlay');
+    const descEl = document.getElementById('suspend-desc');
+    const timerEl = document.getElementById('suspend-timer');
+    overlay.style.display = 'flex';
+    descEl.innerText = reason
+        ? `정지 사유: ${reason}`
+        : "규정 위반으로 24시간 동안 이용이 제한되었습니다.";
+
+    function tick() {
+        const remain = until - Date.now();
+        if (remain <= 0) {
+            timerEl.innerText = "00:00:00";
+            location.reload();
+            return;
+        }
+        const h = String(Math.floor(remain / 3600000)).padStart(2, '0');
+        const m = String(Math.floor((remain % 3600000) / 60000)).padStart(2, '0');
+        const s = String(Math.floor((remain % 60000) / 1000)).padStart(2, '0');
+        timerEl.innerText = `${h}:${m}:${s}`;
+    }
+    tick();
+    setInterval(tick, 1000);
+}
+</script>
+</body>
+</html>
