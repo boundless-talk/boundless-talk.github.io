@@ -735,6 +735,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             30%     { transform: rotate(-18deg); }
             70%     { transform: rotate(18deg); }
         }
+        .icebreaker-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
         .icebreaker-label {
             font-size: 9px;
             text-transform: uppercase;
@@ -1139,10 +1144,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="room-body">
             <div class="icebreaker-box">
                 <span class="icebreaker-emoji" id="icebreaker-emoji">👋</span>
-                <div class="icebreaker-label" id="icebreaker-label">아이스브레이킹 제안</div>
-                <div class="icebreaker-text" id="icebreaker-text">"만나서 반가워요!" 라고
-인사해보시겠어요?</div>
-                <div class="icebreaker-sub" id="icebreaker-sub">낯선 만남도 첫 인사 한 마디면 금방 가까워져요 😊</div>
+                <div class="icebreaker-content">
+                    <div class="icebreaker-label" id="icebreaker-label">아이스브레이킹 제안</div>
+                    <div class="icebreaker-text" id="icebreaker-text">"만나서 반가워요!" 라고 인사해보시겠어요?</div>
+                </div>
+                <div class="icebreaker-sub" id="icebreaker-sub" style="display:none;"></div>
             </div>
             <div class="subtitle-section" id="subtitle-section">
                 <div class="subtitle-ctrl">
