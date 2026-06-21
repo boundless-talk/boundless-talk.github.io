@@ -181,9 +181,9 @@ app.post('/getTopic', async (req, res) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{
-                        parts: [{ text: `You are a topic normalizer. Convert the given topic word into a single canonical English keyword so that semantically similar topics (e.g. "사랑", "love", "연애", "romance") all map to the same word. Rules: 1) Output only one lowercase English word or short phrase (no spaces, use underscore if needed). 2) Merge synonyms and translations into one word. 3) Use the most common English term. Input: "${topic.trim()}" Output:` }]
+                        parts: [{ text: `Translate or normalize this topic into one simple English word (lowercase, no spaces, no punctuation). Similar or synonymous topics must map to the same word. Examples: 사랑->love, 행복->happiness, 연애->love, 음악->music, 여행->travel. Output only the single English word, nothing else.\n\nTopic: ${topic.trim()}` }]
                     }],
-                    generationConfig: { maxOutputTokens: 20, temperature: 0 }
+                    generationConfig: { maxOutputTokens: 10, temperature: 0 }
                 })
             }
         );
