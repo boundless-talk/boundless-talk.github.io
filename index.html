@@ -3211,6 +3211,7 @@ return text;
         try {
             // 모바일에서 auth 토큰 만료 방지: 강제 갱신
             const currentUser = auth.currentUser;
+            alert('[디버그] auth.currentUser: ' + (currentUser ? currentUser.uid : 'NULL') + '\nselectedVoteTarget: ' + selectedVoteTarget);
             if (currentUser) {
                 try { await currentUser.getIdToken(true); } catch(e) { console.warn('token refresh failed', e); }
             }
