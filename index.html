@@ -1400,7 +1400,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- About 세부 내용 모달 -->
     <div class="modal-overlay" id="about-page-modal">
         <div class="modal-content" style="max-width:480px; max-height:80vh; overflow-y:auto;">
-            <button onclick="document.getElementById('about-page-modal').classList.remove('active'); document.getElementById('about-modal').classList.add('active');" style="background:transparent; border:none; color:rgba(255,255,255,0.4); font-size:13px; cursor:pointer; padding:0; margin-bottom:12px; text-align:left;">← 뒤로</button>
+            <button onclick="goBackFromAboutPage()" style="background:transparent; border:none; color:rgba(255,255,255,0.4); font-size:13px; cursor:pointer; padding:0; margin-bottom:12px; text-align:left;">← 뒤로</button>
             <h3 id="about-page-title" style="margin-bottom:16px; font-size:16px;"></h3>
             <div id="about-page-content" style="font-size:13px; color:rgba(255,255,255,0.65); line-height:1.8; white-space:pre-wrap;"></div>
             <button onclick="document.getElementById('about-page-modal').classList.remove('active')" style="margin-top:20px; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.4); border:none; border-radius:10px; padding:10px; width:100%; cursor:pointer; font-size:13px;">닫기</button>
@@ -4109,6 +4109,8 @@ B-TALK은 이용자 간 연결을 위한 플랫폼만을 제공합니다. 대화
         }
     };
 
+    let aboutPageOrigin = 'about'; // 'about' or 'consent'
+
     function openAboutModal() {
         document.getElementById('about-modal').classList.add('active');
     }
@@ -4119,8 +4121,24 @@ B-TALK은 이용자 간 연결을 위한 플랫폼만을 제공합니다. 대화
         const lang = ABOUT_CONTENT[key][currentLang] || ABOUT_CONTENT[key]['en'];
         document.getElementById('about-page-title').textContent = lang.title;
         document.getElementById('about-page-content').textContent = lang.content;
-        document.getElementById('about-modal').classList.remove('active');
+        // 어디서 열렸는지 기록
+        if (document.getElementById('consent-modal').classList.contains('active')) {
+            aboutPageOrigin = 'consent';
+            document.getElementById('consent-modal').classList.remove('active');
+        } else {
+            aboutPageOrigin = 'about';
+            document.getElementById('about-modal').classList.remove('active');
+        }
         document.getElementById('about-page-modal').classList.add('active');
+    }
+
+    function goBackFromAboutPage() {
+        document.getElementById('about-page-modal').classList.remove('active');
+        if (aboutPageOrigin === 'consent') {
+            document.getElementById('consent-modal').classList.add('active');
+        } else {
+            document.getElementById('about-modal').classList.add('active');
+        }
     }
 
 // ── 인트로 화면 제어 ──
