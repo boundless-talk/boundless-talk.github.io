@@ -2102,6 +2102,7 @@ database.ref('activeTopics').on('value', (snap) => {
         const cachedUids = Object.keys(uidToAnimal);
         uidToAnimal = {};
         cachedUids.forEach(uid => assignAnimal(uid));
+        updateRoomParticipants();
         // 언어 토글 버튼 텍스트 업데이트
         document.getElementById('lang-toggle-btn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
         // 인트로 화면 언어 업데이트
