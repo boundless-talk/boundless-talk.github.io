@@ -2364,11 +2364,10 @@ database.ref('activeTopics').on('value', (snap) => {
     async function getAIMatchedTopic(userInput) {
         const statusEl = document.getElementById('matching-status');
         const lang = textData[currentLang];
-        statusEl.innerText = lang.matchingLoading;
+        statusEl.innerText = "";
 
         const input = userInput.trim().toLowerCase();
         const normalized = TOPIC_SYNONYM_MAP[input] || input || "general";
-        statusEl.innerText = lang.matchingDone(normalized);
         return normalized;
         // TODO: AI 매칭 (사용자 증가 시 Gemini API 유료 전환 후 활성화)
         // try {
