@@ -3037,13 +3037,11 @@ return text;
     // 10. 통화방 퇴장 및 멀티 피어 평판 배지 기프트 모달 제어 시스템
     document.getElementById('leave-btn').onclick = async function() {
         try {
-            alert('[디버그] leave 시작, sessionParticipants: ' + JSON.stringify(sessionParticipants));
             stopRollingAudioRecorder();
             if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
             if (signalListenerRef) { signalListenerRef.off(); signalListenerRef = null; }
             if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack.close(); localAudioTrack = null; }
             await client.leave();
-            alert('[디버그] client.leave() 성공');
 
             isJoined = false;
             isJoining = false;
@@ -3086,7 +3084,6 @@ return text;
 
         } catch (error) {
             console.error("Error occurred while leaving room:", error);
-            alert('[디버그] leave 에러: ' + error.message);
             // 에러가 나도 UI는 반드시 정리
             isJoined = false;
             isJoining = false;
@@ -3211,7 +3208,6 @@ return text;
         try {
             // 모바일에서 auth 토큰 만료 방지: 강제 갱신
             const currentUser = auth.currentUser;
-            alert('[디버그] auth.currentUser: ' + (currentUser ? currentUser.uid : 'NULL') + '\nselectedVoteTarget: ' + selectedVoteTarget);
             if (currentUser) {
                 try { await currentUser.getIdToken(true); } catch(e) { console.warn('token refresh failed', e); }
             }
@@ -3235,7 +3231,6 @@ return text;
 
         } catch (err) {
             console.error("Firebase transaction processing failure:", err);
-            alert('[디버그] 배지 전송 실패: ' + (err && err.message ? err.message : JSON.stringify(err)));
             removeVoteTarget(selectedVoteTarget);
         }
     }
