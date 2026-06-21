@@ -1093,7 +1093,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <button id="report-btn">🚨 Report Toxic User</button>
         <button id="leave-btn">Leave Room</button>
 
-        <div id="channel-debug"></div>
+        
     </div>
 
     <div id="user-action-buttons">
@@ -2238,7 +2238,7 @@ database.ref('activeTopics').on('value', (snap) => {
         // 🚨 전역 변수에 저장 — 저장/조회 시 항상 동일값 보장
         safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 64);
 
-        document.getElementById('channel-debug').innerText = `Channel Name: ${currentChannelName}`;
+    
 
         const dbg = (msg) => { document.getElementById('debug-log').innerText += msg + '\n'; };
         try {
