@@ -2903,7 +2903,7 @@ return text;
             meEl.className = 'part-item';
             meEl.id = 'room-part-me';
             const meLabel = currentLang === 'ko' ? '(나)' : '(You)';
-            meEl.innerHTML = `<span class="animal-avatar">${myAnimal.emoji}</span><span class="animal-name">${myAnimal.label} <span style="color:var(--accent-color);font-size:11px;font-weight:600;">${meLabel}</span></span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+            meEl.innerHTML = `<span class="animal-avatar">${myAnimal.emoji}</span><span class="animal-name">${myAnimal.label} ${meLabel}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
             list.appendChild(meEl);
         }
 
