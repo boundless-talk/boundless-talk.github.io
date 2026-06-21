@@ -1350,6 +1350,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let currentChannelName = "";
     let safeAgoraChannelId = ""; // 전역으로 저장 — 저장/조회 시 항상 동일한 값 보장
     let myUid = null;
+    let myAnimalGlobal = null;
     let signalTimer = null;
 
     // 다중 참여자 목록 추적 (본인 제외)
@@ -2419,6 +2420,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
 
             // 내 동물 배정 (Firebase UID 해시 기반 — 상대방이 보는 내 동물과 항상 일치)
             const myAnimal = assignAnimal(firebaseUser ? firebaseUser.uid : myUid);
+            myAnimalGlobal = myAnimal;
             document.getElementById('my-animal-label').innerText = `${myAnimal.emoji} ${myAnimal.label}`;
             document.getElementById('my-animal-tag').style.display = "block";
            const toastMsg = currentLang === 'ko'
@@ -2896,14 +2898,12 @@ return text;
         list.innerHTML = '';
 
         // 내 항목 먼저 표시
-        const myUidForDisplay = (auth.currentUser ? auth.currentUser.uid : null) || myUid;
-        if (myUidForDisplay) {
-            const myAnimal = assignAnimal(myUidForDisplay);
+        if (myAnimalGlobal) {
             const meEl = document.createElement('div');
             meEl.className = 'part-item';
             meEl.id = 'room-part-me';
             const meLabel = currentLang === 'ko' ? '(나)' : '(You)';
-            meEl.innerHTML = `<span class="animal-avatar">${myAnimal.emoji}</span><span class="animal-name">${myAnimal.label} ${meLabel}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+            meEl.innerHTML = `<span class="animal-avatar">${myAnimalGlobal.emoji}</span><span class="animal-name">${myAnimalGlobal.label} ${meLabel}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
             list.appendChild(meEl);
         }
 
