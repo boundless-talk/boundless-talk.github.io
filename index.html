@@ -3403,30 +3403,31 @@ function closeFriendsModal() {
 }
 
 async function connectToFriend(friendUid) {
-    if (!auth.currentUser) return;
-    const myUid = auth.currentUser.uid;
+    try {
+        if (!auth.currentUser) return;
+        const myUid = auth.currentUser.uid;
 
-    const presenceSnap = await database.ref(`users/${friendUid}/presence/online`).once('value');
-    if (presenceSnap.val() !== true) {
-        alert(currentLang === 'ko' ? "친구가 현재 오프라인 상태입니다." : "This friend is currently offline.");
-        return;
-    }
+        const presenceSnap = await database.ref(`users/${friendUid}/presence/online`).once('value');
+        if (presenceSnap.val() !== true) {
+            setTimeout(() => alert(currentLang === 'ko' ? "친구가 현재 오프라인 상태입니다." : "This friend is currently offline."), 0);
+            return;
+        }
 
-    const pairKey = [myUid, friendUid].sort().join("_");
-    const privateChannelRef = database.ref(`privateChannels/${pairKey}`);
-    let channelToken;
-    const existingSnap = await privateChannelRef.once('value');
-    const existing = existingSnap.val();
-    if (existing && existing.token && existing.expiresAt > Date.now()) {
-        channelToken = existing.token;
-    } else {
-        const randomBytes = new Uint8Array(16);
-        crypto.getRandomValues(randomBytes);
-        channelToken = Array.from(randomBytes).map(b => b.toString(16).padStart(2,'0')).join('');
-        await privateChannelRef.set({ token: channelToken, expiresAt: Date.now() + 3600000, participants: [myUid, friendUid] });
-    }
+        const pairKey = [myUid, friendUid].sort().join("_");
+        const privateChannelRef = database.ref(`privateChannels/${pairKey}`);
+        let channelToken;
+        const existingSnap = await privateChannelRef.once('value');
+        const existing = existingSnap.val();
+        if (existing && existing.token && existing.expiresAt > Date.now()) {
+            channelToken = existing.token;
+        } else {
+            const randomBytes = new Uint8Array(16);
+            crypto.getRandomValues(randomBytes);
+            channelToken = Array.from(randomBytes).map(b => b.toString(16).padStart(2,'0')).join('');
+            await privateChannelRef.set({ token: channelToken, expiresAt: Date.now() + 3600000, participants: [myUid, friendUid] });
+        }
 
-    const privateChannelId = `🔒_${channelToken}`;
+        const privateChannelId = `🔒_${channelToken}`;
 
     // 초대 전송
     await database.ref(`invites/${friendUid}`).set({
@@ -3473,6 +3474,9 @@ async function connectToFriend(friendUid) {
             alert(currentLang === 'ko' ? '친구가 나중에 하자고 했어요.' : 'Friend declined.');
         }
     });
+    } catch(e) {
+        setTimeout(() => alert('오류: ' + e.message), 0);
+    }
 }
 
 let currentInviteData = null;
