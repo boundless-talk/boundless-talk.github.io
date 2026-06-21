@@ -3862,6 +3862,12 @@ function showSuspendOverlay(until, reason, uid) {
 </script>
 
 <!-- PWA 설치 배너 (안드로이드/크롬) -->
+<div id="chrome-banner" style="display:none; position:fixed; top:0; left:0; width:100%; background:#1a1d26; border-bottom:1px solid rgba(0,229,255,0.2); padding:10px 16px; z-index:9998; display:none; align-items:center; gap:10px;">
+  <span style="font-size:18px;">🔵</span>
+  <span style="flex:1; font-size:12px; color:rgba(255,255,255,0.7); line-height:1.5;">홈화면 추가는 <strong style="color:#00e5ff;">Chrome</strong>을 권장해요. 삼성 브라우저는 보안 경고가 뜰 수 있어요.</span>
+  <button onclick="document.getElementById('chrome-banner').style.display='none'" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:16px; cursor:pointer; padding:0; margin:0; width:auto; flex-shrink:0;">✕</button>
+</div>
+
 <div id="pwa-banner" style="display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%); width:calc(100% - 32px); max-width:400px; background:#161920; border:1px solid rgba(0,229,255,0.25); border-radius:16px; padding:16px 18px; z-index:9999; box-shadow:0 8px 30px rgba(0,0,0,0.5);">
   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
     <div style="flex:1;">
@@ -3900,6 +3906,17 @@ function showSuspendOverlay(until, reason, uid) {
     }
     setTimeout(() => { document.getElementById('ios-banner').style.display = 'block'; }, 3000);
   }
+
+  // 안드로이드 비크롬 브라우저 안내 배너
+  (function() {
+    const ua = navigator.userAgent;
+    const isAndroid = /Android/i.test(ua);
+    const isChrome = /Chrome/i.test(ua) && !/SamsungBrowser|OPR|Edg|UCBrowser|YaBrowser/i.test(ua);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (isAndroid && !isChrome && !isStandalone) {
+      document.getElementById('chrome-banner').style.display = 'flex';
+    }
+  })();
 
   // 안드로이드/크롬 배너
   let deferredPrompt;
