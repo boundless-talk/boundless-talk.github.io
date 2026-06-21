@@ -1132,13 +1132,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
         </div>
 
-        <div class="speech-style-group" id="speech-style-group">
-            <div class="speech-style-label" id="speech-style-label">어떤 스타일로 대화할래요?</div>
-            <div class="speech-style-btns">
-                <button class="speech-style-btn" id="btn-casual" onclick="selectSpeechStyle('casual')">👋 친구처럼</button>
-                <button class="speech-style-btn" id="btn-polite" onclick="selectSpeechStyle('polite')">🤝 정중하게</button>
-            </div>
-        </div>
         <div id="matching-status"></div>
         <div id="debug-log" style="display:none;font-size:11px;color:#ff6b6b;margin-top:8px;word-break:break-all;max-width:100%;text-align:left;padding:0 10px;"></div>
 
@@ -1193,6 +1186,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     </div>
 
+
+    <!-- 대화 스타일 선택 모달 -->
+    <div class="modal-overlay" id="speech-style-modal">
+        <div class="modal-content" style="max-width:340px;">
+            <h3 id="speech-style-modal-title" style="font-size:17px; margin-bottom:6px;">어떤 스타일로 대화할래요?</h3>
+            <p id="speech-style-modal-desc" style="font-size:12px; margin-bottom:22px; color:rgba(255,255,255,0.35);">선택하지 않아도 입장할 수 있어요</p>
+            <div style="display:flex; gap:10px; margin-bottom:14px;">
+                <button class="speech-style-btn" id="modal-btn-casual" onclick="selectStyleAndJoin('casual')" style="flex:1; padding:14px 8px; font-size:14px;">👋 친구처럼</button>
+                <button class="speech-style-btn" id="modal-btn-polite" onclick="selectStyleAndJoin('polite')" style="flex:1; padding:14px 8px; font-size:14px;">🤝 정중하게</button>
+            </div>
+            <button onclick="selectStyleAndJoin(null)" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; width:auto; padding:4px; margin:0;">건너뛰기</button>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="badge-modal">
         <div class="modal-content">
@@ -1369,6 +1375,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let myAnimalGlobal = null;
     let selectedSpeechStyle = null; // 'casual' | 'polite' | null
     let speechStyleMap = {}; // uid → 'casual' | 'polite'
+    let speechStyleConfirmed = false; // 모달 선택 후 join 진행 플래그
     let signalTimer = null;
 
     // 다중 참여자 목록 추적 (본인 제외)
@@ -1892,11 +1899,13 @@ database.ref('activeTopics').on('value', (snap) => {
         document.getElementById('room-part-title').innerText = lang.roomPartTitle;
         document.getElementById('room-leave-btn').innerText = lang.roomLeaveBtn;
         document.getElementById('room-report-btn').innerText = lang.roomReportBtn;
-        // 대화 스타일 버튼 언어 업데이트
-        const ssLabel = document.getElementById('speech-style-label');
-        const btnCasual = document.getElementById('btn-casual');
-        const btnPolite = document.getElementById('btn-polite');
-        if (ssLabel) ssLabel.textContent = lang.speechStyleLabel;
+        // 대화 스타일 모달 언어 업데이트
+        const ssmTitle = document.getElementById('speech-style-modal-title');
+        const ssmDesc = document.getElementById('speech-style-modal-desc');
+        const btnCasual = document.getElementById('modal-btn-casual');
+        const btnPolite = document.getElementById('modal-btn-polite');
+        if (ssmTitle) ssmTitle.textContent = lang.speechStyleLabel;
+        if (ssmDesc) ssmDesc.textContent = currentLang === 'ko' ? '선택하지 않아도 입장할 수 있어요' : 'You can skip this and join anyway';
         if (btnCasual) btnCasual.textContent = lang.speechStyleCasual;
         if (btnPolite) btnPolite.textContent = lang.speechStylePolite;
         updateRoomParticipants();
@@ -2360,23 +2369,30 @@ database.ref('activeTopics').on('value', (snap) => {
 
 // 7. Agora RTC 소통 엔진 핵심 제어 로직
     document.getElementById('join-btn').onclick = async function() {
-        // 🚨 [수정] 중복 실행 방지 — 이미 입장했거나 연결 중이면 무시 (Agora "already connected" 에러 방지)
         if (isJoined || isJoining ||
             client.connectionState === "CONNECTING" ||
             client.connectionState === "CONNECTED" ||
             client.connectionState === "RECONNECTING") {
             return;
         }
-        isJoining = true;
 
         const topicInput = document.getElementById('topic-input');
         const rawTopic = String(topicInput.value).normalize('NFC').trim();
         if (!rawTopic) {
             alert(textData[currentLang].alertInput);
             topicInput.focus();
-            isJoining = false;
             return;
         }
+
+        // 스타일 선택 모달 표시 (건너뛰기/선택 후 재호출됨)
+        if (!speechStyleConfirmed) {
+            document.getElementById('modal-btn-casual').classList.remove('active');
+            document.getElementById('modal-btn-polite').classList.remove('active');
+            document.getElementById('speech-style-modal').classList.add('active');
+            return;
+        }
+        speechStyleConfirmed = false;
+        isJoining = true;
 
         const maxPeople = parseInt(document.getElementById('max-people-select').value);
         document.getElementById('join-btn').disabled = true;
@@ -2495,7 +2511,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             startVolumeIndicator(); // 발화자 감지 시작
 
             document.getElementById('join-btn').style.display = "none";
-            document.getElementById('speech-style-group').style.display = "none";
             document.getElementById('leave-btn').style.display = "inline-block";
             document.getElementById('report-btn').style.display = "inline-block";
             document.getElementById('participants-box').style.display = "block";
@@ -2538,7 +2553,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             document.getElementById('join-btn').disabled = false;
             document.getElementById('join-btn').style.display = "block";
             document.getElementById('join-btn').innerText = textData[currentLang].startBtn;
-            document.getElementById('speech-style-group').style.display = "block";
             document.getElementById('leave-btn').style.display = "none";
             document.getElementById('report-btn').style.display = "none";
             document.getElementById('participants-box').style.display = "none";
@@ -3114,7 +3128,6 @@ return text;
             document.getElementById('join-btn').style.display = "block";
             document.getElementById('join-btn').disabled = false;
             document.getElementById('join-btn').innerText = textData[currentLang].startBtn;
-            document.getElementById('speech-style-group').style.display = "block";
             document.getElementById('leave-btn').style.display = "none";
             document.getElementById('report-btn').style.display = "none";
             document.getElementById('participants-box').style.display = "none";
@@ -3154,7 +3167,6 @@ return text;
             hideRoomScreen();
             document.getElementById('join-btn').style.display = "block";
             document.getElementById('join-btn').disabled = false;
-            document.getElementById('speech-style-group').style.display = "block";
             document.getElementById('leave-btn').style.display = "none";
             document.getElementById('report-btn').style.display = "none";
             try { document.getElementById('participants-box').style.display = "none"; } catch(e) {}
@@ -3688,8 +3700,17 @@ async function respondInvite(response) {
 // ── 인트로 화면 제어 ──
     function selectSpeechStyle(style) {
         selectedSpeechStyle = style;
-        document.getElementById('btn-casual').classList.toggle('active', style === 'casual');
-        document.getElementById('btn-polite').classList.toggle('active', style === 'polite');
+    }
+
+    function selectStyleAndJoin(style) {
+        selectedSpeechStyle = style;
+        if (style) {
+            document.getElementById('modal-btn-casual').classList.toggle('active', style === 'casual');
+            document.getElementById('modal-btn-polite').classList.toggle('active', style === 'polite');
+        }
+        document.getElementById('speech-style-modal').classList.remove('active');
+        speechStyleConfirmed = true;
+        document.getElementById('join-btn').click();
     }
 
     function toggleLangFromIntro() {
