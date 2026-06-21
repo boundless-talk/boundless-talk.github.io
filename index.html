@@ -129,6 +129,45 @@
             50% { opacity: 1; transform: scale(1.2); }
         }
 
+        /* 인트로 두 번째 화면 스텝 */
+        .intro2-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+        .intro2-num {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-color);
+            background: rgba(0,229,255,0.1);
+            border: 1px solid rgba(0,229,255,0.25);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .intro2-step p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.7;
+            margin: 0;
+        }
+        .intro2-step p strong {
+            color: #fff;
+            font-weight: 600;
+        }
+        @keyframes fadeInIntro2 {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #intro-screen-2.show {
+            animation: fadeInIntro2 0.4s ease forwards;
+        }
+
         /* 영구 정지 스크린 */
         #ban-overlay {
             position: fixed;
@@ -967,7 +1006,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
         </div>
-        <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">시작하기</button>
+        <button class="intro-start-btn" id="intro-start-btn" onclick="showIntro2()">자세히보기</button>
+    </div>
+
+    <!-- 인트로 두 번째 화면 -->
+    <div id="intro-screen-2" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-gradient); z-index:5000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 30px; overflow-y:auto;">
+        <div style="max-width:400px; width:100%;">
+            <div class="intro-title" style="font-size:22px; letter-spacing:4px; margin-bottom:28px;">HOW IT WORKS</div>
+            <div id="intro2-steps" style="text-align:left; margin-bottom:36px; display:flex; flex-direction:column; gap:18px;">
+                <div class="intro2-step"><span class="intro2-num">01</span><p id="intro2-s1">간단히 <strong>로그인</strong>하세요.</p></div>
+                <div class="intro2-step"><span class="intro2-num">02</span><p id="intro2-s2">원하는 <strong>주제</strong>와 대화하고픈 <strong>최대 인원</strong>을 선택하세요.<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">그 이하여도 대화는 시작됩니다.</span></p></div>
+                <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3">주제가 망설여진다면 <strong>현재 대화 중인 방</strong>에 참여해보세요.</p></div>
+                <div class="intro2-step"><span class="intro2-num">04</span><p id="intro2-s4">대화가 즐거웠던 유저는 <strong>친구를 맺어</strong> 다음에 또 대화해보세요.</p></div>
+                <div class="intro2-step"><span class="intro2-num">05</span><p id="intro2-s5">악성 유저가 있다면 <strong>신고</strong>해주세요.<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">임시정지 → 24시간 정지 → 영구정지 순으로 처리됩니다.</span></p></div>
+            </div>
+            <button class="intro-start-btn" id="intro2-start-btn" onclick="startFromIntro()">시작하기</button>
+        </div>
     </div>
 
     <div class="lang-container">
@@ -1411,7 +1465,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMismatch: "Passwords do not match.",
             pwHintMatch: "✓ Passwords match.",
         introDesc: `<strong>No barriers</strong> of nationality, age, or gender.<br><br>Connect with someone, somewhere in the world<br>through nothing but <strong>words</strong>.<br><br>Ready for a conversation<br><strong>unlike any you've had before?</strong>`,
-        introBtn: "Start",
+        introBtn: "Learn More",
+        intro2Btn: "Get Started",
+        intro2Title: "HOW IT WORKS",
+        intro2S1: `Simply <strong>sign in</strong>.`,
+        intro2S2: `Choose a <strong>topic</strong> and the <strong>max number</strong> of people you'd like to talk with.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">The conversation starts even with fewer participants.</span>`,
+        intro2S3: `Not sure what to talk about? <strong>Join an ongoing room</strong> and dive in.`,
+        intro2S4: `Had a great conversation? <strong>Add them as a friend</strong> and chat again later.`,
+        intro2S5: `Encountered a toxic user? <strong>Report them</strong>.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">Penalties: temp ban → 24h ban → permanent ban.</span>`,
         talkAgainBtn: "🗣️ TALK AGAIN",
         addFriendBtn: "➕ ADD FRIEND",
         friendsModalTitle: "MY FRIEND LIST",
@@ -1493,7 +1554,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMismatch: "비밀번호가 일치하지 않습니다.",
             pwHintMatch: "✓ 비밀번호가 일치합니다.",
         introDesc: `국적도, 나이도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>주제</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?`,
-        introBtn: "시작하기",
+        introBtn: "자세히보기",
+        intro2Btn: "시작하기",
+        intro2Title: "이용 방법",
+        intro2S1: `간단히 <strong>로그인</strong>하세요.`,
+        intro2S2: `원하는 <strong>주제</strong>와 대화하고픈 <strong>최대 인원</strong>을 선택하세요.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">그 이하여도 대화는 시작됩니다.</span>`,
+        intro2S3: `주제가 망설여진다면 <strong>현재 대화 중인 방</strong>에 참여해보세요.`,
+        intro2S4: `대화가 즐거웠던 유저는 <strong>친구를 맺어</strong> 다음에 또 대화해보세요.`,
+        intro2S5: `악성 유저가 있다면 <strong>신고</strong>해주세요.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">임시정지 → 24시간 정지 → 영구정지 순으로 처리됩니다.</span>`,
         talkAgainBtn: "🗣️ 또 대화하기",
         addFriendBtn: "➕ 친구 추가",
         friendsModalTitle: "나의 친구 목록",
@@ -1710,6 +1778,15 @@ database.ref('activeTopics').on('value', (snap) => {
         const introBtnEl = document.getElementById('intro-start-btn');
         if (introDescEl) introDescEl.innerHTML = lang.introDesc;
         if (introBtnEl) introBtnEl.textContent = lang.introBtn;
+        const intro2TitleEl = document.getElementById('intro-screen-2') && document.querySelector('#intro-screen-2 .intro-title');
+        if (intro2TitleEl) intro2TitleEl.textContent = lang.intro2Title;
+        const intro2StartBtn = document.getElementById('intro2-start-btn');
+        if (intro2StartBtn) intro2StartBtn.textContent = lang.intro2Btn;
+        const s1 = document.getElementById('intro2-s1'); if (s1) s1.innerHTML = lang.intro2S1;
+        const s2 = document.getElementById('intro2-s2'); if (s2) s2.innerHTML = lang.intro2S2;
+        const s3 = document.getElementById('intro2-s3'); if (s3) s3.innerHTML = lang.intro2S3;
+        const s4 = document.getElementById('intro2-s4'); if (s4) s4.innerHTML = lang.intro2S4;
+        const s5 = document.getElementById('intro2-s5'); if (s5) s5.innerHTML = lang.intro2S5;
         if(document.getElementById('label-add-friend')) document.getElementById('label-add-friend').innerText = lang.addFriendBtn;
         if(document.getElementById('friends-m-title')) document.getElementById('friends-m-title').innerText = lang.friendsModalTitle;
 
@@ -3529,10 +3606,26 @@ async function respondInvite(response) {
         document.getElementById('intro-lang-btn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
     }
 
-    function startFromIntro() {
+    function showIntro2() {
         const intro = document.getElementById('intro-screen');
         intro.classList.add('hide');
-        setTimeout(() => { intro.style.display = 'none'; }, 500);
+        setTimeout(() => {
+            intro.style.display = 'none';
+            const intro2 = document.getElementById('intro-screen-2');
+            intro2.style.display = 'flex';
+            intro2.classList.add('show');
+        }, 500);
+    }
+
+    function startFromIntro() {
+        const intro = document.getElementById('intro-screen');
+        const intro2 = document.getElementById('intro-screen-2');
+        intro.classList.add('hide');
+        intro2.classList.add('hide');
+        setTimeout(() => {
+            intro.style.display = 'none';
+            intro2.style.display = 'none';
+        }, 500);
     }
 
 // ── 영구정지 이의신청 제출 ──
