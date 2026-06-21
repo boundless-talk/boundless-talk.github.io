@@ -2896,7 +2896,7 @@ return text;
         list.innerHTML = '';
 
         // 내 항목 먼저 표시
-        const myUidForDisplay = firebaseUser ? firebaseUser.uid : myUid;
+        const myUidForDisplay = (auth.currentUser ? auth.currentUser.uid : null) || myUid;
         if (myUidForDisplay) {
             const myAnimal = assignAnimal(myUidForDisplay);
             const meEl = document.createElement('div');
