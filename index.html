@@ -1539,6 +1539,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         speechStylePolite: "🤝 Polite",
         speechStyleBadgeCasual: "Friendly",
         speechStyleBadgePolite: "Polite",
+        liveTopicsLabel: "Topics in conversation",
         waitingNone: "No one is looking for a conversation partner right now.",
         waitingOne: "1 person is also looking for a conversation partner!",
         waitingMany: (n) => `${n} people are looking for a conversation partner!`,
@@ -1633,6 +1634,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         speechStylePolite: "🤝 정중하게",
         speechStyleBadgeCasual: "친구처럼",
         speechStyleBadgePolite: "정중하게",
+        liveTopicsLabel: "지금 대화 중인 주제",
         waitingNone: "현재 대화 상대를 찾는 중인 사람이 없어요.",
         waitingOne: "1명이 대화 상대를 찾고 있어요!",
         waitingMany: (n) => `${n}명이 대화 상대를 찾고 있어요!`,
@@ -1910,6 +1912,10 @@ database.ref('activeTopics').on('value', (snap) => {
         document.getElementById('ban-desc').innerText = lang.banDesc;
         document.getElementById('rep-m-title').innerText = lang.reportTitle;
         document.getElementById('rep-m-desc').innerText = lang.reportDesc;
+
+        // 라이브 토픽 라벨 언어 동기화
+        const liveTopicsLbl = document.getElementById('live-topics-label');
+        if (liveTopicsLbl) liveTopicsLbl.textContent = lang.liveTopicsLabel;
 
         // 대기자 텍스트 언어 동기화
         const waitingTxt = document.getElementById('waiting-count-text');
