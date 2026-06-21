@@ -1002,8 +1002,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 인트로 화면 -->
     <div id="intro-screen">
         <button onclick="toggleLangFromIntro()" style="position:absolute; top:20px; right:20px; background:transparent; border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.6); padding:6px 14px; font-size:12px; font-weight:600; border-radius:20px; cursor:pointer; width:auto; margin:0;" id="intro-lang-btn">EN</button>
-        <img src="logo-transparent.png" alt="B-Talk" style="width:80px; height:80px; margin-bottom:2px; display:block; margin-left:auto; margin-right:auto;">
-        <div class="intro-title">BOUNDLESS TALK</div>
+        <div style="position:relative; width:240px; margin:0 auto;">
+            <div style="overflow:hidden; height:168px;">
+                <img src="logo-transparent.png" alt="B-Talk" style="width:240px; height:240px; display:block;">
+            </div>
+            <div class="intro-title" style="margin-top:0px;">BOUNDLESS TALK</div>
+        </div>
         <p class="intro-desc" id="intro-desc">국적도, 나이도, 성별도<br><strong>아무런 장벽이 없는 대화</strong>.<br><br>세상 어딘가의 누군가와<br>오직 <strong>주제</strong>로만 연결되는 순간.<br><br>경험해본 적 없는<br><strong>설레는 대화</strong>를 시작해볼까요?</p>
         <div style="margin-bottom: 40px;">
             <span class="intro-pulse"></span>
