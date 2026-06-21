@@ -3217,7 +3217,8 @@ return text;
 
             // 1. Firebase로 배지 수신 알림 전송 (상대방 signals/{uid} 경로에 기록)
             try {
-                await database.ref(`signals/${selectedVoteTarget}`).set({
+                const signalKey = `${auth.currentUser ? auth.currentUser.uid : myUid}_${selectedVoteTarget}`;
+                await database.ref(`signals/${signalKey}`).set({
                     badgeType,
                     senderId: String(myUid),
                     timestamp: Date.now()
