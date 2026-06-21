@@ -1169,6 +1169,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <button id="btn-talk-again" style="margin: 0; display: none;">🗣️ 또 대화하기</button>
     <button id="toggle-rep-btn" style="display: none;">📊 대화지수</button>
     <button id="logout-btn" style="display: none;">로그아웃</button>
+    <button id="inquiry-btn" onclick="openInquiryModal()" style="display:none; background:transparent; border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.4); font-size:12px; padding:8px 16px; margin:0; width:auto;">✉️ 문의하기</button>
           </div>
 
 
@@ -1186,6 +1187,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     </div>
 
+
+    <!-- 문의하기 모달 -->
+    <div class="modal-overlay" id="inquiry-modal">
+        <div class="modal-content" style="max-width:380px;">
+            <h3 style="font-size:17px; margin-bottom:6px;">✉️ 문의하기</h3>
+            <p style="font-size:12px; color:rgba(255,255,255,0.35); margin-bottom:20px;">불편한 점이나 건의 사항을 보내주세요.</p>
+            <textarea id="inquiry-text" placeholder="문의 내용을 입력해주세요..." style="width:100%; min-height:120px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; padding:12px; font-size:13px; font-family:inherit; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
+            <div style="display:flex; gap:10px; margin-top:14px;">
+                <button onclick="submitInquiry()" style="flex:1; background:var(--accent-color); color:#000; font-weight:700; font-size:14px; padding:12px; border-radius:10px; border:none; cursor:pointer; margin:0;">보내기</button>
+                <button onclick="document.getElementById('inquiry-modal').classList.remove('active')" style="flex:0.4; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.5); font-size:14px; padding:12px; border-radius:10px; border:none; cursor:pointer; margin:0;">취소</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 대화 스타일 선택 모달 -->
     <div class="modal-overlay" id="speech-style-modal">
@@ -1714,6 +1728,7 @@ database.ref('activeTopics').on('value', (snap) => {
 
             document.getElementById("auth-section").style.display = "none";
             if (logoutBtn) logoutBtn.style.display = "inline-block";
+            document.getElementById("inquiry-btn").style.display = "inline-block";
             if (talkControls) talkControls.style.display = "block";
             if (startBtn && !isJoined) startBtn.disabled = false;
             document.getElementById("toggle-rep-btn").style.display = "inline-block";
@@ -3698,6 +3713,30 @@ async function respondInvite(response) {
 }
 
 // ── 인트로 화면 제어 ──
+    function openInquiryModal() {
+        document.getElementById('inquiry-text').value = '';
+        document.getElementById('inquiry-modal').classList.add('active');
+    }
+
+    async function submitInquiry() {
+        const text = document.getElementById('inquiry-text').value.trim();
+        if (!text) { alert('문의 내용을 입력해주세요.'); return; }
+        const user = auth.currentUser;
+        try {
+            await database.ref('inquiries').push({
+                uid: user ? user.uid : null,
+                email: user ? (user.email || '') : '',
+                message: text,
+                ts: firebase.database.ServerValue.TIMESTAMP,
+                status: 'unread'
+            });
+            document.getElementById('inquiry-modal').classList.remove('active');
+            alert(currentLang === 'ko' ? '문의가 접수되었습니다. 감사합니다!' : 'Your inquiry has been submitted. Thank you!');
+        } catch(e) {
+            alert('전송 실패. 다시 시도해주세요.');
+        }
+    }
+
     function selectSpeechStyle(style) {
         selectedSpeechStyle = style;
     }
