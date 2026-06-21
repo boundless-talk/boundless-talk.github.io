@@ -2948,7 +2948,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         stopSubtitleListener();
         subtitlesEnabled = false;
         document.getElementById('subtitle-toggle-btn').classList.remove('on');
-        document.getElementById('subtitle-toggle-btn').textContent = '💬 번역';
+        document.getElementById('subtitle-toggle-btn').textContent = currentLang === 'ko' ? '💬 번역' : '💬 Translate';
         document.getElementById('subtitle-lang-row').style.display = 'none';
         document.getElementById('subtitle-list').style.display = 'none';
         document.getElementById('subtitle-list').innerHTML = '';
@@ -2982,7 +2982,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             listenSubtitles();
         } else {
             btn.classList.remove('on');
-            btn.textContent = '💬 번역';
+            btn.textContent = currentLang === 'ko' ? '💬 번역' : '💬 Translate';
             langRow.style.display = 'none';
             list.style.display = 'none';
             stopSubtitleRecognition();
