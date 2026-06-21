@@ -2098,6 +2098,10 @@ database.ref('activeTopics').on('value', (snap) => {
 
     document.getElementById('lang-toggle-btn').addEventListener('click', () => {
         currentLang = (currentLang === "en") ? "ko" : "en";
+        // 언어 전환 시 동물 레이블만 재생성 (동물 종류는 유지)
+        const cachedUids = Object.keys(uidToAnimal);
+        uidToAnimal = {};
+        cachedUids.forEach(uid => assignAnimal(uid));
         // 언어 토글 버튼 텍스트 업데이트
         document.getElementById('lang-toggle-btn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
         // 인트로 화면 언어 업데이트
