@@ -2057,6 +2057,7 @@ database.ref('activeTopics').on('value', (snap) => {
         document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "LOGOUT" : "로그아웃";
         document.getElementById('email-login-btn-main').innerText = (currentLang === 'en') ? "Email Login" : "이메일 로그인";
         document.getElementById('email-signup-btn-main').innerText = (currentLang === 'en') ? "Sign Up with Email" : "이메일로 회원가입";
+        const findPwBtn = document.getElementById('find-pw-btn'); if(findPwBtn) findPwBtn.textContent = isKo ? '비밀번호를 잊으셨나요?' : 'Forgot password?';
 
         // ── 이메일 로그인/회원가입 패널 내부 요소 번역 반영 ──
         document.getElementById('login-form-title').innerText = lang.loginFormTitle;
