@@ -2311,7 +2311,7 @@ setTimeout(() => toast.remove(), 10000);
                 database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
     database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid).set({ topic: finalTopic, ts: firebase.database.ServerValue.TIMESTAMP });
-database.ref('activeTopics/' + safeAgoraChannelId + '/' + myUid).onDisconnect().remove();
+database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid).onDisconnect().remove();
 }
             }
 
