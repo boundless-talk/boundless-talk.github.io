@@ -2321,7 +2321,7 @@ database.ref('activeTopics').on('value', (snap) => {
             signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
             signupVerifyEmail = email;
 
-            const res = await fetch("https://b-talk-0gi0.onrender.com/sendVerifyEmail", {
+            const res = await fetch("/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, code: signupVerifyCode })
@@ -2356,7 +2356,7 @@ database.ref('activeTopics').on('value', (snap) => {
         if (!signupVerifyEmail) return;
         signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         try {
-            await fetch("https://b-talk-0gi0.onrender.com/sendVerifyEmail", {
+            await fetch("/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: signupVerifyEmail, code: signupVerifyCode })
