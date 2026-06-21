@@ -3098,6 +3098,15 @@ return text;
             try { document.getElementById('max-people-group').style.display = "flex"; } catch(e) {}
             try { document.getElementById('my-animal-tag').style.display = "none"; } catch(e) {}
             document.getElementById('matching-status').innerText = "";
+            // 에러가 나도 배지 모달은 열어줌
+            setupVoteTargetsUI();
+            setTimeout(() => {
+                document.getElementById('badge-modal').classList.add('active');
+                document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
+                document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
+                requestAISummary();
+                uidToAnimal = {};
+            }, 400);
         }
     };
 
