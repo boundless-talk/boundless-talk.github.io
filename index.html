@@ -2318,30 +2318,63 @@ database.ref('activeTopics').on('value', (snap) => {
     });
 
 // 5. Netlify AI Serverless Function 연동 매칭 엔진
+    const TOPIC_SYNONYM_MAP = {
+        // 사랑/연애
+        "사랑":"love","연애":"love","남친":"love","여친":"love","짝사랑":"love","romance":"love","로맨스":"love",
+        // 행복
+        "행복":"happiness","행복해":"happiness","행복함":"happiness","happy":"happiness","happiness":"happiness","기쁨":"happiness",
+        // 고민/상담
+        "고민":"advice","상담":"advice","조언":"advice","걱정":"advice","worry":"advice","counsel":"advice","counseling":"advice","advice":"advice",
+        // 음악
+        "음악":"music","노래":"music","song":"music","songs":"music","playlist":"music","플레이리스트":"music","뮤직":"music",
+        // 여행
+        "여행":"travel","trip":"travel","trips":"travel","여행지":"travel","해외여행":"travel","국내여행":"travel","vacation":"travel","휴가":"travel",
+        // 영화/드라마
+        "영화":"movie","드라마":"movie","film":"movie","films":"movie","movie":"movie","movies":"movie","넷플릭스":"movie","netflix":"movie","ott":"movie",
+        // 게임
+        "게임":"gaming","gaming":"gaming","game":"gaming","games":"gaming","롤":"gaming","리그오브레전드":"gaming","오버워치":"gaming","배그":"gaming",
+        // 음식
+        "음식":"food","맛집":"food","먹방":"food","요리":"food","food":"food","eating":"food","밥":"food","간식":"food","카페":"food",
+        // 운동/헬스
+        "운동":"fitness","헬스":"fitness","다이어트":"fitness","workout":"fitness","fitness":"fitness","gym":"fitness","필라테스":"fitness","요가":"fitness","yoga":"fitness",
+        // 공부/학교
+        "공부":"study","학교":"study","수능":"study","시험":"study","study":"study","studying":"study","학원":"study","과외":"study",
+        // 직장/일
+        "직장":"work","회사":"work","일":"work","업무":"work","work":"work","job":"work","취업":"work","이직":"work","퇴사":"work",
+        // 일상
+        "일상":"daily","데일리":"daily","daily":"daily","하루":"daily","오늘":"daily","잡담":"daily","수다":"daily","chit-chat":"daily","chitchat":"daily","잡썰":"daily",
+        // 취미
+        "취미":"hobby","hobby":"hobby","hobbies":"hobby","관심사":"hobby",
+        // 패션/뷰티
+        "패션":"fashion","뷰티":"fashion","패션뷰티":"fashion","fashion":"fashion","beauty":"fashion","스타일":"fashion","옷":"fashion","화장":"fashion","메이크업":"fashion",
+        // 연예/아이돌
+        "아이돌":"kpop","kpop":"kpop","k-pop":"kpop","연예인":"kpop","아이돌얘기":"kpop","케이팝":"kpop","idol":"kpop",
+        // 심리/멘탈
+        "심리":"mental","멘탈":"mental","우울":"mental","불안":"mental","mental":"mental","psychology":"mental","힐링":"mental","healing":"mental",
+        // 스포츠
+        "스포츠":"sports","축구":"sports","야구":"sports","농구":"sports","sports":"sports","sport":"sports","football":"sports","soccer":"sports","baseball":"sports",
+        // 반려동물
+        "강아지":"pets","고양이":"pets","반려동물":"pets","pets":"pets","pet":"pets","dog":"pets","cat":"pets","애완동물":"pets",
+        // 책/독서
+        "책":"book","독서":"book","book":"book","books":"book","reading":"book","소설":"book","웹툰":"book","manhwa":"book",
+        // 자기계발
+        "자기계발":"selfdev","성장":"selfdev","목표":"selfdev","동기":"selfdev","selfdev":"selfdev","motivation":"selfdev","성공":"selfdev",
+    };
+
     async function getAIMatchedTopic(userInput) {
         const statusEl = document.getElementById('matching-status');
         const lang = textData[currentLang];
         statusEl.innerText = lang.matchingLoading;
 
-        try {
-            const response = await fetch("https://b-talk-0gi0.onrender.com/getTopic", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ topic: userInput })
-            });
-            if (!response.ok) throw new Error("Backend response error");
-            const data = await response.json();
-            let topic = data.topic ? data.topic.trim().toLowerCase() : "general";
-            if(!topic) topic = "general";
-            statusEl.innerText = lang.matchingDone(topic);
-            return topic;
-        } catch (error) {
-            console.error("AI matching failed, moving to fallback route:", error);
-            // 최신 언어 선택 상태를 원자적으로 강제 반영하기 위해 textData[currentLang] 직접 참조
-            statusEl.innerText = textData[currentLang].matchingFail;
-            // 💡 에러 발생 시 유저가 입력한 주제를 소문자로 정규화하여 반환합니다!
-            return userInput.trim().toLowerCase() || "general";
-        }
+        const input = userInput.trim().toLowerCase();
+        const normalized = TOPIC_SYNONYM_MAP[input] || input || "general";
+        statusEl.innerText = lang.matchingDone(normalized);
+        return normalized;
+        // TODO: AI 매칭 (사용자 증가 시 Gemini API 유료 전환 후 활성화)
+        // try {
+        //     const response = await fetch("https://b-talk-0gi0.onrender.com/getTopic", { ... });
+        //     ...
+        // }
     }
 
     // 6. 60초 최신 대화 오디오 롤링 버퍼 및 녹음 아키텍처 (Web Audio API 기반)
