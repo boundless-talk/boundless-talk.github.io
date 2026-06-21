@@ -3229,6 +3229,7 @@ return text;
 
         } catch (err) {
             console.error("Firebase transaction processing failure:", err);
+            alert('[디버그] 배지 전송 실패: ' + (err && err.message ? err.message : JSON.stringify(err)));
             removeVoteTarget(selectedVoteTarget);
         }
     }
