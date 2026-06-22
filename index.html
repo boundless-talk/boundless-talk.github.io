@@ -3,7 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B-TALK</title>
+    <title>Boundless Talk — 익명 음성채팅 | 랜덤 보이스챗 | 언어교환</title>
+    <meta name="description" content="Boundless Talk — 주제를 정하고 낯선 사람과 익명으로 음성 대화하는 무료 랜덤 보이스챗. 실시간 번역 자막 지원, 앱 설치 불필요. Free anonymous voice chat with real-time translated subtitles.">
+    <meta name="keywords" content="익명채팅, 음성채팅, 랜덤채팅, 보이스챗, 언어교환, 랜덤보이스, 외국인대화, 영어스피킹, 실시간번역, anonymous voice chat, language exchange, random voice chat, speaking practice">
+    <meta property="og:title" content="Boundless Talk — 익명 음성채팅">
+    <meta property="og:description" content="주제를 정하고 낯선 사람과 익명으로 음성 대화하세요. 실시간 번역 자막 지원. Free anonymous voice chat with real-time subtitles.">
+    <meta property="og:url" content="https://boundless-talk.github.io/B-Talk/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://boundless-talk.github.io/B-Talk/logo-transparent.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Boundless Talk — 익명 음성채팅">
+    <meta name="twitter:description" content="주제를 정하고 낯선 사람과 익명으로 음성 대화하세요. 실시간 번역 자막 지원.">
+    <meta name="twitter:image" content="https://boundless-talk.github.io/B-Talk/logo-transparent.png">
+    <link rel="canonical" href="https://boundless-talk.github.io/B-Talk/">
+    <meta name="google-site-verification" content="5Q7376bEwALtvcMyr7Qm3iQAMWxuQelfDSjgcPAVO3k" />
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -1738,9 +1751,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 database.ref('activeTopics').on('value', (snap) => {
     const data = snap.val() || {};
     const topics = [];
-    Object.values(data).forEach(channelUsers => {
-        const entry = Object.values(channelUsers || {})[0];
-        if (entry && entry.topic && !topics.includes(entry.topic)) topics.push(entry.topic);
+    const STALE_MS = 5 * 60 * 1000; // 5분 이상 업데이트 없으면 유령 방으로 간주
+    const now = Date.now();
+
+    Object.entries(data).forEach(([channelId, channelUsers]) => {
+        const users = Object.entries(channelUsers || {});
+        // 채널 내 모든 유저 항목이 만료됐으면 Firebase에서 삭제
+        const allStale = users.every(([, u]) => !u.ts || (now - u.ts) > STALE_MS);
+        if (allStale) {
+            database.ref('activeTopics/' + channelId).remove();
+            return;
+        }
+        const entry = users.find(([, u]) => u.ts && (now - u.ts) <= STALE_MS);
+        if (entry && entry[1].topic && !topics.includes(entry[1].topic)) {
+            topics.push(entry[1].topic);
+        }
     });
     
     const bar = document.getElementById('live-topics-bar');
@@ -1748,9 +1773,14 @@ database.ref('activeTopics').on('value', (snap) => {
     if (!bar || !tagsEl) return;
     if (topics.length > 0 && !isJoined) {
         bar.style.display = 'block';
-        tagsEl.innerHTML = topics.slice(0,6).map(t =>
-            `<button onclick="document.getElementById('topic-input').value='${t}'" style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;width:auto;">${t}</button>`
-        ).join('');
+        tagsEl.innerHTML = '';
+        topics.slice(0,6).forEach(t => {
+            const btn = document.createElement('button');
+            btn.textContent = t;
+            btn.style.cssText = 'background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;width:auto;';
+            btn.addEventListener('click', () => { document.getElementById('topic-input').value = t; });
+            tagsEl.appendChild(btn);
+        });
     } else {
         bar.style.display = 'none';
     }
@@ -2317,14 +2347,13 @@ database.ref('activeTopics').on('value', (snap) => {
                 return;
             }
 
-            // 6자리 인증 코드 생성 후 Netlify 함수로 메일 발송
-            signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+            // 서버에서 코드 생성 및 발송 (클라이언트는 코드를 알 수 없음)
             signupVerifyEmail = email;
 
             const res = await fetch("https://b-talk.netlify.app/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, code: signupVerifyCode })
+                body: JSON.stringify({ email })
             });
 
             if (!res.ok) throw new Error("메일 발송 실패");
@@ -2337,29 +2366,45 @@ database.ref('activeTopics').on('value', (snap) => {
         }
     });
 
-    // Step 2: 인증 코드 확인
-    document.getElementById('check-verify-btn').addEventListener('click', () => {
+    // Step 2: 인증 코드 확인 (서버에서 검증)
+    document.getElementById('check-verify-btn').addEventListener('click', async () => {
         const inputCode = document.getElementById('verify-code-input')?.value.trim();
         if (!inputCode) {
             alert(currentLang === 'ko' ? "인증 코드를 입력해 주세요." : "Please enter the verification code.");
             return;
         }
-        if (inputCode === signupVerifyCode) {
-            showSignupStep(3);
-        } else {
-            alert(currentLang === 'ko' ? "인증 코드가 올바르지 않습니다. 다시 확인해 주세요." : "Incorrect code. Please try again.");
+        const btn = document.getElementById('check-verify-btn');
+        btn.disabled = true;
+        try {
+            const res = await fetch("https://b-talk.netlify.app/.netlify/functions/verifyEmailCode", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: signupVerifyEmail, code: inputCode })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                signupVerifiedEmail = signupVerifyEmail;
+                showSignupStep(3);
+            } else if (data.error === 'code_expired') {
+                alert(currentLang === 'ko' ? "인증 코드가 만료되었습니다. 재전송해 주세요." : "Code expired. Please request a new one.");
+            } else {
+                alert(currentLang === 'ko' ? "인증 코드가 올바르지 않습니다. 다시 확인해 주세요." : "Incorrect code. Please try again.");
+            }
+        } catch(e) {
+            alert(currentLang === 'ko' ? "오류가 발생했습니다. 다시 시도해 주세요." : "An error occurred. Please try again.");
+        } finally {
+            btn.disabled = false;
         }
     });
 
     // Step 2: 코드 재전송
     document.getElementById('resend-verify-btn').addEventListener('click', async () => {
         if (!signupVerifyEmail) return;
-        signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         try {
             await fetch("https://b-talk.netlify.app/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: signupVerifyEmail, code: signupVerifyCode })
+                body: JSON.stringify({ email: signupVerifyEmail })
             });
             alert(currentLang === 'ko' ? "인증 코드를 재전송했습니다." : "Verification code resent.");
         } catch(e) {
@@ -2696,11 +2741,23 @@ setTimeout(() => toast.remove(), 10000);
                 // 퇴장 시 자동 삭제
                 database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
-    database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid).set({ topic: finalTopic, style: selectedSpeechStyle, ts: firebase.database.ServerValue.TIMESTAMP });
-database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid).onDisconnect().remove();
+    const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
+    myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, ts: firebase.database.ServerValue.TIMESTAMP });
+    myTopicRef.onDisconnect().remove();
+    // 2분마다 ts 갱신 (비정상 종료 감지용 — 5분 stale 기준보다 짧게)
+    if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
+    window._heartbeatInterval = setInterval(() => {
+        if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
+        myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
+    }, 2 * 60 * 1000);
 // 채널 참여자 스타일 리스닝
 database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     const data = snap.val() || {};
+    // 채널이 비어있으면 자동 삭제 (비정상 종료로 onDisconnect가 실패한 경우 대비)
+    if (!snap.exists()) {
+        database.ref('activeTopics/' + safeAgoraChannelId).remove();
+        return;
+    }
     Object.entries(data).forEach(([uid, val]) => { if (val && val.style) speechStyleMap[uid] = val.style; });
     updateRoomParticipants();
 });
@@ -2955,8 +3012,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         document.getElementById('subtitle-list').style.display = 'none';
         document.getElementById('subtitle-list').innerHTML = '';
         if (currentChannelName && auth.currentUser) {
-    database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid).remove();
-}
+            const channelRef = database.ref('activeTopics/' + safeAgoraChannelId);
+            await channelRef.child(auth.currentUser.uid).remove();
+            // 채널에 아무도 없으면 채널 전체 삭제
+            const snap = await channelRef.once('value');
+            if (!snap.exists()) channelRef.remove();
+        }
     }
 
     // ── 번역 자막 시스템 (Whisper) ──
@@ -3002,60 +3063,106 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
         try {
             subtitleMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            const audioCtx = new AudioContext();
-const source = audioCtx.createMediaStreamSource(subtitleMicStream);
-const analyser = audioCtx.createAnalyser();
-analyser.fftSize = 256;
-source.connect(analyser);
-subtitleMicStream._analyser = analyser;
-            recordAndTranscribeChunk();
+            startVADRecording();
         } catch(e) {
             alert(currentLang === 'ko' ? '마이크 권한이 필요합니다.' : 'Microphone permission required.');
             subtitlesEnabled = false;
         }
     }
 
-    function recordAndTranscribeChunk() {
+    function startVADRecording() {
         if (!subtitlesEnabled || !subtitleMicStream) return;
+
+        const VAD_THRESHOLD = 18;    // 이 볼륨 이상이면 "말하는 중"
+        const SILENCE_DELAY = 900;   // 말 멈춘 후 이 시간(ms) 지나면 전송
+        const MAX_DURATION = 8000;   // 최대 녹음 길이 (너무 길어지면 강제 전송)
+        const MIN_DURATION = 400;    // 이것보다 짧은 발화는 무시
 
         const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
                        : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
                        : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4'
                        : '';
 
-        let recorder;
-        try {
-            recorder = new MediaRecorder(subtitleMicStream, mimeType ? { mimeType } : {});
-        } catch(e) {
-            recorder = new MediaRecorder(subtitleMicStream);
+        const vadAudioCtx = new AudioContext();
+        const source = vadAudioCtx.createMediaStreamSource(subtitleMicStream);
+        const analyser = vadAudioCtx.createAnalyser();
+        analyser.fftSize = 512;
+        source.connect(analyser);
+        subtitleMicStream._vadCtx = vadAudioCtx;
+
+        const freqData = new Uint8Array(analyser.frequencyBinCount);
+
+        let recorder = null;
+        let chunks = [];
+        let isSpeaking = false;
+        let silenceTimer = null;
+        let recordingStart = null;
+        let maxDurationTimer = null;
+
+        function getVolume() {
+            analyser.getByteFrequencyData(freqData);
+            return freqData.reduce((a, b) => a + b, 0) / freqData.length;
         }
 
-        const chunks = [];
-        recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+        function startRecording() {
+            if (recorder && recorder.state === 'recording') return;
+            chunks = [];
+            try {
+                recorder = new MediaRecorder(subtitleMicStream, mimeType ? { mimeType } : {});
+            } catch(e) {
+                recorder = new MediaRecorder(subtitleMicStream);
+            }
+            recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+            recorder.onstop = async () => {
+                if (!subtitlesEnabled) return;
+                const duration = Date.now() - recordingStart;
+                if (duration >= MIN_DURATION && chunks.length > 0) {
+                    const blob = new Blob(chunks, { type: recorder.mimeType });
+                    await sendToWhisper(blob, recorder.mimeType);
+                }
+            };
+            recorder.start();
+            recordingStart = Date.now();
+            maxDurationTimer = setTimeout(() => {
+                if (recorder && recorder.state === 'recording') {
+                    clearTimeout(silenceTimer);
+                    silenceTimer = null;
+                    recorder.stop();
+                    isSpeaking = false;
+                    // 최대 길이 초과 후 즉시 새 녹음 시작 대기
+                }
+            }, MAX_DURATION);
+        }
 
-        let maxVolume = 0;
-const analyser = subtitleMicStream && subtitleMicStream._analyser;
-let volumeInterval = null;
-if (analyser) {
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    volumeInterval = setInterval(() => {
-        analyser.getByteFrequencyData(data);
-        const avg = data.reduce((a, b) => a + b, 0) / data.length;
-        if (avg > maxVolume) maxVolume = avg;
-    }, 100);
-}
+        function stopRecording() {
+            if (maxDurationTimer) { clearTimeout(maxDurationTimer); maxDurationTimer = null; }
+            if (recorder && recorder.state === 'recording') recorder.stop();
+        }
 
-recorder.onstop = async () => {
-    if (volumeInterval) clearInterval(volumeInterval);
-    if (!subtitlesEnabled) return;
-    const blob = new Blob(chunks, { type: recorder.mimeType });
-    const hasSound = analyser ? maxVolume > 30 : blob.size > 15000;
-    if (hasSound) await sendToWhisper(blob, recorder.mimeType);
-            if (subtitlesEnabled) recordAndTranscribeChunk();
-        };
-
-        recorder.start();
-        setTimeout(() => { if (recorder.state === 'recording') recorder.stop(); }, 4000);
+        subtitleMicStream._vadInterval = setInterval(() => {
+            if (!subtitlesEnabled) {
+                clearInterval(subtitleMicStream._vadInterval);
+                stopRecording();
+                return;
+            }
+            const vol = getVolume();
+            if (vol > VAD_THRESHOLD) {
+                if (!isSpeaking) {
+                    isSpeaking = true;
+                    startRecording();
+                }
+                // 말하는 중이면 침묵 타이머 리셋
+                if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+            } else {
+                if (isSpeaking && !silenceTimer) {
+                    silenceTimer = setTimeout(() => {
+                        silenceTimer = null;
+                        isSpeaking = false;
+                        stopRecording();
+                    }, SILENCE_DELAY);
+                }
+            }
+        }, 80);
     }
 
     async function sendToWhisper(blob, mimeType) {
@@ -3081,6 +3188,8 @@ recorder.onstop = async () => {
     function stopSubtitleRecognition() {
         subtitlesEnabled = false;
         if (subtitleMicStream) {
+            if (subtitleMicStream._vadInterval) clearInterval(subtitleMicStream._vadInterval);
+            if (subtitleMicStream._vadCtx) subtitleMicStream._vadCtx.close().catch(()=>{});
             subtitleMicStream.getTracks().forEach(t => t.stop());
             subtitleMicStream = null;
         }
@@ -3318,6 +3427,7 @@ return text;
     document.getElementById('leave-btn').onclick = async function() {
         try {
             stopRollingAudioRecorder();
+            if (window._heartbeatInterval) { clearInterval(window._heartbeatInterval); window._heartbeatInterval = null; }
             if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
             if (signalListenerRef) { signalListenerRef.off(); signalListenerRef = null; }
             if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack.close(); localAudioTrack = null; }
