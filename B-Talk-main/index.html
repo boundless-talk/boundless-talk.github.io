@@ -1748,9 +1748,14 @@ database.ref('activeTopics').on('value', (snap) => {
     if (!bar || !tagsEl) return;
     if (topics.length > 0 && !isJoined) {
         bar.style.display = 'block';
-        tagsEl.innerHTML = topics.slice(0,6).map(t =>
-            `<button onclick="document.getElementById('topic-input').value='${t}'" style="background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;width:auto;">${t}</button>`
-        ).join('');
+        tagsEl.innerHTML = '';
+        topics.slice(0,6).forEach(t => {
+            const btn = document.createElement('button');
+            btn.textContent = t;
+            btn.style.cssText = 'background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);border-radius:20px;padding:5px 13px;font-size:12px;cursor:pointer;width:auto;';
+            btn.addEventListener('click', () => { document.getElementById('topic-input').value = t; });
+            tagsEl.appendChild(btn);
+        });
     } else {
         bar.style.display = 'none';
     }
@@ -2317,14 +2322,13 @@ database.ref('activeTopics').on('value', (snap) => {
                 return;
             }
 
-            // 6자리 인증 코드 생성 후 Netlify 함수로 메일 발송
-            signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+            // 서버에서 코드 생성 및 발송 (클라이언트는 코드를 알 수 없음)
             signupVerifyEmail = email;
 
             const res = await fetch("https://b-talk.netlify.app/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, code: signupVerifyCode })
+                body: JSON.stringify({ email })
             });
 
             if (!res.ok) throw new Error("메일 발송 실패");
@@ -2337,29 +2341,45 @@ database.ref('activeTopics').on('value', (snap) => {
         }
     });
 
-    // Step 2: 인증 코드 확인
-    document.getElementById('check-verify-btn').addEventListener('click', () => {
+    // Step 2: 인증 코드 확인 (서버에서 검증)
+    document.getElementById('check-verify-btn').addEventListener('click', async () => {
         const inputCode = document.getElementById('verify-code-input')?.value.trim();
         if (!inputCode) {
             alert(currentLang === 'ko' ? "인증 코드를 입력해 주세요." : "Please enter the verification code.");
             return;
         }
-        if (inputCode === signupVerifyCode) {
-            showSignupStep(3);
-        } else {
-            alert(currentLang === 'ko' ? "인증 코드가 올바르지 않습니다. 다시 확인해 주세요." : "Incorrect code. Please try again.");
+        const btn = document.getElementById('check-verify-btn');
+        btn.disabled = true;
+        try {
+            const res = await fetch("https://b-talk.netlify.app/.netlify/functions/verifyEmailCode", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: signupVerifyEmail, code: inputCode })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                signupVerifiedEmail = signupVerifyEmail;
+                showSignupStep(3);
+            } else if (data.error === 'code_expired') {
+                alert(currentLang === 'ko' ? "인증 코드가 만료되었습니다. 재전송해 주세요." : "Code expired. Please request a new one.");
+            } else {
+                alert(currentLang === 'ko' ? "인증 코드가 올바르지 않습니다. 다시 확인해 주세요." : "Incorrect code. Please try again.");
+            }
+        } catch(e) {
+            alert(currentLang === 'ko' ? "오류가 발생했습니다. 다시 시도해 주세요." : "An error occurred. Please try again.");
+        } finally {
+            btn.disabled = false;
         }
     });
 
     // Step 2: 코드 재전송
     document.getElementById('resend-verify-btn').addEventListener('click', async () => {
         if (!signupVerifyEmail) return;
-        signupVerifyCode = Math.floor(100000 + Math.random() * 900000).toString();
         try {
             await fetch("https://b-talk.netlify.app/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: signupVerifyEmail, code: signupVerifyCode })
+                body: JSON.stringify({ email: signupVerifyEmail })
             });
             alert(currentLang === 'ko' ? "인증 코드를 재전송했습니다." : "Verification code resent.");
         } catch(e) {
