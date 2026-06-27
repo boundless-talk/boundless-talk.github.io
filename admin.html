@@ -624,7 +624,10 @@
                         <th>신고자 UID</th>
                         <th>피신고자 UID</th>
                         <th>채널</th>
+                        <th>AI 판정</th>
+                        <th>사유</th>
                         <th>신고 일시</th>
+                        <th>음성</th>
                         <th>상태</th>
                         <th>액션</th>
                     </tr></thead>
@@ -953,19 +956,32 @@
         const entries = Object.entries(allReports);
         document.getElementById('reports-count').textContent = `${entries.length}건`;
         const tbody = document.getElementById('report-list');
-        tbody.innerHTML = entries.length ? entries.map(([id, r]) => `
+        tbody.innerHTML = entries.length ? entries.map(([id, r]) => {
+            const toxicPill = r.isToxic === true
+                ? '<span class="status-pill pill-ban">유해</span>'
+                : r.isToxic === false
+                    ? '<span class="status-pill pill-normal">무해</span>'
+                    : '<span class="status-pill pill-pending">미분석</span>';
+            const audioBtnHtml = r.audioUrl
+                ? `<button class="action-btn btn-view" onclick="playReportAudio('${r.audioUrl}')">▶ 재생</button>`
+                : `<span style="font-size:11px;color:var(--text-dim)">${r.hasAudio === false ? '없음' : '—'}</span>`;
+            return `
             <tr>
                 <td class="uid-cell" title="${r.reporterUid||''}">${(r.reporterUid||'—').substring(0,10)}...</td>
                 <td class="uid-cell" title="${r.reportedUid||''}">${(r.reportedUid||'—').substring(0,10)}...</td>
                 <td style="font-size:11px;color:var(--text-dim)">${r.channel||'—'}</td>
+                <td>${toxicPill}</td>
+                <td style="font-size:11px;max-width:150px;word-break:break-word">${r.reason||'—'}</td>
                 <td>${fmtDate(r.submittedAt||r.timestamp)}</td>
+                <td>${audioBtnHtml}</td>
                 <td><span class="status-pill ${r.resolved ? 'pill-normal' : 'pill-pending'}">${r.resolved ? '처리됨' : '미처리'}</span></td>
                 <td>
                     <button class="action-btn btn-view" onclick="openUserModal('${r.reportedUid}')">피신고자</button>
                     <button class="action-btn btn-restore" onclick="resolveReport('${id}')">처리완료</button>
                 </td>
-            </tr>`).join('')
-            : '<tr class="empty-row"><td colspan="6">신고 내역 없음</td></tr>';
+            </tr>`;
+        }).join('')
+            : '<tr class="empty-row"><td colspan="9">신고 내역 없음</td></tr>';
     }
 
     function appealCard(uid, a) {
@@ -1116,6 +1132,19 @@
     async function resolveReport(id) {
         await db.ref(`reports/${id}`).update({ resolved: true });
         await loadReports();
+    }
+
+    function playReportAudio(url) {
+        const existing = document.getElementById('report-audio-player');
+        if (existing) existing.remove();
+        const audio = document.createElement('audio');
+        audio.id = 'report-audio-player';
+        audio.controls = true;
+        audio.autoplay = true;
+        audio.src = url;
+        audio.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4);background:#1e1e2e;';
+        document.body.appendChild(audio);
+        audio.onended = () => audio.remove();
     }
 
     async function acceptAppeal(uid, type) {
