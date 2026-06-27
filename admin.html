@@ -1130,14 +1130,18 @@
     }
 
     async function resolveReport(id) {
+        console.log('resolveReport called:', id);
         try {
-            await db.ref(`reports/${id}`).update({ resolved: true });
+            await db.ref('reports/' + id).update({ resolved: true });
             await loadReports();
         } catch(e) {
             console.error('resolveReport error:', e);
             alert('처리 실패: ' + e.message);
         }
     }
+    window.resolveReport = resolveReport;
+    window.openUserModal = openUserModal;
+    window.playReportAudio = playReportAudio;
 
     function playReportAudio(url) {
         const existing = document.getElementById('report-audio-player');
