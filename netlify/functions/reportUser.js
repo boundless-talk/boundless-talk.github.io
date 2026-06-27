@@ -7,7 +7,7 @@ if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         databaseURL: "https://b-talk-login-default-rtdb.firebaseio.com/",
-        storageBucket: "b-talk-login.appspot.com"
+        storageBucket: "b-talk-login.firebasestorage.app"
     });
 }
 
