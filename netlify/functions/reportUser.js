@@ -37,21 +37,20 @@ exports.handler = async function(event, context) {
         busboy.on('field', (name, value) => { fields[name] = value; });
 
         busboy.on('finish', async () => {
-            try {
-                const finalAudioBuffer = Buffer.concat(audioBuffer);
-                const { reportedUid, reporterUid, channel } = fields;
+            const finalAudioBuffer = Buffer.concat(audioBuffer);
+            const { reportedUid, reporterUid, channel } = fields;
 
-                if (!reportedUid) {
-                    return resolve({ statusCode: 400, headers: CORS_HEADERS, body: 'Missing reportedUid' });
-                }
+            if (!reportedUid) {
+                return resolve({ statusCode: 400, headers: CORS_HEADERS, body: 'Missing reportedUid' });
+            }
 
-                const hasAudio = finalAudioBuffer.length > 0;
-                let audioStorageUrl = null;
-                let aiResult = null;
+            const hasAudio = finalAudioBuffer.length > 0;
+            let audioStorageUrl = null;
+            let aiResult = null;
 
-                // 1. 음성 파일이 있으면 Storage에 저장 + Gemini 분석
-                if (hasAudio) {
-                    // Firebase Storage에 원본 음성 파일 저장
+            // 1. Storage 저장 + Gemini 분석 (실패해도 신고 내역은 저장)
+            if (hasAudio) {
+                try {
                     const timestamp = Date.now();
                     const storagePath = `reports/${reportedUid}/${timestamp}.webm`;
                     const file = bucket.file(storagePath);
@@ -60,14 +59,17 @@ exports.handler = async function(event, context) {
                         metadata: { contentType: 'audio/webm' }
                     });
 
-                    // 다운로드 가능한 서명된 URL 생성 (7일 유효)
                     const [signedUrl] = await file.getSignedUrl({
                         action: 'read',
                         expires: Date.now() + 7 * 24 * 60 * 60 * 1000
                     });
                     audioStorageUrl = signedUrl;
+                    console.log(`[STORAGE] Saved: ${storagePath}`);
+                } catch (storageErr) {
+                    console.error('[STORAGE ERROR]', storageErr.message);
+                }
 
-                    // Gemini AI 유해성 검사
+                try {
                     const prompt = `
                     첨부된 오디오 파일은 익명 음성 채팅방의 대화 내용입니다.
                     이 음성 내용 중에 심한 욕설, 성희롱, 차별적 혐오 발언, 또는 심각한 범죄 모의 내용이 포함되어 있는지 판별하세요.
@@ -85,11 +87,15 @@ exports.handler = async function(event, context) {
                         }],
                         config: { responseMimeType: "application/json" }
                     });
-
                     aiResult = JSON.parse(response.text);
+                    console.log(`[GEMINI] isToxic: ${aiResult.isToxic}, reason: ${aiResult.reason}`);
+                } catch (geminiErr) {
+                    console.error('[GEMINI ERROR]', geminiErr.message);
                 }
+            }
 
-                // 2. 신고 내역 Firebase에 저장 (음성 URL 포함)
+            // 2. 신고 내역 Firebase DB 저장 (항상 실행)
+            try {
                 const reportEntry = {
                     reporterUid: reporterUid || null,
                     reportedUid: reportedUid,
@@ -103,69 +109,55 @@ exports.handler = async function(event, context) {
                 };
 
                 await db.ref('reports').push(reportEntry);
+                console.log(`[DB] Report saved for ${reportedUid}`);
+            } catch (dbErr) {
+                console.error('[DB ERROR]', dbErr.message);
+                return resolve({ statusCode: 500, headers: CORS_HEADERS, body: 'DB write failed' });
+            }
 
-                // 3. 음성 없이 신고한 경우 — 허위 신고 가능성 기록
-                if (!hasAudio) {
+            // 3. 음성 없이 신고한 경우
+            if (!hasAudio) {
+                try {
                     const falseReportRef = db.ref('users/' + (reporterUid || 'unknown') + '/falseReportCount');
                     const snap = await falseReportRef.once('value');
                     await falseReportRef.set((snap.val() || 0) + 1);
-                    console.log(`[NO_AUDIO_REPORT] reporter: ${reporterUid}, reported: ${reportedUid}`);
-                    return resolve({
-                        statusCode: 200,
-                        headers: CORS_HEADERS,
-                        body: JSON.stringify({ success: true, toxic: false, note: 'no_audio' })
-                    });
-                }
+                } catch(e) {}
+                return resolve({
+                    statusCode: 200,
+                    headers: CORS_HEADERS,
+                    body: JSON.stringify({ success: true, toxic: false, note: 'no_audio' })
+                });
+            }
 
-                // 4. 유해성 감지 시 3단계 제재 처리
-                if (aiResult && aiResult.isToxic) {
+            // 4. 유해성 감지 시 3단계 제재
+            if (aiResult && aiResult.isToxic) {
+                try {
                     const userRef = db.ref('users/' + reportedUid);
                     const snapshot = await userRef.once('value');
                     const userData = snapshot.val() || {};
-
                     const reportCount = (userData.reportCount || 0) + 1;
                     const now = Date.now();
 
-                    console.log(`[REPORT] User: ${reportedUid}, Count: ${reportCount}, Reason: ${aiResult.reason}`);
-
                     if (reportCount === 1) {
-                        await userRef.update({
-                            reportCount,
-                            warnedAt: now,
-                            lastReportReason: aiResult.reason
-                        });
-                        console.log(`[WARN] User: ${reportedUid}`);
-
+                        await userRef.update({ reportCount, warnedAt: now, lastReportReason: aiResult.reason });
+                        console.log(`[WARN] ${reportedUid}`);
                     } else if (reportCount === 2) {
-                        await userRef.update({
-                            reportCount,
-                            suspendedUntil: now + 24 * 60 * 60 * 1000,
-                            suspendReason: aiResult.reason,
-                            lastReportReason: aiResult.reason
-                        });
-                        console.log(`[SUSPEND 24H] User: ${reportedUid}`);
-
+                        await userRef.update({ reportCount, suspendedUntil: now + 24 * 60 * 60 * 1000, suspendReason: aiResult.reason, lastReportReason: aiResult.reason });
+                        console.log(`[SUSPEND 24H] ${reportedUid}`);
                     } else {
-                        await userRef.update({
-                            reportCount,
-                            banned: true,
-                            bannedAt: now,
-                            banReason: aiResult.reason
-                        });
-                        console.log(`[BAN PERMANENT] User: ${reportedUid}`);
+                        await userRef.update({ reportCount, banned: true, bannedAt: now, banReason: aiResult.reason });
+                        console.log(`[BAN PERMANENT] ${reportedUid}`);
                     }
+                } catch (sanctionErr) {
+                    console.error('[SANCTION ERROR]', sanctionErr.message);
                 }
-
-                resolve({
-                    statusCode: 200,
-                    headers: CORS_HEADERS,
-                    body: JSON.stringify({ success: true, toxic: aiResult ? aiResult.isToxic : false })
-                });
-
-            } catch (error) {
-                console.error("Report process failed:", error);
-                resolve({ statusCode: 500, headers: CORS_HEADERS, body: 'Internal Server Error' });
             }
+
+            resolve({
+                statusCode: 200,
+                headers: CORS_HEADERS,
+                body: JSON.stringify({ success: true, toxic: aiResult ? aiResult.isToxic : false })
+            });
         });
 
         busboy.write(Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8'));
