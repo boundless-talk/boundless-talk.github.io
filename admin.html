@@ -977,7 +977,10 @@
                 <td><span class="status-pill ${r.resolved ? 'pill-normal' : 'pill-pending'}">${r.resolved ? '처리됨' : '미처리'}</span></td>
                 <td>
                     <button class="action-btn btn-view" onclick="openUserModal('${r.reportedUid}')">피신고자</button>
-                    <button class="action-btn btn-restore" onclick="resolveReport('${id}')">처리완료</button>
+                    <button class="action-btn" style="background:rgba(255,200,0,0.15);color:#ffc800;border:1px solid rgba(255,200,0,0.3)" onclick="sanctionReport('${id}','${r.reportedUid}','warn')">경고</button>
+                    <button class="action-btn btn-ban" onclick="sanctionReport('${id}','${r.reportedUid}','suspend')">24h정지</button>
+                    <button class="action-btn btn-ban" onclick="sanctionReport('${id}','${r.reportedUid}','ban')">영구정지</button>
+                    <button class="action-btn btn-restore" onclick="sanctionReport('${id}','${r.reportedUid}','clear')">무혐의</button>
                 </td>
             </tr>`;
         }).join('')
@@ -1130,7 +1133,6 @@
     }
 
     async function resolveReport(id) {
-        console.log('resolveReport called:', id);
         try {
             await db.ref('reports/' + id).update({ resolved: true });
             await loadReports();
@@ -1139,7 +1141,33 @@
             alert('처리 실패: ' + e.message);
         }
     }
+
+    async function sanctionReport(reportId, uid, type) {
+        if (!uid) return;
+        const labels = { warn: '경고', suspend: '24시간 정지', ban: '영구정지', clear: '무혐의 처리' };
+        if (!confirm(`"${labels[type]}" 처리하시겠습니까?`)) return;
+        try {
+            const userRef = db.ref('users/' + uid);
+            const now = Date.now();
+            if (type === 'warn') {
+                await userRef.update({ warnedAt: now, lastReportReason: '관리자 수동 경고' });
+            } else if (type === 'suspend') {
+                await userRef.update({ suspendedUntil: now + 86400000, suspendReason: '관리자 수동 정지' });
+            } else if (type === 'ban') {
+                await userRef.update({ banned: true, bannedAt: now, banReason: '관리자 수동 영구정지' });
+            } else if (type === 'clear') {
+                await userRef.update({ warnedAt: null, suspendedUntil: null, suspendReason: null });
+            }
+            await db.ref('reports/' + reportId).update({ resolved: true, adminAction: type, actionAt: now });
+            await loadReports();
+            alert(`${labels[type]} 완료!`);
+        } catch(e) {
+            console.error('sanctionReport error:', e);
+            alert('처리 실패: ' + e.message);
+        }
+    }
     window.resolveReport = resolveReport;
+    window.sanctionReport = sanctionReport;
     window.openUserModal = openUserModal;
     window.playReportAudio = playReportAudio;
 
