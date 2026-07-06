@@ -2882,12 +2882,12 @@ document.getElementById('max-people-group').style.visibility = "hidden";
         if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
         myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
     }, 2 * 60 * 1000);
+                    } catch(e) { console.warn('activeTopics write failed (may be permission):', e.message); }
+                    // 리스너는 write 성공/실패와 무관하게 항상 등록 (게스트도 상대방 닉네임 수신 가능)
+                    try {
 database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     const data = snap.val() || {};
-    if (!snap.exists()) {
-        database.ref('activeTopics/' + safeAgoraChannelId).remove();
-        return;
-    }
+    if (!snap.exists()) return;
     Object.entries(data).forEach(([uid, val]) => {
         if (val && val.style) speechStyleMap[uid] = val.style;
         if (val && val.nickname) uidToNickname[uid] = val.nickname;
@@ -2895,7 +2895,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     });
     updateRoomParticipants();
 });
-                    } catch(e) { console.warn('activeTopics write failed (may be permission):', e.message); }
+                    } catch(e) { console.warn('activeTopics listen failed:', e.message); }
                 }
             }
 
@@ -2965,16 +2965,16 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     // Agora 원격 유저 서브스크립션 이벤트 핸들러
     client.on("user-published", async (user, mediaType) => {
-        await client.subscribe(user, mediaType);
+        try { await client.subscribe(user, mediaType); } catch(e) { console.warn('subscribe failed:', e.message); }
         if (mediaType === "audio") {
-            user.audioTrack.play();
-
+            // 참여자 목록 먼저 추가 (play() 실패해도 목록엔 보이도록)
             if (!roomParticipants.includes(user.uid)) {
                 roomParticipants.push(user.uid);
                 renderParticipantsUI();
-                // 첫 번째 상대방 입장 시 7분 타이머 시작
                 if (roomParticipants.length === 1) startFreeTimer();
             }
+
+            try { if (user.audioTrack) user.audioTrack.play(); } catch(e) { console.warn('audioTrack.play failed:', e.message); }
 
             // Agora UID → Firebase UID 조회
             if (!agoraToFirebaseUid[user.uid]) {
