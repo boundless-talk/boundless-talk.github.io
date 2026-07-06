@@ -1229,12 +1229,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="stats-rank-row" id="stats-rank-row">RANK: <span id="rank-label">—</span></div>
         <div class="stats-grid">
             <div class="stats-main-badge">
-                <div class="stats-main-emoji">👍</div>
-                <div class="stats-main-label"><span id="label-manner">NICE</span></div>
-                <div class="stats-main-value" id="score-manner">0</div>
-                <div class="stats-bar"><div class="stats-bar-fill" id="bar-manner" style="width:0%"></div></div>
+                <div class="stats-main-emoji" id="main-badge-emoji">👍</div>
+                <div class="stats-main-label" id="main-badge-label">NICE</div>
+                <div class="stats-main-value" id="main-badge-value">0</div>
+                <div class="stats-bar"><div class="stats-bar-fill" id="main-badge-bar" style="width:100%"></div></div>
             </div>
-            <div class="stats-sub-grid">
+            <div class="stats-sub-grid" id="stats-sub-grid">
+                <div class="stats-sub-badge">
+                    <div class="stats-sub-top">👍 <span id="label-manner">NICE</span>: <strong id="score-manner">0</strong></div>
+                    <div class="stats-bar"><div class="stats-bar-fill" id="bar-manner" style="width:0%"></div></div>
+                </div>
                 <div class="stats-sub-badge">
                     <div class="stats-sub-top">🧠 <span id="label-logic">LOGIC</span>: <strong id="score-logic">0</strong></div>
                     <div class="stats-bar"><div class="stats-bar-fill" id="bar-logic" style="width:0%"></div></div>
@@ -2000,6 +2004,19 @@ database.ref('activeTopics').on('value', (snap) => {
                 document.getElementById('bar-humor').style.width   = (humor   / maxVal * 100) + '%';
                 document.getElementById('bar-empathy').style.width = (empathy / maxVal * 100) + '%';
                 document.getElementById('bar-passion').style.width = (passion / maxVal * 100) + '%';
+
+                // 최고값 배지를 메인 카드에 표시
+                const allBadges = [
+                    { key: 'manner',  val: manner,  emoji: '👍', labelId: 'label-manner'  },
+                    { key: 'logic',   val: logic,   emoji: '🧠', labelId: 'label-logic'   },
+                    { key: 'humor',   val: humor,   emoji: '🤣', labelId: 'label-humor'   },
+                    { key: 'empathy', val: empathy, emoji: '🤗', labelId: 'label-empathy' },
+                    { key: 'passion', val: passion, emoji: '🔥', labelId: 'label-passion' },
+                ];
+                const top = allBadges.reduce((a, b) => b.val > a.val ? b : a);
+                document.getElementById('main-badge-emoji').textContent = top.emoji;
+                document.getElementById('main-badge-label').textContent = document.getElementById(top.labelId).innerText;
+                document.getElementById('main-badge-value').textContent = top.val;
 
                 // 랭크 계산
                 const total = manner + logic + humor + empathy + passion;
