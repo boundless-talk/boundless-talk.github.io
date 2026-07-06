@@ -1226,7 +1226,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <button id="logout-btn" style="display: none;">LOGOUT</button>
     </div>
    <div class="reputation-board" id="reputation-section" style="display: none;">
-        <div class="stats-rank-row">RANK: <span id="rank-label">—</span></div>
+        <div class="stats-rank-row" id="stats-rank-row">RANK: <span id="rank-label">—</span></div>
         <div class="stats-grid">
             <div class="stats-main-badge">
                 <div class="stats-main-emoji">👍</div>
@@ -2003,13 +2003,13 @@ database.ref('activeTopics').on('value', (snap) => {
 
                 // 랭크 계산
                 const total = manner + logic + humor + empathy + passion;
-                let rank;
-                if      (total >= 200) rank = '🏆 LEGEND TALKER';
-                else if (total >= 100) rank = '🥇 GOLD TALKER';
-                else if (total >= 50)  rank = '🥈 SILVER TALKER';
-                else if (total >= 10)  rank = '🌱 RISING TALKER';
-                else                   rank = '👋 NEWCOMER';
+                const rankNames = currentLang === 'ko'
+                    ? ['👋 뉴비', '🌱 떠오르는 토커', '🥈 실버 토커', '🥇 골드 토커', '🏆 레전드 토커']
+                    : ['👋 NEWCOMER', '🌱 RISING TALKER', '🥈 SILVER TALKER', '🥇 GOLD TALKER', '🏆 LEGEND TALKER'];
+                const rank = total >= 200 ? rankNames[4] : total >= 100 ? rankNames[3] : total >= 50 ? rankNames[2] : total >= 10 ? rankNames[1] : rankNames[0];
                 document.getElementById('rank-label').innerText = rank;
+                const rankRow = document.getElementById('stats-rank-row');
+                if (rankRow) rankRow.childNodes[0].textContent = currentLang === 'ko' ? '랭크: ' : 'RANK: ';
             });
 
             // 친구 요청 실시간 수신 리스너 시작
@@ -2190,7 +2190,7 @@ database.ref('activeTopics').on('value', (snap) => {
         document.getElementById('opt-3').innerText = lang.opt3;
         document.getElementById('opt-4').innerText = lang.opt4;
         document.getElementById('opt-6').innerText = lang.opt6;
-        document.getElementById('rep-title').innerText = lang.repTitle;
+        const repTitleEl = document.getElementById('rep-title'); if (repTitleEl) repTitleEl.innerText = lang.repTitle;
         document.getElementById('label-manner').innerText = lang.badgeManner;
         document.getElementById('label-logic').innerText = lang.badgeLogic;
         document.getElementById('label-humor').innerText = lang.badgeHumor;
