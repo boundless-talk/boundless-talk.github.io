@@ -245,6 +245,10 @@
         .stats-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #00e5ff, #7b61ff); transition: width 0.5s ease; }
         #rank-info-popup { display: none; }
         #rank-info-popup.active { display: block; }
+        .rank-badge-item { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
+        .rank-badge-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid rgba(255,255,255,0.08); }
+        .rank-badge-name { font-size:9px; font-weight:800; letter-spacing:0.5px; color:rgba(255,255,255,0.75); text-align:center; }
+        .rank-badge-range { font-size:9px; color:rgba(255,255,255,0.35); text-align:center; }
 
         #main-container {
             width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
@@ -1229,13 +1233,30 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
    <div class="reputation-board" id="reputation-section" style="display: none;">
         <div class="stats-rank-row" id="stats-rank-row">RANK: <span id="rank-label">—</span> <button onclick="const p=document.getElementById('rank-info-popup');p.style.display=p.style.display==='none'?'block':'none';" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;padding:0;margin-left:4px;vertical-align:middle;line-height:1;">?</button></div>
-        <div id="rank-info-popup" style="display:none;background:rgba(20,20,30,0.97);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px 14px;margin:6px 0 4px;text-align:left;font-size:11px;color:rgba(255,255,255,0.6);line-height:1.8;">
-            <div style="font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:6px;" id="rank-info-title">Rank is based on total badges received</div>
-            <div>👋 NEWCOMER — 0–9</div>
-            <div>🌱 RISING TALKER — 10–49</div>
-            <div>🥈 SILVER TALKER — 50–99</div>
-            <div>🥇 GOLD TALKER — 100–199</div>
-            <div>🏆 LEGEND TALKER — 200+</div>
+        <div id="rank-info-popup" style="display:none;background:rgba(15,15,22,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px 10px 10px;margin:6px 0 4px;">
+            <div id="rank-info-title" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-align:center;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Total badges earned</div>
+            <div style="display:flex;justify-content:space-around;gap:4px;">
+                <div class="rank-badge-item">
+                    <div class="rank-badge-icon" style="background:rgba(120,200,80,0.15);">🌱</div>
+                    <div class="rank-badge-name" id="ri-name">RISING</div>
+                    <div class="rank-badge-range">10–49</div>
+                </div>
+                <div class="rank-badge-item">
+                    <div class="rank-badge-icon" style="background:rgba(180,180,200,0.15);">🥈</div>
+                    <div class="rank-badge-name" id="ri-silver">SILVER</div>
+                    <div class="rank-badge-range">50–99</div>
+                </div>
+                <div class="rank-badge-item">
+                    <div class="rank-badge-icon" style="background:rgba(255,200,50,0.15);">🥇</div>
+                    <div class="rank-badge-name" id="ri-gold">GOLD</div>
+                    <div class="rank-badge-range">100–199</div>
+                </div>
+                <div class="rank-badge-item">
+                    <div class="rank-badge-icon" style="background:rgba(255,160,30,0.2);">🏆</div>
+                    <div class="rank-badge-name" id="ri-legend">LEGEND</div>
+                    <div class="rank-badge-range">200+</div>
+                </div>
+            </div>
         </div>
         <div class="stats-grid">
             <div class="stats-main-badge">
