@@ -1980,6 +1980,10 @@ database.ref('activeTopics').on('value', (snap) => {
             });
 
         } else {
+            isGuest = false;
+            const guestBadge = document.getElementById('guest-badge');
+            if (guestBadge) guestBadge.remove();
+
             document.getElementById("auth-section").style.display = "flex";
             if (logoutBtn) logoutBtn.style.display = "none";
             if (talkControls) talkControls.style.display = "none";
