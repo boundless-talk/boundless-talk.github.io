@@ -2176,15 +2176,11 @@ database.ref('activeTopics').on('value', (snap) => {
 
         // 랭크 팝업 다국어
         const rankInfoTitle = document.getElementById('rank-info-title');
-        if (rankInfoTitle) rankInfoTitle.textContent = currentLang === 'ko' ? '총 배지 수 기준으로 랭크가 결정됩니다' : 'Rank is based on total badges received';
-        const rankInfoPopup = document.getElementById('rank-info-popup');
-        if (rankInfoPopup) {
-            const rows = rankInfoPopup.querySelectorAll('div:not(#rank-info-title)');
-            const ko = ['👋 뉴비 — 0–9', '🌱 떠오르는 토커 — 10–49', '🥈 실버 토커 — 50–99', '🥇 골드 토커 — 100–199', '🏆 레전드 토커 — 200+'];
-            const en = ['👋 NEWCOMER — 0–9', '🌱 RISING TALKER — 10–49', '🥈 SILVER TALKER — 50–99', '🥇 GOLD TALKER — 100–199', '🏆 LEGEND TALKER — 200+'];
-            const labels = currentLang === 'ko' ? ko : en;
-            rows.forEach((r, i) => { if (labels[i]) r.textContent = labels[i]; });
-        }
+        if (rankInfoTitle) rankInfoTitle.textContent = currentLang === 'ko' ? '총 배지 수 기준으로 랭크가 결정됩니다' : 'Total badges earned';
+        const riName = document.getElementById('ri-name'); if (riName) riName.textContent = currentLang === 'ko' ? '떠오르는 토커' : 'RISING';
+        const riSilver = document.getElementById('ri-silver'); if (riSilver) riSilver.textContent = currentLang === 'ko' ? '실버 토커' : 'SILVER';
+        const riGold = document.getElementById('ri-gold'); if (riGold) riGold.textContent = currentLang === 'ko' ? '골드 토커' : 'GOLD';
+        const riLegend = document.getElementById('ri-legend'); if (riLegend) riLegend.textContent = currentLang === 'ko' ? '레전드 토커' : 'LEGEND';
         const rankRow = document.getElementById('stats-rank-row');
         if (rankRow) rankRow.childNodes[0].textContent = currentLang === 'ko' ? '랭크: ' : 'RANK: ';
 
