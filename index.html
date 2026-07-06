@@ -2056,12 +2056,8 @@ database.ref('activeTopics').on('value', (snap) => {
         if(document.getElementById('label-add-friend')) document.getElementById('label-add-friend').innerText = lang.addFriendBtn;
         if(document.getElementById('friends-m-title')) document.getElementById('friends-m-title').innerText = lang.friendsModalTitle;
 
-        // 토글 버튼 텍스트 다국어 처리
-        if (currentLang === 'ko') {
-            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 대화지수 접기" : "📊 대화지수";
-        } else {
-            document.getElementById('toggle-rep-btn').innerText = isRepOpen ? "📊 HIDE TALK INDEX" : "📊 TALK INDEX";
-        }
+        // 토글 버튼 텍스트 고정
+        document.getElementById('toggle-rep-btn').innerText = currentLang === 'ko' ? "📊 대화지수" : "📊 TALK INDEX";
 
         if (appTitle) appTitle.innerText = lang.title;
         if (appSubtitle) appSubtitle.innerText = lang.subtitle;
@@ -2334,10 +2330,8 @@ database.ref('activeTopics').on('value', (snap) => {
 
         if (repSection.style.display === "none") {
             repSection.style.display = "block";
-            btn.innerText = (currentLang === 'ko') ? "📊 대화지수 접기" : "📊 HIDE TALK INDEX";
         } else {
             repSection.style.display = "none";
-            btn.innerText = (currentLang === 'ko') ? "📊 대화지수" : "📊 TALK INDEX";
         }
     });
     // ── 이메일 로그인 토글 ──
