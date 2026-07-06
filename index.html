@@ -2868,23 +2868,22 @@ document.getElementById('max-people-group').style.visibility = "hidden";
 
             // 내 Agora UID → Firebase UID 매핑을 채널 경로에 등록 (상대방이 참조용)
             if (firebaseUser) {
-                await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
-                // 퇴장 시 자동 삭제
-                database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+                try {
+                    await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
+                    database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+                } catch(e) { console.warn('channels write failed (may be permission):', e.message); }
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
+                    try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, ts: firebase.database.ServerValue.TIMESTAMP });
+    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, ts: firebase.database.ServerValue.TIMESTAMP });
     myTopicRef.onDisconnect().remove();
-    // 2분마다 ts 갱신 (비정상 종료 감지용 — 5분 stale 기준보다 짧게)
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
     window._heartbeatInterval = setInterval(() => {
         if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
         myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
     }, 2 * 60 * 1000);
-// 채널 참여자 스타일 리스닝
 database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     const data = snap.val() || {};
-    // 채널이 비어있으면 자동 삭제 (비정상 종료로 onDisconnect가 실패한 경우 대비)
     if (!snap.exists()) {
         database.ref('activeTopics/' + safeAgoraChannelId).remove();
         return;
@@ -2896,7 +2895,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     });
     updateRoomParticipants();
 });
-}
+                    } catch(e) { console.warn('activeTopics write failed (may be permission):', e.message); }
+                }
             }
 
             // 아고라 채널 퍼블리시
