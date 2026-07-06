@@ -2978,15 +2978,14 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
             // Agora UID → Firebase UID 조회
             if (!agoraToFirebaseUid[user.uid]) {
-                const snap = await database.ref(`channels/${safeAgoraChannelId}/members/${user.uid}`).once('value');
-                const fbUid = snap.val();
-                if (fbUid) {
-                    agoraToFirebaseUid[user.uid] = fbUid;
-                    // Firebase UID로 동물 배정 → Agora UID도 같은 동물로 연결
-                    const animal = assignAnimal(fbUid);
-                    uidToAnimal[user.uid] = animal; // Agora UID도 같은 동물 참조
-                    renderParticipantsUI(); // Firebase UID 확보 후 재렌더
-                }
+                try {
+                    const snap = await database.ref(`channels/${safeAgoraChannelId}/members/${user.uid}`).once('value');
+                    const fbUid = snap.val();
+                    if (fbUid) {
+                        agoraToFirebaseUid[user.uid] = fbUid;
+                        renderParticipantsUI();
+                    }
+                } catch(e) { console.warn('channels read failed:', e.message); }
             }
 
             // 세션 전체 참여자 목록 (Firebase UID 기준)
