@@ -1105,6 +1105,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                 <button id="email-signup-btn-main">✨ 이메일로 회원가입</button>
 
+                <div style="display:flex; align-items:center; gap:10px; margin:6px 0;">
+                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                    <span style="font-size:11px; color:rgba(255,255,255,0.25);">or</span>
+                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                </div>
+                <button id="guest-login-btn" style="background:transparent; border:1px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.45); font-size:12.5px; padding:11px 14px; font-weight:500; opacity:0.85; margin:0 0 12px 0;">👀 <span id="guest-login-text">게스트로 체험하기</span></button>
+
                 <div class="auth-form-panel" id="signup-form-panel">
                     <div class="auth-form-inner">
 
@@ -1539,6 +1546,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let safeAgoraChannelId = ""; // 전역으로 저장 — 저장/조회 시 항상 동일한 값 보장
     let myUid = null;
     let myAnimalGlobal = null;
+    let isGuest = false; // 게스트 모드 여부
     let myNickname = ""; // 사용자 입력 닉네임
     let nicknameConfirmed = false; // 닉네임 입력 후 join 진행 플래그
     let uidToNickname = {}; // uid → nickname (Firebase에서 수신)
@@ -1676,6 +1684,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2S6: `After the call, you can send a <strong>Talk Badge</strong> to your peer.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">Choose from: Nice, Logic, Fun, Warm, or Bold.</span>`,
         intro2S7: `Try it free for <strong>7 minutes</strong>.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">If you want to keep talking, decide then.</span>`,
         talkAgainBtn: "🗣️ TALK AGAIN",
+        guestLoginBtn: "👀 Try as Guest",
         addFriendBtn: "➕ ADD FRIEND",
         friendsModalTitle: "MY FRIEND LIST",
         noFriends: "No friends added yet. Make some friends after a talk!",
@@ -1773,6 +1782,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2S6: `대화가 끝나면 상대방에게 <strong>대화지수 배지</strong>를 보낼 수 있어요.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">매너, 논리, 유머, 공감, 열정 중 하나를 선택하세요.</span>`,
         intro2S7: `<strong>7분간 무료</strong>로 대화해보세요.<br><span style="font-size:12px;color:rgba(255,255,255,0.4);">더 이야기하고 싶다면, 그때 결정하면 됩니다.</span>`,
         talkAgainBtn: "🗣️ 또 대화하기",
+        guestLoginBtn: "👀 게스트로 체험하기",
         addFriendBtn: "➕ 친구 추가",
         friendsModalTitle: "나의 친구 목록",
         noFriends: "아직 추가된 친구가 없습니다. 대화 후 친구를 맺어보세요!",
@@ -1814,6 +1824,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const talkControls = document.getElementById("talk-controls");
 
         if (user) {
+            isGuest = user.isAnonymous;
+            // 게스트 배지 표시
+            let guestBadge = document.getElementById('guest-badge');
+            if (isGuest) {
+                if (!guestBadge) {
+                    guestBadge = document.createElement('div');
+                    guestBadge.id = 'guest-badge';
+                    guestBadge.style.cssText = 'position:fixed;top:20px;left:20px;z-index:9000;background:rgba(255,255,255,0.06);border:1px dashed rgba(255,255,255,0.2);color:rgba(255,255,255,0.45);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.5px;';
+                    guestBadge.textContent = 'GUEST';
+                    document.body.appendChild(guestBadge);
+                }
+            } else {
+                if (guestBadge) guestBadge.remove();
+            }
             // presence 로직은 setupPresence()로 분리 — 인증 완료 후 별도 호출
             setupPresence(user.uid);
             database.ref(`invites/${user.uid}`).on('value', (snap) => {
@@ -2006,6 +2030,8 @@ database.ref('activeTopics').on('value', (snap) => {
         const isRepOpen = document.getElementById('reputation-section').style.display === "block";
 
         document.getElementById('btn-talk-again').innerText = lang.talkAgainBtn;
+        const guestLoginText = document.getElementById('guest-login-text');
+        if (guestLoginText) guestLoginText.textContent = lang.guestLoginBtn.replace('👀 ', '');
         // 인트로 화면 다국어
         const introDescEl = document.getElementById('intro-desc');
         const introBtnEl = document.getElementById('intro-start-btn');
@@ -2265,6 +2291,15 @@ database.ref('activeTopics').on('value', (snap) => {
         document.getElementById('consent-modal').classList.remove('active');
         if (pendingLoginAction) { pendingLoginAction(); pendingLoginAction = null; }
     }
+
+    document.getElementById('guest-login-btn').addEventListener('click', () => {
+        requireConsent(() => {
+            auth.signInAnonymously().catch((e) => {
+                console.error(e);
+                alert(currentLang === 'ko' ? '게스트 로그인에 실패했습니다.' : 'Guest login failed.');
+            });
+        });
+    });
 
     document.getElementById('google-login-btn').addEventListener('click', () => {
         requireConsent(() => {
@@ -2767,7 +2802,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
         currentChannelName = finalTopic;
 
         // 🚨 전역 변수에 저장 — 저장/조회 시 항상 동일값 보장
-        safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 64);
+        safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 60) + (isGuest ? "_gst" : "");
 
     
 
@@ -3715,6 +3750,19 @@ return text;
         const container = document.getElementById('vote-target-container');
         container.innerHTML = "";
         selectedVoteTarget = null;
+
+        // 게스트는 배지 보내기 / 친구 추가 비활성화
+        const addFriendBtn = document.getElementById('btn-add-friend');
+        const voteBtns = document.querySelectorAll('.badge-vote-btn:not(#vote-skip)');
+        if (isGuest) {
+            if (addFriendBtn) addFriendBtn.style.display = 'none';
+            voteBtns.forEach(b => { b.style.display = 'none'; });
+            container.innerHTML = `<div style="font-size:13px; color:rgba(255,255,255,0.45); text-align:center; padding:14px; line-height:1.6;">${currentLang === 'ko' ? "🔒 배지 보내기와 친구 추가는<br>로그인 후 이용할 수 있어요." : "🔒 Badge & friend features<br>are available after sign-up."}</div>`;
+            return;
+        } else {
+            if (addFriendBtn) addFriendBtn.style.display = '';
+            voteBtns.forEach(b => { b.style.display = ''; });
+        }
 
         toggleVoteBadgeButtons(false);
 
