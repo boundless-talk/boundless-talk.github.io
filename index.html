@@ -1076,20 +1076,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <button class="intro-start-btn" id="intro-start-btn" onclick="showIntro2()">Get Started</button>
     </div>
 
-    <!-- 인트로 두 번째 화면 -->
-    <div id="intro-screen-2" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-gradient); z-index:5000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 30px; overflow-y:auto;">
-        <div style="max-width:400px; width:100%;">
-            <div class="intro-title" style="font-size:22px; letter-spacing:4px; margin-bottom:28px;">HOW IT WORKS</div>
-            <div id="intro2-steps" style="text-align:left; margin-bottom:36px; display:flex; flex-direction:column; gap:18px;">
+    <!-- How It Works 팝업 -->
+    <div id="intro-screen-2" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:400px; max-height:85vh; overflow-y:auto;">
+            <div class="intro-title" style="font-size:18px; letter-spacing:3px; margin-bottom:24px; text-align:center;" id="intro2-title">HOW IT WORKS</div>
+            <div id="intro2-steps" style="text-align:left; margin-bottom:28px; display:flex; flex-direction:column; gap:16px;">
                 <div class="intro2-step"><span class="intro2-num">01</span><p id="intro2-s1">간단히 <strong>로그인</strong>하세요.</p></div>
                 <div class="intro2-step"><span class="intro2-num">02</span><p id="intro2-s2">원하는 <strong>주제</strong>와 대화하고픈 <strong>최대 인원</strong>을 선택하세요.<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">그 이하여도 대화는 시작됩니다.</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3">주제가 망설여진다면 <strong>현재 대화 중인 방</strong>에 참여해보세요.</p></div>
                 <div class="intro2-step"><span class="intro2-num">04</span><p id="intro2-s4">대화가 즐거웠던 유저는 <strong>친구를 맺어</strong> 다음에 또 대화해보세요.</p></div>
                 <div class="intro2-step"><span class="intro2-num">05</span><p id="intro2-s6">대화가 끝나면 상대방에게 <strong>대화스탯 배지</strong>를 보낼 수 있어요.<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">매너, 논리, 유머, 공감, 열정 중 하나를 선택하세요.</span></p></div>
-                <div class="intro2-step"><span class="intro2-num">06</span><p id="intro2-s7"><strong>7분간</strong> 즐겁게 대화하세요.<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">더 긴 대화는 구독 서비스를 이용해주세요.</span></p></div>
+                <div class="intro2-step"><span class="intro2-num">06</span><p id="intro2-s7"><strong>10분간</strong> 즐겁게 대화하세요.<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">더 긴 대화는 구독 서비스를 이용해주세요.</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">07</span><p id="intro2-s5">악성 유저가 있다면 <strong>신고</strong>해주세요.<br><span style="font-size:12px; color:rgba(255,255,255,0.4);">경고 → 24시간 정지 → 영구정지 순으로 처리됩니다.</span></p></div>
             </div>
-            <button class="intro-start-btn" id="intro2-start-btn" onclick="startFromIntro()">시작하기</button>
+            <button class="intro-start-btn" id="intro2-start-btn" onclick="startFromIntro()" style="width:100%;">확인</button>
         </div>
     </div>
 
@@ -5059,23 +5059,14 @@ B-TALK은 이용자 간 연결을 위한 플랫폼만을 제공합니다. 대화
     }
 
     function showIntro2() {
-        const intro = document.getElementById('intro-screen');
-        const intro2 = document.getElementById('intro-screen-2');
-        intro2.style.display = 'flex';
-        intro2.classList.add('show');
-        intro.classList.add('hide');
-        setTimeout(() => { intro.style.display = 'none'; }, 500);
+        document.getElementById('intro-screen-2').style.display = 'flex';
     }
 
     function startFromIntro() {
+        document.getElementById('intro-screen-2').style.display = 'none';
         const intro = document.getElementById('intro-screen');
-        const intro2 = document.getElementById('intro-screen-2');
         intro.classList.add('hide');
-        intro2.classList.add('hide');
-        setTimeout(() => {
-            intro.style.display = 'none';
-            intro2.style.display = 'none';
-        }, 500);
+        setTimeout(() => { intro.style.display = 'none'; }, 500);
     }
 
 // ── 영구정지 이의신청 제출 ──
