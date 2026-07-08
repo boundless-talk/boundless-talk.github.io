@@ -1237,6 +1237,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div id="rank-info-title" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-align:center;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Total badges earned</div>
             <div style="display:flex;justify-content:space-around;gap:4px;">
                 <div class="rank-badge-item">
+                    <div class="rank-badge-icon" style="background:rgba(255,255,255,0.08);">👋</div>
+                    <div class="rank-badge-name" id="ri-newcomer">NEWCOMER</div>
+                    <div class="rank-badge-range">0–9</div>
+                </div>
+                <div class="rank-badge-item">
                     <div class="rank-badge-icon" style="background:rgba(120,200,80,0.15);">🌱</div>
                     <div class="rank-badge-name" id="ri-name">RISING</div>
                     <div class="rank-badge-range">10–49</div>
@@ -2177,6 +2182,7 @@ database.ref('activeTopics').on('value', (snap) => {
         // 랭크 팝업 다국어
         const rankInfoTitle = document.getElementById('rank-info-title');
         if (rankInfoTitle) rankInfoTitle.textContent = currentLang === 'ko' ? '총 배지 수 기준으로 랭크가 결정됩니다' : 'Total badges earned';
+        const riNewcomer = document.getElementById('ri-newcomer'); if (riNewcomer) riNewcomer.textContent = currentLang === 'ko' ? '뉴비' : 'NEWCOMER';
         const riName = document.getElementById('ri-name'); if (riName) riName.textContent = currentLang === 'ko' ? '떠오르는 토커' : 'RISING';
         const riSilver = document.getElementById('ri-silver'); if (riSilver) riSilver.textContent = currentLang === 'ko' ? '실버 토커' : 'SILVER';
         const riGold = document.getElementById('ri-gold'); if (riGold) riGold.textContent = currentLang === 'ko' ? '골드 토커' : 'GOLD';
