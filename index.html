@@ -1587,6 +1587,27 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <!-- 구독 상태 모달 -->
+    <div class="modal-overlay" id="subscription-modal">
+        <div class="modal-content" style="max-width:340px;">
+            <div style="font-size:22px; margin-bottom:6px;">👑 <span id="sub-modal-title" style="font-size:17px; font-weight:700; color:rgba(255,255,255,0.92);">You're already unlimited ✨</span></div>
+            <p id="sub-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:18px;"></p>
+            <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.07);">
+                    <span id="sub-label-plan" style="font-size:13px; color:rgba(255,255,255,0.45);">현재 플랜</span>
+                    <span id="sub-plan-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0;">
+                    <span id="sub-label-next" style="font-size:13px; color:rgba(255,255,255,0.45);">다음 결제일</span>
+                    <span id="sub-next-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
+                </div>
+            </div>
+            <button onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:rgba(255,255,255,0.7); font-size:14px; cursor:pointer; margin-bottom:8px;">🔄 <span id="sub-btn-change">플랜 변경하기</span></button>
+            <button onclick="openManageSubscription()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:13px; cursor:pointer;">⚙️ <span id="sub-btn-manage">구독 관리</span></button>
+            <button onclick="document.getElementById('subscription-modal').classList.remove('active')" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:12px; cursor:pointer; margin-top:4px;" id="sub-btn-close">닫기</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="report-modal">
         <div class="modal-content">
             <h3 style="color: var(--danger-color);" id="rep-m-title">🚨 Report Toxic User</h3>
@@ -3899,12 +3920,53 @@ return text;
         document.getElementById('payment-modal').style.display = 'none';
     }
 
-    function openMainPayModal() {
+    function openManageSubscription() {
+        // Paddle 고객 포털 — Webhook 연동 후 실제 URL로 교체
+        alert(currentLang === 'ko'
+            ? '구독 관리는 결제 이메일을 확인해 주세요.'
+            : 'Check your billing email to manage your subscription.');
+    }
+
+    function openChangePlanModal() {
+        document.getElementById('subscription-modal').classList.remove('active');
+        const leaveBtn = document.getElementById('pay-modal-leave');
+        const countdownRow = document.getElementById('pay-countdown-row');
+        const hr = document.getElementById('pay-modal-hr');
+        if (leaveBtn) leaveBtn.style.display = 'none';
+        if (countdownRow) countdownRow.style.display = 'none';
+        if (hr) hr.style.display = 'none';
+        document.getElementById('payment-modal').style.display = 'flex';
+    }
+
+    async function openMainPayModal() {
         const user = auth.currentUser;
         if (!user || user.isAnonymous) {
             alert(currentLang === 'ko'
                 ? '무제한 대화를 이용하려면 로그인해 주세요.'
                 : 'Sign in to unlock unlimited calls.');
+            return;
+        }
+        // 구독 상태 확인
+        const subSnap = await database.ref('users/' + user.uid + '/subscription').once('value');
+        const sub = subSnap.val();
+        if (sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date()) {
+            // 구독 중 → 상태 모달 표시
+            const isKo = currentLang === 'ko';
+            const planLabel = sub.plan === 'monthly'
+                ? (isKo ? 'Monthly · $4.99' : 'Monthly · $4.99')
+                : (isKo ? 'Weekly · $1.99' : 'Weekly · $1.99');
+            document.getElementById('sub-modal-title').textContent = isKo ? 'You\'re already unlimited ✨' : 'You\'re already unlimited ✨';
+            document.getElementById('sub-modal-desc').textContent = isKo
+                ? `이미 ${sub.plan === 'monthly' ? 'Monthly' : 'Weekly'} Plan을 이용 중입니다 ✦`
+                : `You\'re already on the ${sub.plan === 'monthly' ? 'Monthly' : 'Weekly'} Plan ✦`;
+            document.getElementById('sub-plan-value').textContent = planLabel;
+            document.getElementById('sub-next-value').textContent = sub.expiresAt;
+            document.getElementById('sub-label-plan').textContent = isKo ? '현재 플랜' : 'Current plan';
+            document.getElementById('sub-label-next').textContent = isKo ? '다음 결제일' : 'Next billing';
+            document.getElementById('sub-btn-change').textContent = isKo ? '플랜 변경하기' : 'Change plan';
+            document.getElementById('sub-btn-manage').textContent = isKo ? '구독 관리' : 'Manage subscription';
+            document.getElementById('sub-btn-close').textContent = isKo ? '닫기' : 'Close';
+            document.getElementById('subscription-modal').classList.add('active');
             return;
         }
         const modal = document.getElementById('payment-modal');
