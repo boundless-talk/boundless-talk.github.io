@@ -1474,7 +1474,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div style="font-size:28px; margin-bottom:10px;">🎂</div>
             <h3 id="dob-title" style="font-size:17px; margin-bottom:6px; letter-spacing:0.5px;">Enter your date of birth</h3>
             <p id="dob-subtitle" style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:22px;">B-TALK is for users 18 and older.</p>
-            <input type="date" id="dob-input" style="width:100%; padding:12px 14px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:15px; text-align:center; outline:none; box-sizing:border-box; margin-bottom:16px;" max="">
+            <div style="display:flex; gap:8px; margin-bottom:16px;">
+                <select id="dob-year" style="flex:2; padding:12px 8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer;"></select>
+                <select id="dob-month" style="flex:1.5; padding:12px 8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer;"></select>
+                <select id="dob-day" style="flex:1.5; padding:12px 8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer;"></select>
+            </div>
             <button id="dob-confirm-btn" onclick="confirmDob()" style="width:100%; padding:13px; background:#00e5ff; color:#000; font-weight:700; border:none; border-radius:12px; font-size:15px; cursor:pointer; margin-bottom:10px;">Confirm</button>
             <button onclick="cancelDob()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer;" id="dob-cancel-btn">Cancel</button>
         </div>
@@ -1928,8 +1932,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                         };
                         // Confirm 오버라이드: DOB 저장 후 진행, 미성년 시 로그아웃
                         document.getElementById('dob-confirm-btn').onclick = async () => {
-                            const val = document.getElementById('dob-input').value;
-                            if (!val) { alert(currentLang === 'ko' ? '생년월일을 입력해주세요.' : 'Please enter your date of birth.'); return; }
+                            const y = document.getElementById('dob-year').value;
+                            const m = document.getElementById('dob-month').value;
+                            const d = document.getElementById('dob-day').value;
+                            if (!y || !m || !d) { alert(currentLang === 'ko' ? '생년월일을 모두 선택해주세요.' : 'Please select your full date of birth.'); return; }
+                            const val = `${y}-${m}-${d}`;
                             const birth = new Date(val);
                             const now = new Date();
                             let age = now.getFullYear() - birth.getFullYear();
@@ -2475,10 +2482,23 @@ database.ref('activeTopics').on('value', (snap) => {
     let pendingDobAction = null;
 
     function requireDob(action) {
-        // max 날짜: 오늘
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('dob-input').max = today;
-        document.getElementById('dob-input').value = '';
+        // 연도 드롭다운 채우기
+        const yearSel = document.getElementById('dob-year');
+        const monthSel = document.getElementById('dob-month');
+        const daySel = document.getElementById('dob-day');
+        const thisYear = new Date().getFullYear();
+        yearSel.innerHTML = '<option value="">Year</option>';
+        for (let y = thisYear; y >= 1924; y--) {
+            yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+        }
+        monthSel.innerHTML = '<option value="">Month</option>';
+        for (let m = 1; m <= 12; m++) {
+            monthSel.innerHTML += `<option value="${String(m).padStart(2,'0')}">${m}</option>`;
+        }
+        daySel.innerHTML = '<option value="">Day</option>';
+        for (let d = 1; d <= 31; d++) {
+            daySel.innerHTML += `<option value="${String(d).padStart(2,'0')}">${d}</option>`;
+        }
         pendingDobAction = action;
         document.getElementById('dob-modal').classList.add('active');
         updateDobLang();
@@ -2497,11 +2517,14 @@ database.ref('activeTopics').on('value', (snap) => {
     }
 
     function confirmDob() {
-        const val = document.getElementById('dob-input').value;
-        if (!val) {
-            alert(currentLang === 'ko' ? '생년월일을 입력해주세요.' : 'Please enter your date of birth.');
+        const y = document.getElementById('dob-year').value;
+        const m = document.getElementById('dob-month').value;
+        const d = document.getElementById('dob-day').value;
+        if (!y || !m || !d) {
+            alert(currentLang === 'ko' ? '생년월일을 모두 선택해주세요.' : 'Please select your full date of birth.');
             return;
         }
+        const val = `${y}-${m}-${d}`;
         const birth = new Date(val);
         const now = new Date();
         let age = now.getFullYear() - birth.getFullYear();
