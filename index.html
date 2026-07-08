@@ -3903,8 +3903,8 @@ return text;
         const user = auth.currentUser;
         if (!user || user.isAnonymous) {
             alert(currentLang === 'ko'
-                ? '구독은 Google 로그인 후 이용할 수 있습니다.'
-                : 'Please sign in with Google to subscribe.');
+                ? '무제한 대화를 이용하려면 로그인해 주세요.'
+                : 'Sign in to unlock unlimited calls.');
             return;
         }
         const modal = document.getElementById('payment-modal');
