@@ -28,6 +28,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
+    <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d0e12">
@@ -3860,12 +3861,34 @@ return text;
         if (payCountdownInterval) { clearInterval(payCountdownInterval); payCountdownInterval = null; }
     }
 
-    // 플랜 버튼 — 포트원 연동 전 임시 알림
+    // Paddle 초기화 (샌드박스)
+    Paddle.Environment.set('sandbox');
+    Paddle.Initialize({
+        token: 'test_9a59f7cb93453205c684170d542',
+        eventCallback: function(data) {
+            if (data.name === 'checkout.completed') {
+                document.getElementById('payment-modal').style.display = 'none';
+                clearPayCountdown();
+                alert(currentLang === 'ko'
+                    ? '구독이 완료되었습니다! 대화를 계속 즐기세요 😊'
+                    : 'Subscription activated! Enjoy your conversation 😊');
+            }
+        }
+    });
+
+    const PADDLE_PRICES = {
+        'pay-monthly': 'pri_01kx0zcn1rbc4htvnqhh51ct68',
+        'pay-weekly':  'pri_01kx0ze9crj1awb24ppzhp3kjh'
+    };
+
     ['pay-monthly', 'pay-weekly'].forEach(id => {
         document.getElementById(id).onclick = () => {
-            alert(currentLang === 'ko'
-                ? '결제 기능은 곧 오픈됩니다! 조금만 기다려 주세요 😊'
-                : 'Payment coming soon! Stay tuned 😊');
+            const user = auth.currentUser;
+            Paddle.Checkout.open({
+                items: [{ priceId: PADDLE_PRICES[id], quantity: 1 }],
+                customer: user && user.email ? { email: user.email } : undefined,
+                customData: { uid: user ? user.uid : 'guest' }
+            });
         };
     });
 
