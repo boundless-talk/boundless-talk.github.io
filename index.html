@@ -1571,17 +1571,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
             </div>
 
-            <!-- Pay Per Minute -->
-            <div class="pay-plan-btn" id="pay-permin" style="border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 16px; margin-bottom:6px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
-                <div>
-                    <div style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.88);">Pay Per Minute</div>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;">Just try it for today</div>
-                </div>
-                <div style="text-align:right;">
-                    <div style="font-size:16px; font-weight:700; color:rgba(255,255,255,0.9);">$0.08</div>
-                    <div style="font-size:10px; color:rgba(255,255,255,0.35);">/ min</div>
-                </div>
-            </div>
+
 
             <hr style="border:none; border-top:1px solid rgba(255,255,255,0.07); margin:6px 0 8px;">
             <button id="pay-modal-leave" style="width:100%; padding:11px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; border-radius:10px;">End conversation</button>
@@ -3871,7 +3861,7 @@ return text;
     }
 
     // 플랜 버튼 — 포트원 연동 전 임시 알림
-    ['pay-monthly', 'pay-weekly', 'pay-permin'].forEach(id => {
+    ['pay-monthly', 'pay-weekly'].forEach(id => {
         document.getElementById(id).onclick = () => {
             alert(currentLang === 'ko'
                 ? '결제 기능은 곧 오픈됩니다! 조금만 기다려 주세요 😊'
