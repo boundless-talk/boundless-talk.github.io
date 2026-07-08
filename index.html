@@ -3835,8 +3835,28 @@ return text;
     let freeTimerInterval = null;
     let payCountdownInterval = null;
 
+    // WakeLock — 통화 중 화면 꺼짐 방지
+    let wakeLock = null;
+    async function acquireWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+            } catch(e) { /* 지원 안 하는 브라우저는 무시 */ }
+        }
+    }
+    function releaseWakeLock() {
+        if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    }
+    // 백그라운드 복귀 시 WakeLock 재획득
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && roomParticipants.length > 0) {
+            acquireWakeLock();
+        }
+    });
+
     function startFreeTimer() {
         clearFreeTimer();
+        acquireWakeLock();
         let elapsed = 0;
         const banner = document.getElementById('free-time-banner');
 
@@ -3858,6 +3878,7 @@ return text;
     }
 
     function clearFreeTimer() {
+        releaseWakeLock();
         if (freeTimerInterval) { clearInterval(freeTimerInterval); freeTimerInterval = null; }
         clearPayCountdown();
         document.getElementById('free-time-banner').style.display = 'none';
