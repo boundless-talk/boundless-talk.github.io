@@ -3926,6 +3926,13 @@ return text;
     }
 
     function showPaymentModal() {
+        const user = auth.currentUser;
+        if (!user || user.isAnonymous) {
+            alert(currentLang === 'ko'
+                ? '무료 통화가 종료되었습니다.\n무제한 통화를 원하시면 로그인 후 구독해주세요!'
+                : 'Your free call has ended.\nSign in and subscribe for unlimited talk!');
+            return;
+        }
         const modal = document.getElementById('payment-modal');
         modal.style.display = 'flex';
         let sec = 60;
