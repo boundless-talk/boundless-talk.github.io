@@ -1941,8 +1941,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                             const birth = new Date(val);
                             const now = new Date();
                             let age = now.getFullYear() - birth.getFullYear();
-                            const m = now.getMonth() - birth.getMonth();
-                            if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+                            const monthDiff = now.getMonth() - birth.getMonth();
+                            if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birth.getDate())) age--;
                             if (age < 18) {
                                 alert(currentLang === 'ko' ? '죄송합니다. B-TALK은 만 18세 이상만 이용할 수 있습니다.' : 'Sorry, B-TALK is only available for users 18 and older.');
                                 document.getElementById('dob-modal').classList.remove('active');
