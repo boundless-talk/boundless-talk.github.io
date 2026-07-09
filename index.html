@@ -4588,17 +4588,21 @@ async function executeAddFriend() {
     const myUid = auth.currentUser.uid;
     if (selectedVoteTarget === myUid) return;
 
-    // 이미 친구인지 확인
-    const snap = await database.ref(`users/${myUid}/friends/${selectedVoteTarget}`).once('value');
-    if (snap.exists() && snap.val().status === 'accepted') {
-        alert(currentLang === 'ko' ? "이미 친구로 등록된 사용자입니다." : "Already your friend.");
-        return;
-    }
-    // 이미 보낸 요청이 있는지 확인
-    const sentSnap = await database.ref(`users/${selectedVoteTarget}/friendRequests/${myUid}`).once('value');
-    if (sentSnap.exists()) {
-        alert(currentLang === 'ko' ? "이미 친구 요청을 보낸 상태입니다." : "Friend request already sent.");
-        return;
+    try {
+        // 내 friends 노드만 읽어서 상태 확인 (타인 노드 읽기 방지)
+        const snap = await database.ref(`users/${myUid}/friends/${selectedVoteTarget}`).once('value');
+        const status = snap.exists() ? snap.val().status : null;
+
+        if (status === 'accepted') {
+            alert(currentLang === 'ko' ? "이미 친구로 등록된 사용자입니다." : "Already your friend.");
+            return;
+        }
+        if (status === 'pending_sent') {
+            alert(currentLang === 'ko' ? "이미 친구 요청을 보낸 상태입니다." : "Friend request already sent.");
+            return;
+        }
+    } catch(e) {
+        console.error('executeAddFriend check failed:', e);
     }
 
     pendingFriendTargetUid = selectedVoteTarget;
