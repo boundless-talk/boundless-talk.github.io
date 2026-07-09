@@ -252,6 +252,9 @@
         .rank-badge-name { font-size:9px; font-weight:800; letter-spacing:0.5px; color:rgba(255,255,255,0.75); text-align:center; }
         .rank-badge-range { font-size:9px; color:rgba(255,255,255,0.35); }
         .rank-badge-desc { font-size:10px; color:rgba(255,255,255,0.4); margin-top:2px; line-height:1.4; }
+        .rank-badge-item { cursor:pointer; }
+        .rank-badge-item:hover .rank-badge-icon { border-color: rgba(255,255,255,0.3); }
+        .rank-desc-box { margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:11px; color:rgba(255,255,255,0.6); text-align:center; line-height:1.5; }
 
         #main-container {
             width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
@@ -1242,48 +1245,38 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="stats-rank-row" id="stats-rank-row">RANK: <span id="rank-label">—</span> <button onclick="const p=document.getElementById('rank-info-popup');p.style.display=p.style.display==='none'?'block':'none';" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;padding:0;margin-left:4px;vertical-align:middle;line-height:1;">?</button></div>
         <div id="rank-info-popup" style="display:none;background:rgba(15,15,22,0.98);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:14px 10px 10px;margin:6px 0 4px;">
             <div id="rank-info-title" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-align:center;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Total badges earned</div>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-                <div class="rank-badge-item" style="display:flex;align-items:flex-start;gap:10px;text-align:left;">
-                    <div class="rank-badge-icon" style="background:rgba(255,255,255,0.08);flex-shrink:0;">👋</div>
-                    <div>
-                        <div class="rank-badge-name" id="ri-newcomer">Newcomer</div>
-                        <div class="rank-badge-range">0–9</div>
-                        <div class="rank-badge-desc" id="ri-newcomer-desc">이제 막 첫 대화를 시작한 낯선 인연</div>
-                    </div>
+            <div style="display:flex;justify-content:space-around;gap:4px;">
+                <div class="rank-badge-item" onclick="toggleRankDesc('rd-newcomer')">
+                    <div class="rank-badge-icon" style="background:rgba(255,255,255,0.08);">👋</div>
+                    <div class="rank-badge-name" id="ri-newcomer">Newcomer</div>
+                    <div class="rank-badge-range">0–9</div>
                 </div>
-                <div class="rank-badge-item" style="display:flex;align-items:flex-start;gap:10px;text-align:left;">
-                    <div class="rank-badge-icon" style="background:rgba(120,200,80,0.15);flex-shrink:0;">🌱</div>
-                    <div>
-                        <div class="rank-badge-name" id="ri-name">Rising Talker</div>
-                        <div class="rank-badge-range">10–49</div>
-                        <div class="rank-badge-desc" id="ri-rising-desc">점점 대화의 재미를 알아가는 중</div>
-                    </div>
+                <div class="rank-badge-item" onclick="toggleRankDesc('rd-rising')">
+                    <div class="rank-badge-icon" style="background:rgba(120,200,80,0.15);">🌱</div>
+                    <div class="rank-badge-name" id="ri-name">Rising Talker</div>
+                    <div class="rank-badge-range">10–49</div>
                 </div>
-                <div class="rank-badge-item" style="display:flex;align-items:flex-start;gap:10px;text-align:left;">
-                    <div class="rank-badge-icon" style="background:rgba(100,180,255,0.15);flex-shrink:0;">💬</div>
-                    <div>
-                        <div class="rank-badge-name" id="ri-silver">Storyteller</div>
-                        <div class="rank-badge-range">50–99</div>
-                        <div class="rank-badge-desc" id="ri-silver-desc">대화를 지루하지 않고 맛있게 이끌어가는 사람</div>
-                    </div>
+                <div class="rank-badge-item" onclick="toggleRankDesc('rd-silver')">
+                    <div class="rank-badge-icon" style="background:rgba(100,180,255,0.15);">💬</div>
+                    <div class="rank-badge-name" id="ri-silver">Storyteller</div>
+                    <div class="rank-badge-range">50–99</div>
                 </div>
-                <div class="rank-badge-item" style="display:flex;align-items:flex-start;gap:10px;text-align:left;">
-                    <div class="rank-badge-icon" style="background:rgba(255,200,50,0.15);flex-shrink:0;">☕</div>
-                    <div>
-                        <div class="rank-badge-name" id="ri-gold">Lingering Voice</div>
-                        <div class="rank-badge-range">100–199</div>
-                        <div class="rank-badge-desc" id="ri-gold-desc">대화가 끝난 후에도 자꾸만 생각나게 하는 매력적인 사람</div>
-                    </div>
+                <div class="rank-badge-item" onclick="toggleRankDesc('rd-gold')">
+                    <div class="rank-badge-icon" style="background:rgba(255,200,50,0.15);">☕</div>
+                    <div class="rank-badge-name" id="ri-gold">Lingering Voice</div>
+                    <div class="rank-badge-range">100–199</div>
                 </div>
-                <div class="rank-badge-item" style="display:flex;align-items:flex-start;gap:10px;text-align:left;">
-                    <div class="rank-badge-icon" style="background:rgba(180,100,255,0.2);flex-shrink:0;">🔮</div>
-                    <div>
-                        <div class="rank-badge-name" id="ri-legend">Soulmate</div>
-                        <div class="rank-badge-range">200+</div>
-                        <div class="rank-badge-desc" id="ri-legend-desc">한 번의 대화만으로도 영혼이 통하는, 다시없을 최고의 인연</div>
-                    </div>
+                <div class="rank-badge-item" onclick="toggleRankDesc('rd-legend')">
+                    <div class="rank-badge-icon" style="background:rgba(180,100,255,0.2);">🔮</div>
+                    <div class="rank-badge-name" id="ri-legend">Soulmate</div>
+                    <div class="rank-badge-range">200+</div>
                 </div>
             </div>
+            <div class="rank-desc-box" id="rd-newcomer" style="display:none;"><span id="ri-newcomer-desc">이제 막 첫 대화를 시작한 낯선 인연</span></div>
+            <div class="rank-desc-box" id="rd-rising"   style="display:none;"><span id="ri-rising-desc">점점 대화의 재미를 알아가는 중</span></div>
+            <div class="rank-desc-box" id="rd-silver"   style="display:none;"><span id="ri-silver-desc">대화를 지루하지 않고 맛있게 이끌어가는 사람</span></div>
+            <div class="rank-desc-box" id="rd-gold"     style="display:none;"><span id="ri-gold-desc">대화가 끝난 후에도 자꾸만 생각나게 하는 매력적인 사람</span></div>
+            <div class="rank-desc-box" id="rd-legend"   style="display:none;"><span id="ri-legend-desc">한 번의 대화만으로도 영혼이 통하는, 다시없을 최고의 인연</span></div>
         </div>
         <div class="stats-grid">
             <div class="stats-main-badge">
@@ -4639,6 +4632,14 @@ function loadFriendsList() {
                 }
             });
         });
+    });
+}
+
+function toggleRankDesc(id) {
+    const all = ['rd-newcomer','rd-rising','rd-silver','rd-gold','rd-legend'];
+    all.forEach(d => {
+        const el = document.getElementById(d);
+        if (el) el.style.display = (d === id && el.style.display === 'none') ? 'block' : 'none';
     });
 }
 
