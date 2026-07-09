@@ -4841,6 +4841,8 @@ async function unfriendUser(friendUid) {
     try {
         await database.ref(`users/${myUid}/friends/${friendUid}`).remove();
         await database.ref(`users/${friendUid}/friends/${myUid}`).remove();
+        await database.ref(`users/${myUid}/friendRequests/${friendUid}`).remove();
+        await database.ref(`users/${friendUid}/friendRequests/${myUid}`).remove();
         document.getElementById(`friend-item-${friendUid}`)?.remove();
         const container = document.getElementById('friends-list-container');
         if (container && container.children.length === 0) {
