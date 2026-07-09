@@ -4589,8 +4589,14 @@ let friendRequestListener = null;       // Firebase 리스너 참조
 // 1. 친구 추가 버튼 클릭 → 닉네임 입력 모달 열기
 async function executeAddFriend() {
     if (!selectedVoteTarget || !auth.currentUser) return;
+    if (isGuest) return;
     const myUid = auth.currentUser.uid;
     if (selectedVoteTarget === myUid) return;
+
+    if (uidToIsGuest[selectedVoteTarget]) {
+        alert(currentLang === 'ko' ? '게스트 유저는 친구로 추가할 수 없습니다.' : 'Guest users cannot be added as friends.');
+        return;
+    }
 
     try {
         // 내 friends 노드만 읽어서 상태 확인 (타인 노드 읽기 방지)
