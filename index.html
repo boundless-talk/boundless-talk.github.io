@@ -1423,15 +1423,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="friend-request-banner">
         <div class="frb-top">
-            <div class="frb-title">💌 친구 요청이 왔어요!</div>
+            <div class="frb-title" id="frb-title">💌 친구 요청이 왔어요!</div>
             <div class="frb-desc" id="frb-desc">통하는 게 있었나 봐요!<br>상대방이 '다음에 또 얘기하자'며 친구 요청을 슬쩍 던졌습니다.<br>잡을까요, 말까요?</div>
         </div>
         <div class="frb-nickname-row">
             <input type="text" id="frb-nickname-input" placeholder="상대방 닉네임 (나만 보임)" maxlength="12">
         </div>
         <div class="frb-actions">
-            <button class="frb-reject-btn" onclick="rejectFriendRequest()">즐거운 대화였어요, 안녕!</button>
-            <button class="frb-accept-btn" onclick="acceptFriendRequest()">좋아요! 다음에 또 대화해요!</button>
+            <button class="frb-reject-btn" id="frb-reject-btn" onclick="rejectFriendRequest()">즐거운 대화였어요, 안녕!</button>
+            <button class="frb-accept-btn" id="frb-accept-btn" onclick="acceptFriendRequest()">좋아요! 다음에 또 대화해요!</button>
         </div>
     </div>
 
@@ -1997,6 +1997,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         wlDesc: "We'll keep the radar on for 24 hours. If someone enters the same keyword, we'll send you a signal right away.",
         wlEnable: "📡 Turn on Connection Radar",
         wlClose: "Close",
+        frbTitle: "💌 Friend request received!",
+        frbDesc: "Looks like you two clicked!<br>They'd love to chat again — what do you say?",
+        frbPlaceholder: "Their nickname (only visible to you)",
+        frbAccept: "Sure, let's talk again! 😊",
+        frbReject: "It was fun, goodbye!",
         friendAdded: "🎉 Added to your friend list!",
         privateChannelAlert: (name) => `Connecting to private channel with ${name}...`,
         roomHeaderLabel: "Conversation Topic",
@@ -2101,6 +2106,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         wlDesc: "24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 신호를 보내드릴게요.",
         wlEnable: "📡 인연의 신호 켜두기",
         wlClose: "닫기",
+        frbTitle: "💌 친구 요청이 왔어요!",
+        frbDesc: "통하는 게 있었나 봐요!<br>상대방이 '다음에 또 얘기하자'며 친구 요청을 슬쩍 던졌습니다.<br>잡을까요, 말까요?",
+        frbPlaceholder: "상대방 닉네임 (나만 보임)",
+        frbAccept: "좋아요! 다음에 또 대화해요!",
+        frbReject: "즐거운 대화였어요, 안녕!",
         friendAdded: "🎉 친구 목록에 추가되었습니다!",
         privateChannelAlert: (name) => `${name} 님과의 비밀 채널로 연결합니다...`,
         roomHeaderLabel: "대화 주제",
@@ -2469,6 +2479,13 @@ database.ref('activeTopics').on('value', (snap) => {
         const wlDesc = document.getElementById('wl-desc'); if (wlDesc) wlDesc.textContent = lang.wlDesc;
         const wlEnableBtn = document.getElementById('wl-enable-btn'); if (wlEnableBtn && !wlEnableBtn.disabled) wlEnableBtn.textContent = lang.wlEnable;
         const wlCloseBtn = document.getElementById('wl-close-btn'); if (wlCloseBtn) wlCloseBtn.textContent = lang.wlClose;
+
+        // 친구 요청 배너 다국어
+        const frbTitleEl = document.getElementById('frb-title'); if (frbTitleEl) frbTitleEl.textContent = lang.frbTitle;
+        const frbDescEl = document.getElementById('frb-desc'); if (frbDescEl) frbDescEl.innerHTML = lang.frbDesc;
+        const frbInput = document.getElementById('frb-nickname-input'); if (frbInput) frbInput.placeholder = lang.frbPlaceholder;
+        const frbAcceptBtn = document.getElementById('frb-accept-btn'); if (frbAcceptBtn) frbAcceptBtn.textContent = lang.frbAccept;
+        const frbRejectBtn = document.getElementById('frb-reject-btn'); if (frbRejectBtn) frbRejectBtn.textContent = lang.frbReject;
 
         // 토글 버튼 텍스트 고정
         document.getElementById('toggle-rep-btn').innerText = currentLang === 'ko' ? "📊 대화스탯" : "📊 TALK STATS";
