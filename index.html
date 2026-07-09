@@ -1699,7 +1699,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     const FCM_VAPID_KEY = 'BP6PHmLRXOfuipR_pFfM-lwP_6AUBbIpwvrHiTr28oSjkL40VqgwXfUJgyTybbMx45vmSi5S7GujHW3Z8r-mmmQ';
     let messaging = null;
     let waitlistTopic = null;     // 현재 대기 등록한 토픽
-    let aloneTimer = null;        // 혼자 30초 타이머
+    let hadPeer = false;          // 이번 세션에서 상대방이 한 번이라도 들어왔는지
     let countdownInterval = null; // 3분 카운트다운
 
     async function initMessaging() {
@@ -1783,21 +1783,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
     }
 
-    // 혼자 있을 때 30초 후 배너 표시
-    function startAloneTimer(topic) {
-        clearAloneTimer();
-        if (!topic || topic.startsWith('🔒_')) return;
-        waitlistTopic = topic;
-        aloneTimer = setTimeout(() => {
-            if (isJoined && roomParticipants.length === 0) {
-                document.getElementById('waitlist-banner').style.display = 'block';
-            }
-        }, 30000);
+    function hideWaitlistBanner() {
+        document.getElementById('waitlist-banner').style.display = 'none';
     }
 
-    function clearAloneTimer() {
-        if (aloneTimer) { clearTimeout(aloneTimer); aloneTimer = null; }
-        document.getElementById('waitlist-banner').style.display = 'none';
+    function showWaitlistBanner() {
+        if (!waitlistTopic || waitlistTopic.startsWith('🔒_')) return;
+        document.getElementById('waitlist-banner').style.display = 'block';
     }
 
     // User B: 대기자에게 FCM 발송 후 3분 카운트다운
@@ -3413,9 +3405,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             renderParticipantsUI();
             showRoomScreen(finalTopic);
 
-            // 대기자 알림 발송 (User B 역할) + 혼자일 때 레이더 배너 (User A 역할)
+            // 대기자 알림 발송 (User B 역할)
+            hadPeer = false;
+            waitlistTopic = finalTopic.startsWith('🔒_') ? null : finalTopic;
             notifyWaitlistAndCountdown(finalTopic);
-            startAloneTimer(finalTopic);
 
             isJoining = false;
 
@@ -3469,9 +3462,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 roomParticipants.push(user.uid);
                 renderParticipantsUI();
                 if (roomParticipants.length === 1) {
+                    hadPeer = true;
                     startFreeTimer();
-                    clearAloneTimer();  // 상대방 입장 → 레이더 배너 숨김
-                    stopCountdown();    // 카운트다운 종료
+                    hideWaitlistBanner();
+                    stopCountdown();
                 }
             }
 
@@ -4304,9 +4298,15 @@ return text;
         document.getElementById('leave-btn').click();
     };
 
+    window.addEventListener('beforeunload', () => {
+        // PC 탭/창 닫기 시도 시 (모바일에선 동작 안 함)
+        if (isJoined && !hadPeer && waitlistTopic) showWaitlistBanner();
+    });
+
     document.getElementById('leave-btn').onclick = async function() {
+        const _shouldShowRadar = isJoined && !hadPeer && waitlistTopic;
         try {
-            clearAloneTimer();
+            hideWaitlistBanner();
             stopCountdown();
             clearFreeTimer();
             stopRollingAudioRecorder();
@@ -4344,6 +4344,9 @@ return text;
 
             // 피어 배지 전송 타겟 리스트박스 렌더링 구성 (uidToAnimal 초기화 전에 호출!)
             setupVoteTargetsUI();
+
+            // 혼자 나간 경우 → 레이더 배너 표시 (badge-modal 닫은 뒤에도 유지)
+            if (_shouldShowRadar) showWaitlistBanner();
 
             // 모바일 ghost tap 방지: 터치 이벤트 소멸 후 모달 오픈
             // AI 대화 요약본 분석 브리핑 레이아웃 활성화
