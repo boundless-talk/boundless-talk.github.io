@@ -4517,8 +4517,12 @@ return text;
         ['btn-vote-manner','btn-vote-logic','btn-vote-humor','btn-vote-empathy','btn-vote-passion','btn-add-friend'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
-            if (enable) el.classList.remove('btn-disabled');
-            else el.classList.add('btn-disabled');
+            if (enable) {
+                el.classList.remove('btn-disabled');
+                el.disabled = false;
+            } else {
+                el.classList.add('btn-disabled');
+            }
         });
     }
 
