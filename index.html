@@ -1825,6 +1825,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         noFriends: "No friends added yet. Make some friends after a talk!",
         lastTalked: "Last talked:",
         callBtn: "Call",
+        editNickname: "✏️ Rename",
+        unfriend: "🚫 Unfriend",
         friendAdded: "🎉 Added to your friend list!",
         privateChannelAlert: (name) => `Connecting to private channel with ${name}...`,
         roomHeaderLabel: "Conversation Topic",
@@ -1923,6 +1925,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         noFriends: "아직 추가된 친구가 없습니다. 대화 후 친구를 맺어보세요!",
         lastTalked: "마지막 대화:",
         callBtn: "연결",
+        editNickname: "✏️ 이름 변경",
+        unfriend: "🚫 친구 끊기",
         friendAdded: "🎉 친구 목록에 추가되었습니다!",
         privateChannelAlert: (name) => `${name} 님과의 비밀 채널로 연결합니다...`,
         roomHeaderLabel: "대화 주제",
@@ -4576,12 +4580,12 @@ function loadFriendsList() {
 
             const editBtn = document.createElement('button');
             editBtn.className = 'friend-edit-btn';
-            editBtn.textContent = '✏️ 이름 변경';
+            editBtn.textContent = textData[currentLang].editNickname;
             editBtn.onclick = () => editFriendNickname(friendUid);
 
             const unfriendBtn = document.createElement('button');
             unfriendBtn.className = 'friend-unfriend-btn';
-            unfriendBtn.textContent = '🚫 친구 끊기';
+            unfriendBtn.textContent = textData[currentLang].unfriend;
             unfriendBtn.onclick = () => unfriendUser(friendUid);
 
             actionGroup.appendChild(callBtn);
