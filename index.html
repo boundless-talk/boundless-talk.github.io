@@ -1587,8 +1587,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 구독 상태 모달 -->
     <div class="modal-overlay" id="subscription-modal">
         <div class="modal-content" style="max-width:340px;">
-            <div style="font-size:22px; margin-bottom:6px;">👑 <span id="sub-modal-title" style="font-size:17px; font-weight:700; color:rgba(255,255,255,0.92);">You're already unlimited ✨</span></div>
-            <p id="sub-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:18px;"></p>
+            <!-- 헤더 -->
+            <div style="margin-bottom:4px;">
+                <div style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:6px;">👑 <span id="sub-modal-badge">추천</span></div>
+                <div id="sub-modal-title" style="font-size:18px; font-weight:700; color:#fff; margin-bottom:4px;">You're already unlimited ✨</div>
+                <p id="sub-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:16px;"></p>
+            </div>
+            <!-- 플랜 정보 -->
             <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.07);">
                     <span id="sub-label-plan" style="font-size:13px; color:rgba(255,255,255,0.45);">현재 플랜</span>
@@ -1599,9 +1604,27 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <span id="sub-next-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
                 </div>
             </div>
-            <button onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:12px; color:rgba(255,255,255,0.7); font-size:14px; cursor:pointer; margin-bottom:8px;">🔄 <span id="sub-btn-change">플랜 변경하기</span></button>
-            <button onclick="openManageSubscription()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:13px; cursor:pointer;">⚙️ <span id="sub-btn-manage">구독 관리</span></button>
-            <button onclick="document.getElementById('subscription-modal').classList.remove('active')" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:12px; cursor:pointer; margin-top:4px;" id="sub-btn-close">닫기</button>
+            <!-- 플랜 변경 -->
+            <button onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; margin-bottom:8px;">🔄 <span id="sub-btn-change">플랜 변경하기</span></button>
+            <!-- 구독 관리 -->
+            <button onclick="openManageSubscription()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer;">⚙️ <span id="sub-btn-manage">구독 관리</span></button>
+            <button onclick="document.getElementById('subscription-modal').classList.remove('active')" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.15); font-size:12px; cursor:pointer; margin-top:2px;" id="sub-btn-close">닫기</button>
+        </div>
+    </div>
+
+    <!-- 플랜 변경 모달 -->
+    <div class="modal-overlay" id="change-plan-modal">
+        <div class="modal-content" style="max-width:340px;">
+            <div style="font-size:15px; font-weight:700; color:#fff; margin-bottom:16px;">🔄 <span id="cp-title">플랜 변경</span></div>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                <button onclick="switchPlan('weekly')" id="cp-weekly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; cursor:pointer; text-align:left;">
+                    <span id="cp-weekly-label">Weekly Plan으로 변경</span> <span style="float:right; color:rgba(255,255,255,0.4);" id="cp-weekly-price">$1.49/week</span>
+                </button>
+                <button onclick="switchPlan('monthly')" id="cp-monthly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; color:rgba(255,255,255,0.4); font-size:14px; cursor:default; text-align:left;" disabled>
+                    <span id="cp-monthly-label">Monthly Plan 유지</span>
+                </button>
+            </div>
+            <button onclick="document.getElementById('change-plan-modal').classList.remove('active')" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.25); font-size:13px; cursor:pointer;" id="cp-cancel-btn">취소</button>
         </div>
     </div>
 
@@ -3925,14 +3948,42 @@ return text;
     }
 
     function openChangePlanModal() {
+        const isKo = currentLang === 'ko';
         document.getElementById('subscription-modal').classList.remove('active');
-        const leaveBtn = document.getElementById('pay-modal-leave');
-        const countdownRow = document.getElementById('pay-countdown-row');
-        const hr = document.getElementById('pay-modal-hr');
-        if (leaveBtn) leaveBtn.style.display = 'none';
-        if (countdownRow) countdownRow.style.display = 'none';
-        if (hr) hr.style.display = 'none';
-        document.getElementById('payment-modal').style.display = 'flex';
+        // 현재 플랜 확인해서 변경 가능한 플랜만 활성화
+        database.ref('users/' + auth.currentUser.uid + '/subscription').once('value').then(snap => {
+            const sub = snap.val();
+            const currentPlan = sub ? sub.plan : 'monthly';
+            const weeklyBtn = document.getElementById('cp-weekly-btn');
+            const monthlyBtn = document.getElementById('cp-monthly-btn');
+            document.getElementById('cp-title').textContent = isKo ? '플랜 변경' : 'Change Plan';
+            document.getElementById('cp-cancel-btn').textContent = isKo ? '취소' : 'Cancel';
+            if (currentPlan === 'monthly') {
+                weeklyBtn.disabled = false;
+                weeklyBtn.style.opacity = '1';
+                weeklyBtn.style.cursor = 'pointer';
+                document.getElementById('cp-weekly-label').textContent = isKo ? 'Weekly Plan으로 변경' : 'Switch to Weekly Plan';
+                document.getElementById('cp-weekly-price').textContent = '$1.49/week';
+                monthlyBtn.disabled = true;
+                monthlyBtn.style.opacity = '0.4';
+                document.getElementById('cp-monthly-label').textContent = isKo ? 'Monthly Plan 유지' : 'Keep Monthly Plan';
+            } else {
+                monthlyBtn.disabled = false;
+                monthlyBtn.style.opacity = '1';
+                monthlyBtn.style.cursor = 'pointer';
+                document.getElementById('cp-monthly-label').textContent = isKo ? 'Monthly Plan으로 변경' : 'Switch to Monthly Plan';
+                weeklyBtn.disabled = true;
+                weeklyBtn.style.opacity = '0.4';
+                document.getElementById('cp-weekly-label').textContent = isKo ? 'Weekly Plan 유지' : 'Keep Weekly Plan';
+            }
+            document.getElementById('change-plan-modal').classList.add('active');
+        });
+    }
+
+    function switchPlan(plan) {
+        const isKo = currentLang === 'ko';
+        document.getElementById('change-plan-modal').classList.remove('active');
+        Paddle.Checkout.open({ items: [{ priceId: PADDLE_PRICES['pay-' + plan], quantity: 1 }] });
     }
 
     async function openMainPayModal() {
@@ -3952,10 +4003,10 @@ return text;
             const planLabel = sub.plan === 'monthly'
                 ? (isKo ? 'Monthly · $4.99' : 'Monthly · $4.99')
                 : (isKo ? 'Weekly · $1.99' : 'Weekly · $1.99');
-            document.getElementById('sub-modal-title').textContent = isKo ? 'You\'re already unlimited ✨' : 'You\'re already unlimited ✨';
-            document.getElementById('sub-modal-desc').textContent = isKo
-                ? `이미 ${sub.plan === 'monthly' ? 'Monthly' : 'Weekly'} Plan을 이용 중입니다 ✦`
-                : `You\'re already on the ${sub.plan === 'monthly' ? 'Monthly' : 'Weekly'} Plan ✦`;
+            const planName = sub.plan === 'monthly' ? 'Monthly' : 'Weekly';
+            document.getElementById('sub-modal-title').textContent = isKo ? `이미 ${planName} Plan을 이용 중입니다 ✨` : `You're already on the ${planName} Plan ✨`;
+            document.getElementById('sub-modal-desc').textContent = isKo ? '플랜을 변경하시겠어요?' : 'Would you like to change your plan?';
+            document.getElementById('sub-modal-badge').textContent = isKo ? '추천' : 'Active';
             document.getElementById('sub-plan-value').textContent = planLabel;
             document.getElementById('sub-next-value').textContent = sub.expiresAt;
             document.getElementById('sub-label-plan').textContent = isKo ? '현재 플랜' : 'Current plan';
