@@ -1142,13 +1142,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                 <button id="email-signup-btn-main">✨ 이메일로 회원가입</button>
 
-                <div style="display:flex; align-items:center; gap:10px; margin:6px 0;">
-                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
-                    <span style="font-size:11px; color:rgba(255,255,255,0.25);">or</span>
-                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
-                </div>
-                <button id="guest-login-btn" style="background:transparent; border:1px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.45); font-size:12.5px; padding:11px 14px; font-weight:500; opacity:0.85; margin:0 0 12px 0;">👀 <span id="guest-login-text">게스트로 체험하기</span></button>
-
                 <div class="auth-form-panel" id="signup-form-panel">
                     <div class="auth-form-inner">
 
@@ -1184,6 +1177,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                     </div>
                 </div>
+
+                <div style="display:flex; align-items:center; gap:10px; margin:6px 0;">
+                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                    <span style="font-size:11px; color:rgba(255,255,255,0.25);">or</span>
+                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                </div>
+                <button id="guest-login-btn" style="background:transparent; border:1px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.45); font-size:12.5px; padding:11px 14px; font-weight:500; opacity:0.85; margin:0 0 12px 0;">👀 <span id="guest-login-text">게스트로 체험하기</span></button>
 
             </div>
 
@@ -1508,9 +1508,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <h3 id="dob-title" style="font-size:17px; margin-bottom:6px; letter-spacing:0.5px;">Enter your date of birth</h3>
             <p id="dob-subtitle" style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:22px;">B-TALK is for users 18 and older.</p>
             <div style="display:flex; gap:8px; margin-bottom:16px;">
-                <select id="dob-year" style="flex:2; padding:12px 8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer;"></select>
-                <select id="dob-month" style="flex:1.5; padding:12px 8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer;"></select>
-                <select id="dob-day" style="flex:1.5; padding:12px 8px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer;"></select>
+                <select id="dob-year" style="flex:2; padding:12px 8px; background:#1a1d26; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer; color-scheme:dark;"></select>
+                <select id="dob-month" style="flex:1.5; padding:12px 8px; background:#1a1d26; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer; color-scheme:dark;"></select>
+                <select id="dob-day" style="flex:1.5; padding:12px 8px; background:#1a1d26; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer; color-scheme:dark;"></select>
             </div>
             <button id="dob-confirm-btn" onclick="confirmDob()" style="width:100%; padding:13px; background:#00e5ff; color:#000; font-weight:700; border:none; border-radius:12px; font-size:15px; cursor:pointer; margin-bottom:10px;">Confirm</button>
             <button onclick="cancelDob()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer;" id="dob-cancel-btn">Cancel</button>
@@ -1670,7 +1670,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
             <div class="target-select-list" id="report-target-container"></div>
 
-            <div style="display: flex; gap: 10px;">
+            <textarea id="report-reason-input" placeholder="신고 이유를 간략히 적어주세요. (선택)" maxlength="300" style="width:100%; box-sizing:border-box; margin-top:10px; padding:10px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:12.5px; resize:none; height:72px; outline:none; font-family:inherit;"></textarea>
+
+            <div style="display: flex; gap: 10px; margin-top:10px;">
                 <button id="rep-m-submit" style="background: var(--danger-color); color: #fff;" onclick="executeReport()" disabled>Submit Report</button>
                 <button style="background: rgba(255,255,255,0.05); color: #fff;" onclick="closeReportModal()">Cancel</button>
             </div>
@@ -2407,7 +2409,7 @@ database.ref('activeTopics').on('value', (snap) => {
             if (talkControls) talkControls.style.display = "none";
             document.getElementById("btn-talk-again").style.display = "none";
 
-            document.getElementById("toggle-rep-btn").style.display = "none";
+            document.getElementById("toggle-rep-btn").style.display = "inline-block";
             if (reputationSection) reputationSection.style.display = "none";
 
             if (startBtn) startBtn.disabled = true;
@@ -2843,9 +2845,18 @@ database.ref('activeTopics').on('value', (snap) => {
 
     // 💡 새롭게 추가하는 토글 클릭 이벤트 리스너
     document.getElementById('toggle-rep-btn').addEventListener('click', () => {
+        if (isGuest) {
+            const repSection = document.getElementById('reputation-section');
+            repSection.style.display = repSection.style.display === 'none' ? 'block' : 'none';
+            if (repSection.style.display === 'block') {
+                repSection.innerHTML = `<div style="text-align:center; padding:24px 16px; color:rgba(255,255,255,0.55); font-size:13.5px; line-height:1.8;">
+                    🔒 <strong style="color:#fff;">${currentLang === 'ko' ? '회원에게만 공개됩니다' : 'Available to members only'}</strong><br>
+                    <span style="font-size:12px; color:rgba(255,255,255,0.35);">${currentLang === 'ko' ? '대화를 거듭할수록 쌓이는 나만의 스탯,<br>가입하면 확인할 수 있어요.' : 'Your personal talk stats grow with every conversation.<br>Sign up to unlock them.'}</span>
+                </div>`;
+            }
+            return;
+        }
         const repSection = document.getElementById('reputation-section');
-        const btn = document.getElementById('toggle-rep-btn');
-
         if (repSection.style.display === "none") {
             repSection.style.display = "block";
         } else {
@@ -4063,6 +4074,8 @@ return text;
 
     function closeReportModal() {
         document.getElementById('report-modal').classList.remove('active');
+        const ri = document.getElementById('report-reason-input');
+        if (ri) ri.value = '';
     }
 
     async function executeReport() {
@@ -4073,10 +4086,12 @@ return text;
 
         // 실제 운영 배포 단계용 FormData 전송부 인프라 설계 구성 제공
         const formData = new FormData();
+        const reportReason = (document.getElementById('report-reason-input')?.value || '').trim();
         formData.append("audioData", fullReportBlob);
         formData.append("reportedUid", selectedReportTarget);
         formData.append("reporterUid", myUid);
         formData.append("channel", currentChannelName);
+        if (reportReason) formData.append("reason", reportReason);
 
         alert(currentLang === 'ko'
             ? "🚨 최근 1분간의 대화 오디오 데이터를 추출하여 AI 검증 시스템에 업로드합니다."
@@ -4221,7 +4236,7 @@ return text;
         if (!user || user.isAnonymous) {
             alert(currentLang === 'ko'
                 ? '무제한 대화를 이용하려면 로그인해 주세요.'
-                : 'Sign in to unlock unlimited calls.');
+                : 'Sign in for an unlimited calling experience.');
             return;
         }
         // 구독 상태 확인
