@@ -1597,7 +1597,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div>
                     <div style="font-size:10px; background:rgba(0,229,255,0.15); color:#00e5ff; border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:4px;">Popular</div>
                     <div style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9);">Monthly Plan</div>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;" id="pay-monthly-desc"></div>
+                    <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;" id="pay-monthly-desc">Unlimited calls for a month</div>
                     <div id="pay-event-badge" style="font-size:10px; color:#ffcc00; margin-top:5px;"></div>
                 </div>
                 <div style="text-align:right;">
@@ -2611,8 +2611,6 @@ function updateUI() {
         if (subBtn) subBtn.textContent = currentLang === 'ko' ? '프리미엄 시작 ✨' : 'Go Premium ✨';
         const aboutNavBtn = document.getElementById('about-nav-btn');
         if (aboutNavBtn) aboutNavBtn.textContent = currentLang === 'ko' ? '서비스소개' : 'About';
-        const monthlyDesc = document.getElementById('pay-monthly-desc');
-        if (monthlyDesc) monthlyDesc.textContent = currentLang === 'ko' ? '첫 달 무제한 · 이후 일 2시간' : 'First month unlimited · 2 hrs/day after';
         const eventBadge = document.getElementById('pay-event-badge');
         if (eventBadge) {
             const end = new Date('2026-08-31T23:59:59');
