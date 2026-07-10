@@ -1678,7 +1678,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
             <div class="target-select-list" id="report-target-container"></div>
 
-            <textarea id="report-reason-input" placeholder="신고 이유를 간략히 적어주세요. (선택)" maxlength="300" style="width:100%; box-sizing:border-box; margin-top:10px; padding:10px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:12.5px; resize:none; height:72px; outline:none; font-family:inherit;"></textarea>
+            <textarea id="report-reason-input" placeholder="신고 사유를 적어주세요." maxlength="300" style="width:100%; box-sizing:border-box; margin-top:10px; padding:10px 12px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; font-size:12.5px; resize:none; height:72px; outline:none; font-family:inherit;"></textarea>
 
             <div style="display: flex; gap: 10px; margin-top:10px;">
                 <button id="rep-m-submit" style="background: var(--danger-color); color: #fff;" onclick="executeReport()" disabled>Submit Report</button>
@@ -2604,6 +2604,8 @@ database.ref('activeTopics').on('value', (snap) => {
         document.getElementById('ban-desc').innerText = lang.banDesc;
         document.getElementById('rep-m-title').innerText = lang.reportTitle;
         document.getElementById('rep-m-desc').innerText = lang.reportDesc;
+        const rrInput = document.getElementById('report-reason-input');
+        if (rrInput) rrInput.placeholder = currentLang === 'ko' ? '신고 사유를 적어주세요.' : 'Please describe the reason for your report.';
 
         // 라이브 토픽 라벨 언어 동기화
         const liveTopicsLbl = document.getElementById('live-topics-label');
