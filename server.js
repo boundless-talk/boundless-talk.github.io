@@ -352,6 +352,24 @@ app.post('/push/notify', async (req, res) => {
     }
 });
 
+app.post('/translate', async (req, res) => {
+    const { text, from, to } = req.body;
+    if (!text || !from || !to) return res.status(400).json({ error: 'Missing params' });
+    if (!process.env.DEEPL_API_KEY) return res.status(503).json({ error: 'No API key' });
+    try {
+        const r = await fetch('https://api-free.deepl.com/v2/translate', {
+            method: 'POST',
+            headers: { 'Authorization': 'DeepL-Auth-Key ' + process.env.DEEPL_API_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: [text], source_lang: from.toUpperCase(), target_lang: to.toUpperCase() })
+        });
+        const data = await r.json();
+        const translated = data.translations?.[0]?.text || text;
+        res.json({ translated });
+    } catch(e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 const PORT = process.env.PORT || 3000;

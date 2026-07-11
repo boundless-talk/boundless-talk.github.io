@@ -3983,11 +3983,13 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const data = snap.val();
             if (!data || !data.text) return;
 
-            let translated = data.text;
+            // 원문 즉시 표시
+            displaySubtitle(uid, data.text, null, false);
+            // 번역 필요하면 완료 후 업데이트
             if (data.lang !== targetSubtitleLang) {
-                translated = await translateSubtitleText(data.text, data.lang, targetSubtitleLang);
+                const translated = await translateSubtitleText(data.text, data.lang, targetSubtitleLang);
+                updateSubtitleTranslation(uid, data.text, translated);
             }
-            displaySubtitle(uid, data.text, translated, false);
         });
     }
 
@@ -4001,15 +4003,14 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     async function translateSubtitleText(text, from, to) {
         try {
-            const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + from + '|' + to + '&de=freesia9353@gmail.com';
-            const res = await fetch(url);
+            const res = await fetch(TOKEN_SERVER_URL + '/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, from, to })
+            });
+            if (!res.ok) return text;
             const data = await res.json();
-            if (data.responseStatus === 200) {
-    const translated = data.responseData.translatedText;
-    if (translated && !translated.includes('MYMEMORY WARNING')) return translated;
-}
-return text;
-            return text;
+            return data.translated || text;
         } catch(e) { return text; }
     }
 
@@ -4021,6 +4022,8 @@ return text;
         const nickname = isSelf ? (myNickname || 'Me') : (uidToNickname[resolvedUid] || uidToNickname[uid] || 'User');
         const item = document.createElement('div');
         item.className = 'subtitle-item';
+        item.dataset.uid = uid;
+        item.dataset.original = original;
 
         if (isSelf) {
             item.innerHTML =
@@ -4032,12 +4035,32 @@ return text;
             item.innerHTML =
                 '<div class="subtitle-speaker">👤 ' + nickname + '</div>'
                 + (showOriginal ? '<div class="subtitle-original">' + original + '</div>' : '')
-                + '<div class="subtitle-translated">' + (translated || original) + '</div>';
+                + '<div class="subtitle-translated">' + (translated || '<span class="subtitle-loading">...</span>') + '</div>';
         }
 
         list.appendChild(item);
         while (list.children.length > 6) list.removeChild(list.firstChild);
         list.scrollTop = list.scrollHeight;
+    }
+
+    function updateSubtitleTranslation(uid, original, translated) {
+        const list = document.getElementById('subtitle-list');
+        if (!list) return;
+        const items = list.querySelectorAll('.subtitle-item');
+        for (let i = items.length - 1; i >= 0; i--) {
+            if (items[i].dataset.uid === uid && items[i].dataset.original === original) {
+                const showOriginal = translated && original !== translated;
+                const transEl = items[i].querySelector('.subtitle-translated');
+                if (transEl) transEl.textContent = translated || original;
+                if (showOriginal && !items[i].querySelector('.subtitle-original')) {
+                    const origEl = document.createElement('div');
+                    origEl.className = 'subtitle-original';
+                    origEl.textContent = original;
+                    transEl.before(origEl);
+                }
+                break;
+            }
+        }
     }
 
     function updateRoomParticipants() {
@@ -4291,6 +4314,9 @@ return text;
         document.getElementById('subscription-modal').classList.remove('active');
         document.getElementById('refund-modal').classList.add('active');
     }
+
+    // Render 서버 콜드스타트 방지 핑 (10분마다)
+    setInterval(() => { fetch(TOKEN_SERVER_URL + '/health').catch(() => {}); }, 10 * 60 * 1000);
 
     // 기타 체크박스 토글 시 텍스트 영역 표시
     document.addEventListener('DOMContentLoaded', () => {
