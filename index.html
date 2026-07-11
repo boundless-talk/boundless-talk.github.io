@@ -2646,7 +2646,6 @@ function updateUI() {
         if (aboutNavBtn) aboutNavBtn.textContent = currentLang === 'ko' ? '서비스소개' : 'About';
         const refundBtn = document.getElementById('sub-btn-refund');
         if (refundBtn) refundBtn.innerHTML = currentLang === 'ko' ? '💸 환불 요청' : '💸 Request a Refund';
-        const isKo = currentLang === 'ko';
         const rm = document.getElementById('refund-modal-title');
         if (rm) rm.textContent = isKo ? '어떤 점이 불편하셨나요?' : 'What was the issue?';
         const rs = document.getElementById('refund-modal-subtitle');
