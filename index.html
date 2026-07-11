@@ -1595,26 +1595,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <!-- Monthly Plan -->
             <div class="pay-plan-btn" id="pay-monthly" style="border:1.5px solid #00e5ff; background:rgba(0,229,255,0.06); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
                 <div>
-                    <div style="font-size:10px; background:rgba(0,229,255,0.15); color:#00e5ff; border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:4px;">Popular</div>
-                    <div style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9);">Monthly Plan</div>
+                    <div id="pay-popular-badge" style="font-size:10px; background:rgba(0,229,255,0.15); color:#00e5ff; border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:4px;">Popular</div>
+                    <div id="pay-monthly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9);">Monthly Plan</div>
                     <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;" id="pay-monthly-desc">2 hrs/day for a month</div>
                     <div id="pay-event-badge" style="font-size:10px; color:#ffcc00; margin-top:5px;"></div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:16px; font-weight:700; color:#00e5ff;">$4.99</div>
-                    <div style="font-size:10px; color:rgba(255,255,255,0.35);">/ mo</div>
+                    <div id="pay-monthly-period" style="font-size:10px; color:rgba(255,255,255,0.35);">/ mo</div>
                 </div>
             </div>
 
             <!-- Weekly Plan -->
             <div class="pay-plan-btn" id="pay-weekly" style="border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
                 <div>
-                    <div style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.88);">Weekly Plan</div>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;">Unlimited calls for 7 days</div>
+                    <div id="pay-weekly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.88);">Weekly Plan</div>
+                    <div id="pay-weekly-desc" style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;">Unlimited calls for 7 days</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:16px; font-weight:700; color:rgba(255,255,255,0.9);">$1.99</div>
-                    <div style="font-size:10px; color:rgba(255,255,255,0.35);">/ wk</div>
+                    <div id="pay-weekly-period" style="font-size:10px; color:rgba(255,255,255,0.35);">/ wk</div>
                 </div>
             </div>
 
@@ -2023,6 +2023,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payModalTitle: "Too good to stop now? 😊",
         payModalSub: "Keep the conversation going",
         payModalClose: "Close",
+        payPopular: "Popular",
+        payMonthlyTitle: "Monthly Plan",
+        payMonthlyDesc: "2 hrs/day for a month",
+        payMonthlyPeriod: "/ mo",
+        payWeeklyTitle: "Weekly Plan",
+        payWeeklyDesc: "Unlimited calls for 7 days",
+        payWeeklyPeriod: "/ wk",
+        payLeave: "End conversation",
+        payCountdown: "Call ends in",
         intro2S1: `<strong>Pick a Topic</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enter what you want to talk about today, or join a room that's already talking.</span>`,
         intro2S2: `<strong>Enjoy 10 Minutes (or more)</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enjoy 10 minutes of free, focused time for every conversation. Want to talk longer without limits? Premium features are always available to keep the chat going.</span>`,
         intro2S3: `<strong>Connect &amp; Collect Badges</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">If you hit it off, add them as a friend. You can also collect unique Talk Badges based on your conversation style.</span>`,
@@ -2135,6 +2144,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payModalTitle: "대화가 너무 좋았나요? 😊",
         payModalSub: "대화를 계속 이어가보세요",
         payModalClose: "닫기",
+        payPopular: "인기",
+        payMonthlyTitle: "월간 구독권",
+        payMonthlyDesc: "매일 2시간 통화 (한 달간)",
+        payMonthlyPeriod: "/ 월",
+        payWeeklyTitle: "주간 구독권",
+        payWeeklyDesc: "7일간 무제한 통화 이용",
+        payWeeklyPeriod: "/ 주",
+        payLeave: "대화 종료",
+        payCountdown: "통화 종료까지",
         intro2S1: `<strong>주제 선택</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">오늘 이야기하고 싶은 주제를 입력하거나, 이미 대화 중인 방에 참여해보세요.</span>`,
         intro2S2: `<strong>10분 무료 대화 (또는 그 이상)</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">모든 대화에서 10분의 무료 집중 시간을 즐겨보세요. 시간 제한 없이 더 오래 대화하고 싶으신가요? 대화를 계속 이어갈 수 있는 프리미엄 기능이 언제나 준비되어 있습니다.</span>`,
         intro2S3: `<strong>친구 맺기 &amp; 배지 수집</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">마음이 맞으면 친구를 추가하세요. 대화 스타일에 따라 다양한 Talk Badge도 수집할 수 있어요.</span>`,
@@ -2522,6 +2540,14 @@ function updateUI() {
         const pmTitle = document.getElementById('pay-modal-title'); if (pmTitle) pmTitle.textContent = lang.payModalTitle;
         const pmSub = document.getElementById('pay-modal-sub'); if (pmSub) pmSub.textContent = lang.payModalSub;
         const pmClose = document.getElementById('pay-modal-close'); if (pmClose) pmClose.textContent = lang.payModalClose;
+        const pmPopular = document.getElementById('pay-popular-badge'); if (pmPopular) pmPopular.textContent = lang.payPopular;
+        const pmMonthlyTitle = document.getElementById('pay-monthly-title'); if (pmMonthlyTitle) pmMonthlyTitle.textContent = lang.payMonthlyTitle;
+        const pmMonthlyDesc = document.getElementById('pay-monthly-desc'); if (pmMonthlyDesc) pmMonthlyDesc.textContent = lang.payMonthlyDesc;
+        const pmWeeklyTitle = document.getElementById('pay-weekly-title'); if (pmWeeklyTitle) pmWeeklyTitle.textContent = lang.payWeeklyTitle;
+        const pmWeeklyDesc = document.getElementById('pay-weekly-desc'); if (pmWeeklyDesc) pmWeeklyDesc.textContent = lang.payWeeklyDesc;
+        const pmMonthlyPeriod = document.getElementById('pay-monthly-period'); if (pmMonthlyPeriod) pmMonthlyPeriod.textContent = lang.payMonthlyPeriod;
+        const pmWeeklyPeriod = document.getElementById('pay-weekly-period'); if (pmWeeklyPeriod) pmWeeklyPeriod.textContent = lang.payWeeklyPeriod;
+        const pmLeave = document.getElementById('pay-modal-leave'); if (pmLeave) pmLeave.textContent = lang.payLeave;
         const s1 = document.getElementById('intro2-s1'); if (s1) s1.innerHTML = lang.intro2S1;
         const s2 = document.getElementById('intro2-s2'); if (s2) s2.innerHTML = lang.intro2S2;
         const s3 = document.getElementById('intro2-s3'); if (s3) s3.innerHTML = lang.intro2S3;
