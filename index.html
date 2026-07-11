@@ -1045,6 +1045,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 </head>
 <body>
 
+    <!-- 스플래시 화면 — body 최상단에서 즉시 렌더링 -->
+    <div id="splash-screen">
+        <div style="position:relative; width:min(480px, 80vw);">
+            <video id="splash-video" muted playsinline style="width:100%; height:auto; display:block;">
+                <source src="splash.mp4" type="video/mp4">
+            </video>
+            <div style="position:absolute; inset:0; background: radial-gradient(ellipse at center, transparent 40%, #0a0a0f 80%); pointer-events:none;"></div>
+        </div>
+    </div>
+
     <div id="invite-banner" style="display:none; position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:rgba(13,14,18,0.95); border:1px solid rgba(0,229,255,0.4); border-radius:16px; padding:18px 24px; z-index:9999; text-align:center; min-width:280px;">
     <div id="invite-text" style="font-size:14px; color:#fff; margin-bottom:14px;">친구가 대화를 요청했어요! 🎉</div>
     <div style="display:flex; gap:10px; justify-content:center;">
@@ -1096,17 +1106,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div id="suspend-appeal-done" style="display:none; margin-top:12px; font-size:13px; color:var(--accent-color);">
                 ✅ 이의신청이 접수되었습니다.
             </div>
-        </div>
-    </div>
-
-    <!-- 스플래시 화면 -->
-    <div id="splash-screen">
-        <div style="position:relative; width:min(480px, 80vw);">
-            <video id="splash-video" muted playsinline style="width:100%; height:auto; display:block;">
-                <source src="splash.mp4" type="video/mp4">
-            </video>
-            <!-- 가장자리 페이드 -->
-            <div style="position:absolute; inset:0; background: radial-gradient(ellipse at center, transparent 40%, #0a0a0f 80%); pointer-events:none;"></div>
         </div>
     </div>
 
