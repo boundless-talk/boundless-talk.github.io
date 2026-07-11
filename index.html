@@ -4398,10 +4398,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const video = document.getElementById('splash-video');
 
         function hideSplash() {
-            splash.classList.add('hide');
+            intro.style.display = 'flex';   // 인트로 먼저 보이게
+            splash.classList.add('hide');    // 그 위에서 스플래시 페이드아웃
             setTimeout(() => {
                 splash.style.display = 'none';
-                intro.style.display = 'flex';
             }, 600);
         }
 
