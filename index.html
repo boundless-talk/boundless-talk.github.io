@@ -1652,6 +1652,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <button onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; margin-bottom:8px;">🔄 <span id="sub-btn-change">플랜 변경하기</span></button>
             <!-- 구독 관리 -->
             <button onclick="openManageSubscription()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer;">⚙️ <span id="sub-btn-manage">구독 관리</span></button>
+            <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:2px; text-decoration:underline;" id="sub-btn-refund">💸 환불 요청</button>
             <button onclick="document.getElementById('subscription-modal').classList.remove('active')" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.15); font-size:12px; cursor:pointer; margin-top:2px;" id="sub-btn-close">닫기</button>
         </div>
     </div>
@@ -2611,6 +2612,8 @@ function updateUI() {
         if (subBtn) subBtn.textContent = currentLang === 'ko' ? '프리미엄 시작 ✨' : 'Go Premium ✨';
         const aboutNavBtn = document.getElementById('about-nav-btn');
         if (aboutNavBtn) aboutNavBtn.textContent = currentLang === 'ko' ? '서비스소개' : 'About';
+        const refundBtn = document.getElementById('sub-btn-refund');
+        if (refundBtn) refundBtn.innerHTML = currentLang === 'ko' ? '💸 환불 요청' : '💸 Request a Refund';
         const eventBadge = document.getElementById('pay-event-badge');
         if (eventBadge) {
             const end = new Date('2026-08-31T23:59:59');
@@ -4224,6 +4227,33 @@ return text;
         clearPayCountdown();
         document.getElementById('free-time-banner').style.display = 'none';
         document.getElementById('payment-modal').style.display = 'none';
+    }
+
+    async function requestRefund() {
+        const user = auth.currentUser;
+        if (!user) return;
+        const isKo = currentLang === 'ko';
+        const confirmed = confirm(isKo
+            ? '환불을 요청하시겠어요?\n결제일로부터 7일 이내 요청만 처리됩니다.'
+            : 'Request a refund?\nOnly requests within 7 days of payment will be processed.');
+        if (!confirmed) return;
+        const reason = prompt(isKo ? '환불 사유를 입력해주세요.' : 'Please describe the reason for your refund request.');
+        if (reason === null) return;
+        try {
+            await database.ref('refundRequests/' + user.uid + '_' + Date.now()).set({
+                uid: user.uid,
+                email: user.email || '',
+                reason: reason.trim(),
+                requestedAt: new Date().toISOString(),
+                status: 'pending'
+            });
+            document.getElementById('subscription-modal').classList.remove('active');
+            alert(isKo
+                ? '환불 요청이 접수되었습니다. 7일 이내 처리해드릴게요.'
+                : 'Your refund request has been received. We\'ll process it within 7 days.');
+        } catch(e) {
+            alert(isKo ? '요청 중 오류가 발생했습니다. 다시 시도해주세요.' : 'An error occurred. Please try again.');
+        }
     }
 
     function openManageSubscription() {
