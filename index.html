@@ -4310,19 +4310,51 @@ return text;
             return;
         }
         const otherText = document.getElementById('refund-other-input').value.trim();
+        const tail = isKo
+            ? '\n\n언제든지 대화가 필요할 때 돌아오세요!\n늘 이곳에서 기다리고 있겠습니다. 😊'
+            : '\n\nWe hope to see you again soon. You\'re always welcome back! 😊';
         try {
+            // 중복 요청 체크
+            const existingSnap = await database.ref('refundRequests').orderByChild('uid').equalTo(user.uid).once('value');
+            if (existingSnap.val()) {
+                document.getElementById('refund-modal').classList.remove('active');
+                alert((isKo
+                    ? '이미 환불(취소) 요청이 완료되었습니다.\n처리가 완료될 때까지 조금만 기다려 주세요!'
+                    : 'A refund or cancellation request has already been submitted.\nPlease wait while we process it.') + tail);
+                return;
+            }
+
+            // 7일 이내 여부 판단
+            const subSnap = await database.ref('users/' + user.uid + '/subscription').once('value');
+            const sub = subSnap.val();
+            let isWithin7Days = false;
+            if (sub && sub.expiresAt) {
+                const expires = new Date(sub.expiresAt);
+                const daysInPlan = sub.plan === 'weekly' ? 7 : 30;
+                const startedAt = new Date(expires.getTime() - daysInPlan * 86400000);
+                isWithin7Days = (Date.now() - startedAt.getTime()) <= 7 * 86400000;
+            }
+
             await database.ref('refundRequests/' + user.uid + '_' + Date.now()).set({
                 uid: user.uid,
                 email: user.email || '',
                 reasons: checked,
                 otherText: otherText || null,
                 requestedAt: new Date().toISOString(),
+                isWithin7Days,
                 status: 'pending'
             });
             document.getElementById('refund-modal').classList.remove('active');
-            alert(isKo
-                ? '환불 요청이 접수되었습니다. 구독 후 7일 이내 요청이면 전액 환불 처리됩니다.'
-                : 'Your refund request has been received. If within 7 days of purchase, a full refund will be processed.');
+
+            if (isWithin7Days) {
+                alert((isKo
+                    ? '환불 요청이 접수되었습니다.\n\n구독 후 7일 이내 요청으로 전액 환불 대상이며,\n영업일 기준 3일 이내에 완료됩니다.'
+                    : 'Your refund request has been received.\n\nAs this is within 7 days of purchase, you are eligible for a full refund.\nProcessing takes up to 3 business days.') + tail);
+            } else {
+                alert((isKo
+                    ? '환불 요청이 접수되었습니다.\n\n구독 후 7일이 경과하여 환불은 어렵지만,\n다음 정기 구독(자동 결제)을 취소해 드렸습니다.\n(남은 결제 기간 동안은 계속 이용하실 수 있어요.)'
+                    : 'Your request has been received.\n\nAs it has been over 7 days since purchase, a refund is not available.\nHowever, your subscription auto-renewal will be cancelled.\nYou retain access until the end of the current billing period.') + tail);
+            }
         } catch(e) {
             alert(isKo ? '요청 중 오류가 발생했습니다. 다시 시도해주세요.' : 'An error occurred. Please try again.');
         }
