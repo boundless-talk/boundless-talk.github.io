@@ -5369,7 +5369,21 @@ B-TALK은 이용자 간 연결을 위한 플랫폼만을 제공합니다. 대화
         currentAboutPageKey = key;
         const lang = ABOUT_CONTENT[key][currentLang] || ABOUT_CONTENT[key]['en'];
         document.getElementById('about-page-title').textContent = lang.title;
-        document.getElementById('about-page-content').textContent = lang.content;
+        const rendered = lang.content
+            .split('\n')
+            .map(line => {
+                const sectionMatch = line.match(/^─+\s*(.+?)\s*─+$/);
+                if (sectionMatch) {
+                    return `<div style="color:#00e5ff; font-size:11px; font-weight:700; letter-spacing:0.08em; margin-top:20px; margin-bottom:6px;">${sectionMatch[1]}</div>`;
+                }
+                if (line.startsWith('•')) {
+                    return `<div style="padding-left:12px; color:rgba(255,255,255,0.6); font-size:13px; margin-bottom:3px;">${line}</div>`;
+                }
+                if (line.trim() === '') return '<div style="height:4px;"></div>';
+                return `<div style="color:rgba(255,255,255,0.65); font-size:13px; line-height:1.6; margin-bottom:4px;">${line}</div>`;
+            })
+            .join('');
+        document.getElementById('about-page-content').innerHTML = rendered;
         // 어디서 열렸는지 기록
         if (document.getElementById('consent-modal').classList.contains('active')) {
             aboutPageOrigin = 'consent';
