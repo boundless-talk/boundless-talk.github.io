@@ -1051,7 +1051,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <video id="splash-video" muted playsinline style="width:100%; height:auto; display:block;">
                 <source src="splash.mp4" type="video/mp4">
             </video>
-            <div style="position:absolute; inset:0; background: radial-gradient(ellipse at center, transparent 40%, #0a0a0f 80%); pointer-events:none;"></div>
+            <div style="position:absolute; inset:0; background: radial-gradient(ellipse at center, transparent 30%, #0a0a0f 65%); pointer-events:none;"></div>
         </div>
     </div>
 
@@ -1138,7 +1138,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
-    <div class="lang-container">
+    <div class="lang-container" id="lang-container">
         <button id="lang-toggle-btn" class="lang-btn">KO</button>
     </div>
 
@@ -4398,12 +4398,18 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const video = document.getElementById('splash-video');
 
         function hideSplash() {
-            intro.style.display = 'flex';   // 인트로 먼저 보이게
-            splash.classList.add('hide');    // 그 위에서 스플래시 페이드아웃
+            intro.style.display = 'flex';
+            splash.classList.add('hide');
             setTimeout(() => {
                 splash.style.display = 'none';
+                const langContainer = document.getElementById('lang-container');
+                if (langContainer) langContainer.style.display = '';
             }, 600);
         }
+
+        // 스플래시 동안 언어 버튼 숨기기
+        const langContainer = document.getElementById('lang-container');
+        if (langContainer) langContainer.style.display = 'none';
 
         // iOS Safari 자동재생 강제
         const playPromise = video.play();
