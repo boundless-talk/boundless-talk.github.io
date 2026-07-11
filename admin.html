@@ -494,6 +494,10 @@
         <span class="icon">✉️</span> 문의 내역
         <span class="nav-badge" id="inquiry-badge" style="display:none">0</span>
     </div>
+    <div class="nav-item" onclick="navigate('refunds')">
+        <span class="icon">💸</span> 환불 요청
+        <span class="nav-badge" id="refund-badge" style="display:none">0</span>
+    </div>
 
     <div class="sidebar-footer">
         <div class="admin-info">
@@ -676,6 +680,18 @@
                 <div class="section-count" id="inquiries-count"></div>
             </div>
             <div id="inquiries-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
+        </div>
+
+        <!-- 환불 요청 -->
+        <div class="page" id="page-refunds">
+            <div class="section-header">
+                <div class="section-title">환불 요청</div>
+                <div class="section-count" id="refunds-count"></div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <a href="https://vendors.paddle.com/transactions" target="_blank" style="display:inline-block; padding:9px 16px; background:rgba(0,229,255,0.1); border:1px solid rgba(0,229,255,0.3); border-radius:10px; color:#00e5ff; font-size:13px; text-decoration:none; font-weight:600;">🏦 Paddle 대시보드에서 환불 처리 →</a>
+            </div>
+            <div id="refunds-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
         </div>
 
     </div>
@@ -1025,7 +1041,8 @@
         currentPage = page;
         if (page === 'online') startOnlineListener();
         if (page === 'inquiries') loadInquiries();
-        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역' };
+        if (page === 'refunds') loadRefunds();
+        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', refunds:'환불 요청' };
         document.getElementById('page-title').textContent = titles[page] || page;
     }
 
@@ -1237,6 +1254,59 @@
 
     function markInquiryRead(id) {
         db.ref('inquiries/' + id + '/status').set('read').then(() => loadInquiries());
+    }
+
+    const REASON_LABELS = {
+        too_expensive: '너무 비쌈',
+        few_users: '대화 상대 부족',
+        bad_users: '불량 유저 많음',
+        not_fun: '기대만큼 재미없음',
+        bad_quality: '통화 품질 불량',
+        other: '기타'
+    };
+
+    function loadRefunds() {
+        db.ref('refundRequests').once('value', snap => {
+            const list = document.getElementById('refunds-list');
+            const data = snap.val();
+            if (!data) {
+                list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">환불 요청이 없습니다.</div>';
+                document.getElementById('refunds-count').textContent = '0건';
+                document.getElementById('refund-badge').style.display = 'none';
+                return;
+            }
+            const items = Object.entries(data).sort((a,b) => b[0].localeCompare(a[0]));
+            const pending = items.filter(([,v]) => v.status === 'pending').length;
+            document.getElementById('refunds-count').textContent = `총 ${items.length}건`;
+            if (pending > 0) {
+                document.getElementById('refund-badge').style.display = 'inline-block';
+                document.getElementById('refund-badge').textContent = pending;
+            } else {
+                document.getElementById('refund-badge').style.display = 'none';
+            }
+            list.innerHTML = items.map(([id, v]) => {
+                const reasons = (v.reasons || []).map(r => REASON_LABELS[r] || r).join(', ');
+                const isPending = v.status === 'pending';
+                return `
+                <div style="background:var(--surface);border:1px solid ${isPending ? 'rgba(255,77,77,0.3)' : 'var(--border)'};border-radius:10px;padding:16px 20px;margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-size:12px;color:var(--text-dim);">${v.email || v.uid} &nbsp;·&nbsp; ${v.requestedAt ? v.requestedAt.slice(0,10) : ''}</span>
+                        <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:${isPending ? 'var(--danger-dim)' : 'var(--surface2)'};color:${isPending ? 'var(--danger)' : 'var(--text-dim)'};">${isPending ? '미처리' : '처리완료'}</span>
+                    </div>
+                    <div style="font-size:13px;color:var(--text);margin-bottom:6px;">사유: <strong>${reasons || '—'}</strong></div>
+                    ${v.otherText ? `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">기타: ${v.otherText}</div>` : ''}
+                    ${isPending ? `
+                    <div style="display:flex;gap:8px;margin-top:10px;">
+                        <a href="https://vendors.paddle.com/transactions" target="_blank" style="padding:6px 14px;font-size:12px;background:var(--accent-dim);border:1px solid rgba(0,229,255,0.3);color:var(--accent);border-radius:6px;cursor:pointer;text-decoration:none;font-weight:600;">🏦 Paddle에서 환불처리</a>
+                        <button onclick="markRefundDone('${id}')" style="padding:6px 14px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:6px;cursor:pointer;">✔ 처리완료 표시</button>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+        });
+    }
+
+    function markRefundDone(id) {
+        db.ref('refundRequests/' + id + '/status').set('done').then(() => loadRefunds());
     }
 
     function startOnlineListener() {
