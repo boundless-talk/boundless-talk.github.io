@@ -3893,7 +3893,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     Object.entries(data).forEach(([uid, val]) => {
         if (val && val.style) speechStyleMap[uid] = val.style;
         if (val && val.nickname) uidToNickname[uid] = val.nickname;
-        if (val) uidToIsGuest[uid] = !!val.guest;
+        if (val && val.guest) uidToIsGuest[uid] = true;
     });
     updateRoomParticipants();
 });
