@@ -1634,6 +1634,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <span id="label-add-friend">➕ Add Friend</span>
     </button>
                 <button class="badge-vote-btn" onclick="closeModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-weight:400; margin-top: 10px;" id="vote-skip">Skip Feedback</button>
+                <button onclick="closeModal()" id="badge-modal-close-btn" style="width:100%;margin-top:6px;padding:13px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:600;cursor:pointer;">닫기</button>
             </div>
         </div>
     </div>
@@ -3006,6 +3007,7 @@ function updateUI() {
         document.getElementById('vote-empathy').innerText = lang.vEmpathy;
         document.getElementById('vote-passion').innerText = lang.vPassion;
         document.getElementById('vote-skip').innerText = lang.vSkip;
+        document.getElementById('badge-modal-close-btn').textContent = currentLang === 'ko' ? '닫기' : 'Close';
         document.getElementById('part-title-label').innerText = lang.partLabel;
         document.getElementById('ban-title').innerText = lang.banTitle;
         document.getElementById('ban-desc').innerText = lang.banDesc;
@@ -5471,6 +5473,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             // 모바일 ghost tap 방지: 터치 이벤트 소멸 후 모달 오픈
             // AI 대화 요약본 분석 브리핑 레이아웃 활성화
             setTimeout(() => {
+                badgeSentThisSession = false;
                 document.getElementById('badge-modal').classList.add('active');
                 document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
                 document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
@@ -5497,6 +5500,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             // 에러가 나도 배지 모달은 열어줌
             setupVoteTargetsUI();
             setTimeout(() => {
+                badgeSentThisSession = false;
                 document.getElementById('badge-modal').classList.add('active');
                 document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
                 document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
@@ -5589,17 +5593,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     // 배지를 보낸 대상은 목록에서 제거하고, 다음 대상을 선택할 수 있도록 모달을 유지
-    function removeVoteTarget(uid) {
-        const btn = document.querySelector(`#vote-target-container .target-btn[data-uid="${uid}"]`);
-        if (btn) btn.remove();
+    let badgeSentThisSession = false;
 
+    function removeVoteTarget(uid) {
         selectedVoteTarget = null;
         toggleVoteBadgeButtons(false);
-
-        const container = document.getElementById('vote-target-container');
-        if (container.children.length === 0) {
-            closeModal();
-        }
+        // 모달은 자동으로 닫지 않음 — 닫기 버튼으로만 닫힘
     }
 
     function toggleVoteBadgeButtons(enable) {
@@ -5617,6 +5616,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     async function executeVote(badgeType) {
         if (!selectedVoteTarget) return;
+        if (badgeSentThisSession) {
+            showBadgeToast(currentLang === 'ko' ? '너무 즐거워도 배지는 한번만 보낼 수 있어요 😊' : 'You can only send one badge per session 😊');
+            return;
+        }
         if (uidToIsGuest[selectedVoteTarget]) {
             alert(currentLang === 'ko' ? '게스트 유저에게는 배지를 보낼 수 없습니다.' : 'You cannot send badges to guest users.');
             return;
@@ -5646,7 +5649,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const today = new Date().toISOString().slice(0, 10);
             database.ref('users/' + selectedVoteTarget + '/dailyBadges/' + today + '/' + badgeType).set(firebase.database.ServerValue.increment(1));
 
-            alert(textData[currentLang].badgeSuccess);
+            badgeSentThisSession = true;
+            showBadgeToast(textData[currentLang].badgeSuccess);
             removeVoteTarget(selectedVoteTarget);
 
         } catch (err) {
@@ -5657,6 +5661,21 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     function closeModal() {
         document.getElementById('badge-modal').classList.remove('active');
+        badgeSentThisSession = false;
+    }
+
+    function showBadgeToast(msg) {
+        let toast = document.getElementById('badge-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'badge-toast';
+            toast.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(20,18,32,0.97);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;z-index:99999;white-space:nowrap;pointer-events:none;transition:opacity 0.3s;';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
     }
 
     // 초기 실행 구동부 체인 링크
