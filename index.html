@@ -3887,7 +3887,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, ts: firebase.database.ServerValue.TIMESTAMP });
+    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, rankEmoji: myRankEmoji || '👋', ts: firebase.database.ServerValue.TIMESTAMP });
     myTopicRef.onDisconnect().remove();
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
     window._heartbeatInterval = setInterval(() => {
@@ -3904,6 +3904,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (val && val.style) speechStyleMap[uid] = val.style;
         if (val && val.nickname) uidToNickname[uid] = val.nickname;
         if (val && val.guest) uidToIsGuest[uid] = true;
+        if (val && val.rankEmoji) uidToRankEmoji[uid] = val.rankEmoji;
     });
     updateRoomParticipants();
 });
@@ -4028,7 +4029,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                         const atSnap = await database.ref(`activeTopics/${safeAgoraChannelId}`).once('value');
                         const atData = atSnap.val() || {};
                         fbUid = Object.keys(atData).find(uid => uid !== myFbUid) || null;
-                        if (fbUid && atData[fbUid] && atData[fbUid].guest) uidToIsGuest[fbUid] = true;
+                        if (fbUid && atData[fbUid]) {
+                            if (atData[fbUid].guest) uidToIsGuest[fbUid] = true;
+                            if (atData[fbUid].rankEmoji) uidToRankEmoji[fbUid] = atData[fbUid].rankEmoji;
+                        }
                     }
                     if (fbUid) {
                         database.ref(`channels/${safeAgoraChannelId}/guestFlags/${fbUid}`).once('value').then(gs => { if (gs.val()) uidToIsGuest[fbUid] = true; });
