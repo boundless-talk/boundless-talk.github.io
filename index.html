@@ -949,6 +949,86 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             text-align: center;
             padding: 12px 0;
         }
+
+        /* ── 핑퐁 모드 토글 ── */
+        .pingpong-toggle-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(123,97,255,0.07);
+            border: 1px solid rgba(123,97,255,0.2);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .pingpong-toggle-row:hover { background: rgba(123,97,255,0.12); }
+        .pingpong-toggle-label { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); }
+        .pingpong-toggle-sub { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 2px; }
+        .pp-switch { width: 44px; height: 24px; background: rgba(255,255,255,0.1); border-radius: 12px; position: relative; transition: background 0.3s; flex-shrink: 0; }
+        .pp-switch.on { background: linear-gradient(135deg, #7b61ff, #a78bff); }
+        .pp-switch-thumb { width: 18px; height: 18px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+        .pp-switch.on .pp-switch-thumb { left: 23px; }
+
+        /* ── 핑퐁 통화 중 UI ── */
+        #pingpong-section { display: none; }
+        #pingpong-section.active { display: block; }
+        .pp-relay-bar {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 14px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .pp-relay-bar::-webkit-scrollbar { display: none; }
+        .pp-relay-label { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.22); text-transform: uppercase; flex-shrink: 0; margin-right: 4px; }
+        .pp-relay-item { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; transition: all 0.35s ease; }
+        .pp-relay-item.removing { opacity: 0; transform: scale(0.6); }
+        .pp-relay-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: all 0.3s; }
+        .pp-relay-avatar.speaking { border-color: #00e5ff; background: rgba(0,229,255,0.12); box-shadow: 0 0 10px rgba(0,229,255,0.25); }
+        .pp-relay-avatar.new-join { border-color: #7b61ff; background: rgba(123,97,255,0.12); box-shadow: 0 0 10px rgba(123,97,255,0.2); }
+        .pp-relay-name { font-size: 8px; color: rgba(255,255,255,0.35); font-weight: 600; max-width: 36px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pp-relay-name.speaking { color: #00e5ff; }
+        .pp-relay-arrow { font-size: 12px; color: rgba(255,255,255,0.12); flex-shrink: 0; margin-bottom: 14px; }
+
+        .pp-turn-block {
+            text-align: center;
+            padding: 14px 0 10px;
+            margin-bottom: 10px;
+        }
+        .pp-turn-label { font-size: 15px; font-weight: 800; color: #00e5ff; margin-bottom: 2px; }
+        .pp-turn-label.waiting { color: rgba(255,200,50,0.85); }
+        .pp-turn-label.other { color: rgba(255,255,255,0.45); }
+        .pp-turn-sub { font-size: 11px; color: rgba(255,255,255,0.3); }
+
+        .pp-timer-row { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin-bottom: 8px; }
+        .pp-timer-num { font-size: 32px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+        .pp-timer-total { font-size: 13px; color: rgba(255,255,255,0.22); }
+        .pp-progress-track { height: 5px; background: rgba(255,255,255,0.07); border-radius: 5px; margin-bottom: 14px; overflow: hidden; }
+        .pp-progress-fill { height: 100%; background: linear-gradient(90deg, #7b61ff, #00e5ff); border-radius: 5px; transition: width 1s linear; }
+        .pp-progress-fill.other { background: rgba(255,255,255,0.15); transition: width 1s linear; }
+
+        .pp-pass-btn {
+            width: 100%; padding: 11px;
+            background: rgba(123,97,255,0.12); border: 1px solid rgba(123,97,255,0.35);
+            border-radius: 12px; color: #a78bff; font-size: 13px; font-weight: 700; cursor: pointer;
+            margin-bottom: 8px; transition: all 0.2s;
+        }
+        .pp-pass-btn:hover:not(:disabled) { background: rgba(123,97,255,0.22); }
+        .pp-pass-btn:disabled { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); color: rgba(255,255,255,0.18); cursor: not-allowed; }
+
+        .pp-waiting-solo {
+            text-align: center; padding: 18px 0 10px;
+            border-top: 1px solid rgba(255,200,50,0.15);
+            margin-top: 10px; display: none;
+        }
+        .pp-waiting-solo.active { display: block; }
+        .pp-waiting-solo-title { font-size: 13px; font-weight: 700; color: rgba(255,200,50,0.85); margin-bottom: 4px; }
+        .pp-waiting-solo-sub { font-size: 11px; color: rgba(255,255,255,0.3); line-height: 1.6; }
         .room-footer {
             width: 100%;
             max-width: 420px;
@@ -1242,6 +1322,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div id="matching-status"></div>
         <div id="debug-log" style="display:none;font-size:11px;color:#ff6b6b;margin-top:8px;word-break:break-all;max-width:100%;text-align:left;padding:0 10px;"></div>
 
+        <!-- 핑퐁 모드 토글 -->
+        <div class="pingpong-toggle-row" id="pingpong-toggle-row" onclick="togglePingpongMode()">
+            <div>
+                <div class="pingpong-toggle-label">🏓 Ping-Pong Mode</div>
+                <div class="pingpong-toggle-sub" id="pp-toggle-sub">1분 30초씩 번갈아 말하는 턴제 대화</div>
+            </div>
+            <div class="pp-switch" id="pp-switch"><div class="pp-switch-thumb"></div></div>
+        </div>
+
         <div class="select-group" id="max-people-group">
             <label for="max-people-select" id="maxpeople">Max People:</label>
             <select id="max-people-select">
@@ -1528,6 +1617,27 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div class="subtitle-list" id="subtitle-list"></div>
             </div>
 
+            <!-- 핑퐁 모드 통화 중 UI -->
+            <div id="pingpong-section">
+                <div class="pp-relay-bar" id="pp-relay-bar">
+                    <span class="pp-relay-label">순서</span>
+                </div>
+                <div class="pp-turn-block">
+                    <div class="pp-turn-label" id="pp-turn-label">내 차례예요!</div>
+                    <div class="pp-turn-sub" id="pp-turn-sub"></div>
+                </div>
+                <div class="pp-timer-row">
+                    <div class="pp-timer-num" id="pp-timer-num">1:30</div>
+                    <div class="pp-timer-total">/ 1:30</div>
+                </div>
+                <div class="pp-progress-track"><div class="pp-progress-fill" id="pp-progress-fill"></div></div>
+                <button class="pp-pass-btn" id="pp-pass-btn" onclick="pingpongPass()">⏭ 턴 넘기기 (Pass)</button>
+                <div class="pp-waiting-solo" id="pp-waiting-solo">
+                    <div class="pp-waiting-solo-title">⏸ 다른 참여자를 기다리는 중...</div>
+                    <div class="pp-waiting-solo-sub">핑퐁 타이머가 일시정지됐어요.<br>새 유저가 입장하면 바로 재개돼요!</div>
+                </div>
+            </div>
+
             <div class="room-participants-section">
                 <div class="room-part-header">
                     <div class="room-part-title" id="room-part-title">참여자</div>
@@ -1539,6 +1649,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="room-footer">
             <button class="room-leave-btn" id="room-leave-btn">🚪 대화방 나가기</button>
             <button class="room-report-btn" id="room-report-btn">🚨 신고하기</button>
+        </div>
+    </div>
+
+    <!-- 핑퐁 매칭 지연 팝업 -->
+    <div id="pp-slow-match-modal" style="display:none; position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+        <div style="background:#1a1a2e; border:1px solid rgba(123,97,255,0.3); border-radius:20px; padding:28px 24px; width:90%; max-width:320px; text-align:center;">
+            <div style="font-size:28px; margin-bottom:10px;">🏓</div>
+            <div style="font-size:15px; font-weight:700; color:rgba(255,255,255,0.9); margin-bottom:8px;" id="pp-slow-title">핑퐁 모드 매칭 지연 중</div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.4); line-height:1.6; margin-bottom:20px;" id="pp-slow-desc">현재 핑퐁 모드 대기열에 사람이 적어요.<br>일반 모드로 변경하시겠어요?</div>
+            <button onclick="ppSwitchToNormal()" style="width:100%; padding:12px; background:#00e5ff; color:#000; font-weight:700; border:none; border-radius:12px; font-size:14px; cursor:pointer; margin-bottom:10px;" id="pp-slow-confirm">일반 모드로 변경</button>
+            <button onclick="ppKeepWaiting()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer;" id="pp-slow-cancel">계속 기다릴게요</button>
         </div>
     </div>
 
@@ -1940,6 +2061,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let uidToRankEmoji = {}; // Firebase UID → rank emoji
     let myRankEmoji = '👤';
     let isSubscribed = false; // 구독 여부 캐시
+
+    // ── 핑퐁 모드 상태 ──
+    let pingpongMode = false;       // 토글 ON/OFF
+    let isPingpong = false;         // 현재 통화가 핑퐁 모드인지
+    let ppTurnQueue = [];           // Firebase UID 순서 배열
+    let ppCurrentTurnIdx = 0;       // 현재 화자 인덱스
+    let ppTurnStartedAt = 0;        // 턴 시작 타임스탬프
+    let ppTimerInterval = null;     // setInterval 핸들
+    let ppTurnRef = null;           // Firebase 리스너 ref
+    let ppSlowMatchTimer = null;    // 매칭 지연 감지 타이머
+    const PP_TURN_SEC = 90;         // 1분 30초
 
     function getRankEmoji(total) {
         if (total >= 200) return '🔮';
@@ -3522,7 +3654,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
         currentChannelName = finalTopic;
 
         // 🚨 전역 변수에 저장 — 저장/조회 시 항상 동일값 보장
-        safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 64);
+        safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 60) + (pingpongMode && !finalTopic.startsWith('🔒_') ? '_pp' : '');
 
     
 
@@ -3642,6 +3774,20 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             renderParticipantsUI();
             showRoomScreen(finalTopic);
 
+            // 핑퐁 모드 시작
+            if (pingpongMode && !finalTopic.startsWith('🔒_')) {
+                isPingpong = true;
+                const ppSection = document.getElementById('pingpong-section');
+                if (ppSection) ppSection.classList.add('active');
+                const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
+                if (myFbUid) startPPListener(safeAgoraChannelId, myFbUid, [myFbUid]);
+                startPPSlowMatchTimer();
+            }
+
+            // 핑퐁 토글 숨기기
+            const ppRow = document.getElementById('pingpong-toggle-row');
+            if (ppRow) ppRow.style.display = 'none';
+
             // 대기자 알림 발송 (User B 역할)
             notifyWaitlistAndCountdown(finalTopic);
 
@@ -3701,6 +3847,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                     startFreeTimer();
                     hideWaitlistBanner();
                     stopCountdown();
+                    // 핑퐁 매칭 성공 → 지연 팝업 취소
+                    if (ppSlowMatchTimer) { clearTimeout(ppSlowMatchTimer); ppSlowMatchTimer = null; }
+                    const ppModal = document.getElementById('pp-slow-match-modal');
+                    if (ppModal) ppModal.style.display = 'none';
                 }
             }
 
@@ -3720,6 +3870,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                             uidToRankEmoji[fbUid] = getRankEmoji(t);
                             renderParticipantsUI();
                         }).catch(() => {});
+                        // 핑퐁 큐에 신규 유저 추가
+                        if (isPingpong && ppTurnRef && !ppTurnQueue.includes(fbUid)) {
+                            const newQueue = [...ppTurnQueue, fbUid];
+                            ppTurnRef.update({ turnQueue: newQueue, paused: false });
+                        }
                         renderParticipantsUI();
                     }
                 } catch(e) { console.warn('channels read failed:', e.message); }
@@ -3744,6 +3899,29 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     client.on("user-left", (user) => {
         roomParticipants = roomParticipants.filter(uid => uid !== user.uid);
+
+        // 핑퐁 큐에서 퇴장한 유저 제거 (fade-out 후 업데이트)
+        if (isPingpong && ppTurnRef) {
+            const fbUid = agoraToFirebaseUid[user.uid] || String(user.uid);
+            const leavingEl = document.getElementById('pp-relay-' + fbUid);
+            if (leavingEl) {
+                leavingEl.classList.add('removing');
+                setTimeout(() => {
+                    const newQueue = ppTurnQueue.filter(u => u !== fbUid);
+                    let newIdx = ppCurrentTurnIdx;
+                    const leavingIdx = ppTurnQueue.indexOf(fbUid);
+                    if (leavingIdx !== -1 && leavingIdx < newIdx) newIdx = Math.max(0, newIdx - 1);
+                    if (newIdx >= newQueue.length) newIdx = 0;
+                    ppTurnRef.update({
+                        turnQueue: newQueue,
+                        currentTurnIdx: newIdx,
+                        turnStartedAt: leavingIdx === ppCurrentTurnIdx ? Date.now() : ppTurnStartedAt,
+                        paused: newQueue.length < 2
+                    });
+                }, 350);
+            }
+        }
+
         renderParticipantsUI();
     });
 
@@ -3907,6 +4085,227 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     let mySubtitleLang = 'ko';
     let targetSubtitleLang = 'en';
     let subtitleFbRef = null;
+
+    // ── 핑퐁 모드 토글 ──
+    function togglePingpongMode() {
+        pingpongMode = !pingpongMode;
+        const sw = document.getElementById('pp-switch');
+        const sub = document.getElementById('pp-toggle-sub');
+        if (pingpongMode) {
+            sw.classList.add('on');
+            sub.textContent = currentLang === 'ko' ? '1분 30초씩 번갈아 말하는 턴제 대화' : 'Turn-based talk · 1:30 per turn';
+        } else {
+            sw.classList.remove('on');
+            sub.textContent = currentLang === 'ko' ? '1분 30초씩 번갈아 말하는 턴제 대화' : 'Turn-based talk · 1:30 per turn';
+        }
+    }
+
+    // ── 핑퐁 릴레이 바 렌더 ──
+    function renderPPRelayBar() {
+        const bar = document.getElementById('pp-relay-bar');
+        if (!bar) return;
+        const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
+
+        // 기존 아이템 제거 (label 유지)
+        while (bar.children.length > 1) bar.removeChild(bar.lastChild);
+
+        ppTurnQueue.forEach((uid, i) => {
+            if (i > 0) {
+                const arrow = document.createElement('span');
+                arrow.className = 'pp-relay-arrow';
+                arrow.textContent = '›';
+                bar.appendChild(arrow);
+            }
+            const item = document.createElement('div');
+            item.className = 'pp-relay-item';
+            item.id = 'pp-relay-' + uid;
+
+            const isSpeaking = i === ppCurrentTurnIdx;
+            const emoji = (uid === myFbUid) ? myRankEmoji : (uidToRankEmoji[uid] || '👋');
+            const name = (uid === myFbUid)
+                ? (currentLang === 'ko' ? '나' : 'Me')
+                : (uidToNickname[uid] || 'User');
+
+            item.innerHTML = `
+                <div class="pp-relay-avatar ${isSpeaking ? 'speaking' : ''}">${emoji}</div>
+                <div class="pp-relay-name ${isSpeaking ? 'speaking' : ''}">${name}</div>`;
+            bar.appendChild(item);
+        });
+    }
+
+    // ── 핑퐁 턴 UI 업데이트 ──
+    function updatePPTurnUI() {
+        const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
+        const currentSpeakerUid = ppTurnQueue[ppCurrentTurnIdx];
+        const isMySpeaking = currentSpeakerUid === myFbUid;
+        const isPaused = ppTurnQueue.length < 2;
+
+        const labelEl = document.getElementById('pp-turn-label');
+        const subEl = document.getElementById('pp-turn-sub');
+        const passBtn = document.getElementById('pp-pass-btn');
+        const soloEl = document.getElementById('pp-waiting-solo');
+        const isKo = currentLang === 'ko';
+
+        if (isPaused) {
+            labelEl.className = 'pp-turn-label waiting';
+            labelEl.textContent = isKo ? '⏸ 참여자를 기다리는 중...' : '⏸ Waiting for others...';
+            subEl.textContent = isKo ? '마이크를 자유롭게 사용할 수 있어요' : 'Your mic is open while waiting';
+            passBtn.disabled = true;
+            soloEl.classList.add('active');
+        } else if (isMySpeaking) {
+            labelEl.className = 'pp-turn-label';
+            labelEl.textContent = isKo ? '🎙 내 차례예요!' : '🎙 Your turn!';
+            const nextUid = ppTurnQueue[(ppCurrentTurnIdx + 1) % ppTurnQueue.length];
+            const nextName = (nextUid === myFbUid) ? (isKo ? '나' : 'Me') : (uidToNickname[nextUid] || 'User');
+            subEl.textContent = isKo ? `다음: ${nextName} ›` : `Next: ${nextName} ›`;
+            passBtn.disabled = false;
+            soloEl.classList.remove('active');
+        } else {
+            labelEl.className = 'pp-turn-label other';
+            const spName = uidToNickname[currentSpeakerUid] || 'User';
+            labelEl.textContent = isKo ? `${spName}님 차례예요` : `${spName}'s turn`;
+            subEl.textContent = isKo ? '잠시 들어보세요 👂' : 'Listen for now 👂';
+            passBtn.disabled = true;
+            soloEl.classList.remove('active');
+        }
+
+        renderPPRelayBar();
+
+        // 마이크 ON/OFF
+        if (localAudioTrack) {
+            if (isPaused || isMySpeaking) {
+                localAudioTrack.setEnabled(true);
+            } else {
+                localAudioTrack.setEnabled(false);
+            }
+        }
+    }
+
+    // ── 핑퐁 타이머 틱 ──
+    function startPPTimer() {
+        if (ppTimerInterval) clearInterval(ppTimerInterval);
+        const numEl = document.getElementById('pp-timer-num');
+        const fillEl = document.getElementById('pp-progress-fill');
+        const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
+
+        ppTimerInterval = setInterval(() => {
+            if (ppTurnQueue.length < 2) {
+                if (numEl) numEl.textContent = '1:30';
+                if (fillEl) { fillEl.style.width = '100%'; fillEl.className = 'pp-progress-fill'; }
+                return;
+            }
+            const elapsed = Math.floor((Date.now() - ppTurnStartedAt) / 1000);
+            const remaining = Math.max(0, PP_TURN_SEC - elapsed);
+            const m = Math.floor(remaining / 60);
+            const s = remaining % 60;
+            if (numEl) numEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+            const pct = (remaining / PP_TURN_SEC) * 100;
+            const isMySpeaking = ppTurnQueue[ppCurrentTurnIdx] === myFbUid;
+            if (fillEl) {
+                fillEl.style.width = pct + '%';
+                fillEl.className = 'pp-progress-fill' + (isMySpeaking ? '' : ' other');
+            }
+            // 타이머 종료 → 현재 화자만 턴 전환
+            if (remaining === 0 && isMySpeaking) {
+                advancePPTurn();
+            }
+        }, 1000);
+    }
+
+    // ── 턴 전환 (Firebase 쓰기) ──
+    async function advancePPTurn() {
+        if (!ppTurnRef || ppTurnQueue.length < 2) return;
+        const nextIdx = (ppCurrentTurnIdx + 1) % ppTurnQueue.length;
+        try {
+            await ppTurnRef.update({
+                currentTurnIdx: nextIdx,
+                turnStartedAt: Date.now()
+            });
+        } catch(e) { console.warn('PP turn advance failed:', e); }
+    }
+
+    // ── 패스 버튼 ──
+    function pingpongPass() {
+        const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
+        if (ppTurnQueue[ppCurrentTurnIdx] !== myFbUid) return;
+        advancePPTurn();
+    }
+
+    // ── Firebase 핑퐁 리스너 시작 ──
+    function startPPListener(channelId, myFbUid, initialQueue) {
+        if (ppTurnRef) { ppTurnRef.off(); ppTurnRef = null; }
+        ppTurnRef = database.ref(`channels/${channelId}/pingpong`);
+
+        // 첫 입장자가 핑퐁 노드 초기화
+        ppTurnRef.once('value').then(snap => {
+            if (!snap.val()) {
+                ppTurnRef.set({
+                    active: true,
+                    turnQueue: initialQueue,
+                    currentTurnIdx: 0,
+                    turnStartedAt: Date.now(),
+                    paused: initialQueue.length < 2
+                });
+            }
+        });
+
+        ppTurnRef.on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+            ppTurnQueue = data.turnQueue || [];
+            ppCurrentTurnIdx = data.currentTurnIdx || 0;
+            ppTurnStartedAt = data.turnStartedAt || Date.now();
+            updatePPTurnUI();
+            startPPTimer();
+        });
+    }
+
+    // ── 핑퐁 매칭 지연 팝업 ──
+    function startPPSlowMatchTimer() {
+        if (ppSlowMatchTimer) clearTimeout(ppSlowMatchTimer);
+        ppSlowMatchTimer = setTimeout(() => {
+            if (!isJoined || !isPingpong || roomParticipants.length > 0) return;
+            const isKo = currentLang === 'ko';
+            const modal = document.getElementById('pp-slow-match-modal');
+            document.getElementById('pp-slow-title').textContent = isKo ? '핑퐁 모드 매칭 지연 중' : 'Ping-Pong Matching Delayed';
+            document.getElementById('pp-slow-desc').innerHTML = isKo
+                ? '현재 핑퐁 모드 대기열에 사람이 적어요.<br>일반 모드로 변경하시겠어요?'
+                : 'Not many people in Ping-Pong queue right now.<br>Switch to normal mode?';
+            document.getElementById('pp-slow-confirm').textContent = isKo ? '일반 모드로 변경' : 'Switch to Normal';
+            document.getElementById('pp-slow-cancel').textContent = isKo ? '계속 기다릴게요' : 'Keep waiting';
+            modal.style.display = 'flex';
+        }, 30000);
+    }
+
+    function ppSwitchToNormal() {
+        document.getElementById('pp-slow-match-modal').style.display = 'none';
+        document.getElementById('leave-btn').click();
+        setTimeout(() => {
+            pingpongMode = false;
+            document.getElementById('pp-switch').classList.remove('on');
+        }, 300);
+    }
+
+    function ppKeepWaiting() {
+        document.getElementById('pp-slow-match-modal').style.display = 'none';
+        startPPSlowMatchTimer(); // 30초 후 다시 체크
+    }
+
+    // ── 핑퐁 정리 ──
+    function stopPPMode() {
+        isPingpong = false;
+        if (ppTimerInterval) { clearInterval(ppTimerInterval); ppTimerInterval = null; }
+        if (ppTurnRef) { ppTurnRef.off(); ppTurnRef = null; }
+        if (ppSlowMatchTimer) { clearTimeout(ppSlowMatchTimer); ppSlowMatchTimer = null; }
+        ppTurnQueue = [];
+        ppCurrentTurnIdx = 0;
+        const section = document.getElementById('pingpong-section');
+        if (section) section.classList.remove('active');
+        const modal = document.getElementById('pp-slow-match-modal');
+        if (modal) modal.style.display = 'none';
+        // 마이크 복구
+        if (localAudioTrack) localAudioTrack.setEnabled(true);
+    }
 
     function toggleSubtitles() {
         if (!isSubscribed && !subtitlesEnabled) {
@@ -4708,6 +5107,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             hideWaitlistBanner();
             stopCountdown();
             clearFreeTimer();
+            stopPPMode();
             stopRollingAudioRecorder();
             if (window._heartbeatInterval) { clearInterval(window._heartbeatInterval); window._heartbeatInterval = null; }
             if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
@@ -4740,6 +5140,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             document.getElementById('max-people-group').style.visibility = "visible";
             document.getElementById('max-people-group').style.opacity = "1";
             document.getElementById('max-people-group').style.pointerEvents = "auto";
+
+            // 핑퐁 토글 다시 표시
+            const ppRow = document.getElementById('pingpong-toggle-row');
+            if (ppRow) ppRow.style.display = '';
+            if (ppSlowMatchTimer) { clearTimeout(ppSlowMatchTimer); ppSlowMatchTimer = null; }
 
             // 피어 배지 전송 타겟 리스트박스 렌더링 구성 (uidToAnimal 초기화 전에 호출!)
             setupVoteTargetsUI();
