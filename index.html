@@ -2195,6 +2195,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let agoraToFirebaseUid = {}; // Agora UID → Firebase UID 매핑 테이블
     let uidToRankEmoji = {}; // Firebase UID → rank emoji
     let myRankEmoji = '👤';
+    let myBadgeTotal = 0; // 랭크 라벨 재렌더링용 (언어 토글 시 배지 DB 재조회 없이 사용)
     let isSubscribed = false; // 구독 여부 캐시
 
     // ── 핑퐁 모드 상태 ──
@@ -2214,6 +2215,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (total >= 50)  return '💬';
         if (total >= 10)  return '🌱';
         return '👋';
+    }
+
+    // 현재 currentLang 기준으로 랭크 라벨을 다시 그림 (언어 토글 시에도 호출됨)
+    function renderRankLabel(total) {
+        const rankNames = currentLang === 'ko'
+            ? ['👋 뉴비', '🌱 떠오르는 토커', '💬 이야기꾼', '☕ 여운이 남는', '🔮 영혼의 단짝']
+            : ['👋 Newcomer', '🌱 Rising Talker', '💬 Storyteller', '☕ Lingering Voice', '🔮 Soulmate'];
+        const rank = total >= 200 ? rankNames[4] : total >= 100 ? rankNames[3] : total >= 50 ? rankNames[2] : total >= 10 ? rankNames[1] : rankNames[0];
+        const rankLabelEl = document.getElementById('rank-label');
+        if (rankLabelEl) rankLabelEl.innerText = rank;
+        const rankRow = document.getElementById('stats-rank-row');
+        if (rankRow) rankRow.childNodes[0].textContent = currentLang === 'ko' ? '랭크: ' : 'RANK: ';
     }
 
     let selectedVoteTarget = null;
@@ -2744,14 +2757,9 @@ database.ref('activeTopics').on('value', (snap) => {
 
                 // 랭크 계산
                 const total = manner + logic + humor + empathy + passion;
+                myBadgeTotal = total;
                 myRankEmoji = getRankEmoji(total);
-                const rankNames = currentLang === 'ko'
-                    ? ['👋 뉴비', '🌱 떠오르는 토커', '💬 이야기꾼', '☕ 여운이 남는', '🔮 영혼의 단짝']
-                    : ['👋 Newcomer', '🌱 Rising Talker', '💬 Storyteller', '☕ Lingering Voice', '🔮 Soulmate'];
-                const rank = total >= 200 ? rankNames[4] : total >= 100 ? rankNames[3] : total >= 50 ? rankNames[2] : total >= 10 ? rankNames[1] : rankNames[0];
-                document.getElementById('rank-label').innerText = rank;
-                const rankRow = document.getElementById('stats-rank-row');
-                if (rankRow) rankRow.childNodes[0].textContent = currentLang === 'ko' ? '랭크: ' : 'RANK: ';
+                renderRankLabel(total);
             });
 
             // 구독 상태 캐시
@@ -2910,8 +2918,7 @@ function updateUI() {
         const riSilverDesc = document.getElementById('ri-silver-desc'); if (riSilverDesc) riSilverDesc.textContent = currentLang === 'ko' ? '대화를 지루하지 않고 맛있게 이끌어가는 사람' : 'Someone who keeps every conversation alive';
         const riGoldDesc = document.getElementById('ri-gold-desc'); if (riGoldDesc) riGoldDesc.textContent = currentLang === 'ko' ? '대화가 끝난 후에도 자꾸만 생각나게 하는 매력적인 사람' : 'The kind of person you keep thinking about after';
         const riLegendDesc = document.getElementById('ri-legend-desc'); if (riLegendDesc) riLegendDesc.textContent = currentLang === 'ko' ? '한 번의 대화만으로도 영혼이 통하는, 다시없을 최고의 인연' : 'One conversation. A connection that lasts forever.';
-        const rankRow = document.getElementById('stats-rank-row');
-        if (rankRow) rankRow.childNodes[0].textContent = currentLang === 'ko' ? '랭크: ' : 'RANK: ';
+        renderRankLabel(myBadgeTotal);
 
         if (appTitle) appTitle.innerText = lang.title;
         if (appSubtitle) appSubtitle.innerText = lang.subtitle;
