@@ -4898,11 +4898,13 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (signalListenerRef) { signalListenerRef.off(); signalListenerRef = null; }
         if (!myUid) return;
 
-        signalListenerRef = database.ref(`signals/${myUid}`);
+        signalListenerRef = database.ref(`channels/${safeAgoraChannelId}/badgeSignal`);
         signalListenerRef.on('value', async (snap) => {
             if (!isJoined) return;
             const data = snap.val();
             if (!data) return;
+            const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
+            if (!myFbUid || data.to !== myFbUid) return;
 
             const badgeType = data.badgeType;
             const badgeNames = {
@@ -4914,17 +4916,14 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             };
 
             // 수신 후 즉시 삭제 (중복 처리 방지)
-            await database.ref(`signals/${myUid}`).remove();
+            await database.ref(`channels/${safeAgoraChannelId}/badgeSignal`).remove();
 
             // 내 Firebase UID로 직접 badges + dailyBadges 기록 (자기 데이터 쓰기 → 규칙 통과)
             try {
-                const fbUid = auth.currentUser ? auth.currentUser.uid : null;
-                if (fbUid && badgeType) {
-                    const _n = new Date();
-                    const kstToday = new Date(_n.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-                    await database.ref(`users/${fbUid}/badges/${badgeType}`).set(firebase.database.ServerValue.increment(1));
-                    await database.ref(`users/${fbUid}/dailyBadges/${kstToday}/${badgeType}`).set(firebase.database.ServerValue.increment(1));
-                }
+                const _n = new Date();
+                const kstToday = new Date(_n.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+                await database.ref(`users/${myFbUid}/badges/${badgeType}`).set(firebase.database.ServerValue.increment(1));
+                await database.ref(`users/${myFbUid}/dailyBadges/${kstToday}/${badgeType}`).set(firebase.database.ServerValue.increment(1));
             } catch(e) { console.warn('badge self-write failed:', e); }
 
             showBadgeToast(currentLang === 'ko'
@@ -5663,11 +5662,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 try { await currentUser.getIdToken(true); } catch(e) { console.warn('token refresh failed', e); }
             }
 
-            // signals/{receiverFbUid}에 배지 신호 전송 → 수신측에서 자기 데이터에 직접 씀
-            await database.ref(`signals/${selectedVoteTarget}`).set({
+            // channels/{channelId}/badgeSignal에 배지 신호 전송 → 수신측에서 자기 데이터에 직접 씀
+            await database.ref(`channels/${safeAgoraChannelId}/badgeSignal`).set({
                 badgeType,
-                senderId: auth.currentUser ? auth.currentUser.uid : String(myUid),
-                timestamp: Date.now()
+                to: selectedVoteTarget,
+                from: auth.currentUser ? auth.currentUser.uid : String(myUid),
+                ts: Date.now()
             });
 
             badgeSentThisSession = true;
