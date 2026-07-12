@@ -5975,6 +5975,8 @@ function toggleRankDesc(id) {
 }
 
 // ── 설정 모달 ──
+let _settingsBadgeRef = null;
+let _settingsAllBadgeRef = null;
 function openSettingsModal() {
     const overlay = document.getElementById('settings-modal-overlay');
     overlay.classList.add('open');
@@ -5983,6 +5985,8 @@ function openSettingsModal() {
 }
 function closeSettingsModal() {
     document.getElementById('settings-modal-overlay').classList.remove('open');
+    if (_settingsBadgeRef) { _settingsBadgeRef.off(); _settingsBadgeRef = null; }
+    if (_settingsAllBadgeRef) { _settingsAllBadgeRef.off(); _settingsAllBadgeRef = null; }
 }
 function setLangFromSettings(lang) {
     if (currentLang === lang) return;
@@ -6028,30 +6032,35 @@ async function loadSettingsMyPage() {
         document.getElementById('settings-time-value').textContent = isKo ? '미구독' : 'Not subscribed';
         document.getElementById('settings-time-value').style.color = 'rgba(255,255,255,0.3)';
     }
-    // 내 랭크
-    const allBadgeSnap = await database.ref('users/' + uid + '/badges').once('value');
-    const allB = allBadgeSnap.val() || {};
-    const rankTotal = (allB.manner||0)+(allB.logic||0)+(allB.humor||0)+(allB.empathy||0)+(allB.passion||0);
-    const rankEmoji = getRankEmoji(rankTotal);
     const rankNames = { ko: ['뉴비','떠오르는 토커','이야기꾼','여운이 남는','영혼의 단짝'], en: ['Newcomer','Rising Talker','Storyteller','Lingering Voice','Soulmate'] };
-    const rankIdx = rankTotal>=200?4: rankTotal>=100?3: rankTotal>=50?2: rankTotal>=10?1:0;
-    document.getElementById('settings-rank-emoji').textContent = rankEmoji;
-    document.getElementById('settings-rank-name').textContent = rankNames[isKo?'ko':'en'][rankIdx];
-    document.getElementById('settings-rank-sub').textContent = (isKo ? '누적 배지 ' : 'Total badges ') + rankTotal;
-    // 오늘 받은 배지
-    const badgeSnap = await database.ref('users/' + uid + '/dailyBadges/' + today).once('value');
-    const daily = badgeSnap.val() || {};
     const badgeMap = { manner:'👍', logic:'🧠', humor:'🤣', empathy:'🤗', passion:'🔥' };
     const badgeName = { manner:{ko:'친절',en:'NICE'}, logic:{ko:'논리',en:'LOGIC'}, humor:{ko:'유머',en:'FUN'}, empathy:{ko:'공감',en:'WARM'}, passion:{ko:'열정',en:'BOLD'} };
-    let total = 0;
-    const chips = [];
-    Object.entries(badgeMap).forEach(([k, emoji]) => {
-        const cnt = daily[k] || 0;
-        if (cnt > 0) { total += cnt; chips.push(emoji + ' ' + badgeName[k][isKo ? 'ko' : 'en'] + (cnt > 1 ? ' x' + cnt : '')); }
+    // 내 랭크 — 실시간
+    if (_settingsAllBadgeRef) { _settingsAllBadgeRef.off(); }
+    _settingsAllBadgeRef = database.ref('users/' + uid + '/badges');
+    _settingsAllBadgeRef.on('value', snap => {
+        const allB = snap.val() || {};
+        const rankTotal = (allB.manner||0)+(allB.logic||0)+(allB.humor||0)+(allB.empathy||0)+(allB.passion||0);
+        const rankIdx = rankTotal>=200?4: rankTotal>=100?3: rankTotal>=50?2: rankTotal>=10?1:0;
+        document.getElementById('settings-rank-emoji').textContent = getRankEmoji(rankTotal);
+        document.getElementById('settings-rank-name').textContent = rankNames[isKo?'ko':'en'][rankIdx];
+        document.getElementById('settings-rank-sub').textContent = (isKo ? '누적 배지 ' : 'Total badges ') + rankTotal;
     });
-    document.getElementById('settings-badge-count').textContent = total;
-    const chipsEl = document.getElementById('settings-badge-chips');
-    chipsEl.innerHTML = chips.map(c => '<span class="settings-badge-chip">' + c + '</span>').join('');
+    // 오늘 받은 배지 — 실시간
+    if (_settingsBadgeRef) { _settingsBadgeRef.off(); }
+    _settingsBadgeRef = database.ref('users/' + uid + '/dailyBadges/' + today);
+    _settingsBadgeRef.on('value', snap => {
+        const daily = snap.val() || {};
+        let total = 0;
+        const chips = [];
+        Object.entries(badgeMap).forEach(([k, emoji]) => {
+            const cnt = daily[k] || 0;
+            if (cnt > 0) { total += cnt; chips.push(emoji + ' ' + badgeName[k][isKo ? 'ko' : 'en'] + (cnt > 1 ? ' x' + cnt : '')); }
+        });
+        document.getElementById('settings-badge-count').textContent = total;
+        const chipsEl = document.getElementById('settings-badge-chips');
+        chipsEl.innerHTML = chips.map(c => '<span class="settings-badge-chip">' + c + '</span>').join('');
+    });
 }
 
 function closeFriendsModal() {
