@@ -3898,11 +3898,16 @@ document.getElementById('max-people-group').style.visibility = "hidden";
 database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     const data = snap.val() || {};
     if (!snap.exists()) return;
+    const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
     Object.entries(data).forEach(([uid, val]) => {
         if (val && val.style) speechStyleMap[uid] = val.style;
         if (val && val.nickname) uidToNickname[uid] = val.nickname;
         if (val && val.guest) uidToIsGuest[uid] = true;
         if (val && val.rankEmoji) uidToRankEmoji[uid] = val.rankEmoji;
+        // user-published보다 activeTopics 쓰기가 늦을 수 있으므로 여기서도 보충
+        if (uid !== myFbUid && !sessionParticipants.includes(uid)) {
+            sessionParticipants.push(uid);
+        }
     });
     updateRoomParticipants();
 });
