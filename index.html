@@ -5007,6 +5007,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (elapsed >= TOTAL) {
                 clearInterval(freeTimerInterval);
                 banner.style.display = 'none';
+                // 게스트는 구독 불가 → 즉시 방 퇴장
+                if (isGuest) {
+                    alert(currentLang === 'ko' ? '무료 10분이 종료됐어요.\n로그인 후 계속 대화하실 수 있어요 😊' : 'Your free 10 minutes have ended.\nSign in to keep talking 😊');
+                    leaveChannel();
+                    return;
+                }
                 // 캐시 대신 Firebase에서 구독 상태 재확인
                 const uid = auth.currentUser ? auth.currentUser.uid : null;
                 if (uid) {
