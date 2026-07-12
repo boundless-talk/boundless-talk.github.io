@@ -1862,9 +1862,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
 
     <!-- 구독 시간 코너 위젯 -->
-    <div id="sub-time-widget" style="display:none; position:fixed; bottom:20px; right:16px; z-index:9001; background:rgba(20,18,40,0.92); border:1px solid rgba(123,97,255,0.4); border-radius:20px; padding:6px 12px; font-size:11px; color:rgba(255,255,255,0.7); white-space:nowrap;">
-        👑 <span id="sub-time-text">02:00:00</span>
-    </div>
+    <span id="sub-time-text" style="display:none;"></span>
 
     <!-- 7분 결제 모달 -->
     <div id="payment-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
@@ -5049,7 +5047,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         subRemainingSeconds = Math.max(0, MAX - usedSec);
 
         // 전환 토스트
-        const widget = document.getElementById('sub-time-widget');
         const banner = document.getElementById('free-time-banner');
         const bannerText = document.getElementById('free-time-banner-text');
         const fmt = s => {
@@ -5067,7 +5064,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
         if (subRemainingSeconds <= 0) { showPaymentModal(); return; }
 
-        widget.style.display = 'block';
         document.getElementById('sub-time-text').textContent = fmt(subRemainingSeconds);
 
         let saveAccum = 0;
@@ -5091,8 +5087,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     function clearSubTimer() {
         if (subTimerInterval) { clearInterval(subTimerInterval); subTimerInterval = null; }
-        const w = document.getElementById('sub-time-widget');
-        if (w) w.style.display = 'none';
     }
 
     function requestRefund() {
