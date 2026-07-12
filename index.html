@@ -1634,7 +1634,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <span id="label-add-friend">➕ Add Friend</span>
     </button>
                 <button class="badge-vote-btn" onclick="closeModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-weight:400; margin-top: 10px;" id="vote-skip">Skip Feedback</button>
-                <button onclick="closeModal()" id="badge-modal-close-btn" style="width:100%;margin-top:6px;padding:13px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:12px;color:rgba(255,255,255,0.7);font-size:14px;font-weight:600;cursor:pointer;">닫기</button>
             </div>
         </div>
     </div>
@@ -3007,8 +3006,7 @@ function updateUI() {
         document.getElementById('vote-empathy').innerText = lang.vEmpathy;
         document.getElementById('vote-passion').innerText = lang.vPassion;
         document.getElementById('vote-skip').innerText = lang.vSkip;
-        document.getElementById('badge-modal-close-btn').textContent = currentLang === 'ko' ? '닫기' : 'Close';
-        document.getElementById('part-title-label').innerText = lang.partLabel;
+document.getElementById('part-title-label').innerText = lang.partLabel;
         document.getElementById('ban-title').innerText = lang.banTitle;
         document.getElementById('ban-desc').innerText = lang.banDesc;
         document.getElementById('rep-m-title').innerText = lang.reportTitle;
