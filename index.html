@@ -4900,7 +4900,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
         signalListenerRef = database.ref(`channels/${safeAgoraChannelId}/badgeSignal`);
         signalListenerRef.on('value', async (snap) => {
-            if (!isJoined) return;
             const data = snap.val();
             showBadgeToast('📥 recv:' + JSON.stringify(data).slice(0,60));
             if (!data) return;
@@ -5462,7 +5461,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             stopRollingAudioRecorder();
             if (window._heartbeatInterval) { clearInterval(window._heartbeatInterval); window._heartbeatInterval = null; }
             if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
-            if (signalListenerRef) { signalListenerRef.off(); signalListenerRef = null; }
+            // 배지 신호 리스너는 여기서 끄지 않음 — 나간 뒤 Conversation Report 화면에서
+            // 상대방이 보내는 배지를 계속 수신해야 하므로 다음 입장 시(startSignalPolling)에 정리됨
             if (localAudioTrack) { localAudioTrack.stop(); localAudioTrack.close(); localAudioTrack = null; }
             await client.leave();
 
@@ -5661,6 +5661,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         try {
             // 모바일에서 auth 토큰 만료 방지: 강제 갱신
             const currentUser = auth.currentUser;
+            showBadgeToast('🔑 auth:' + (currentUser ? currentUser.uid.slice(0,10) : 'NULL') + ' ch:' + safeAgoraChannelId.slice(0,10));
             if (currentUser) {
                 try { await currentUser.getIdToken(true); } catch(e) { console.warn('token refresh failed', e); }
             }
