@@ -1333,9 +1333,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="settings-card-sub" id="settings-time-sub">구독 혜택</div>
                 </div>
                 <div class="settings-card">
-                    <div class="settings-card-icon">🏅</div>
-                    <div class="settings-card-label" id="settings-badge-label">오늘 받은 배지</div>
-                    <div class="settings-card-value" id="settings-badge-count" style="color:#ffd166;">0</div>
+                    <div class="settings-card-icon" id="settings-rank-emoji">👋</div>
+                    <div class="settings-card-label" id="settings-rank-label">내 랭크</div>
+                    <div class="settings-card-value" id="settings-rank-name" style="color:#ffd166;">--</div>
+                    <div class="settings-card-sub" id="settings-rank-sub">누적 배지</div>
+                </div>
+            </div>
+            <div class="settings-card" style="margin-top:10px;">
+                <div class="settings-card-icon">🏅</div>
+                <div class="settings-card-label" id="settings-badge-label">오늘 받은 배지</div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                    <div class="settings-card-value" id="settings-badge-count" style="color:#ffd166;font-size:17px;font-weight:700;">0</div>
                     <div class="settings-badge-chips" id="settings-badge-chips"></div>
                 </div>
             </div>
@@ -5992,6 +6000,8 @@ function updateSettingsModalLang() {
     document.getElementById('settings-time-label').textContent = isKo ? '오늘 남은 시간' : 'Today\'s remaining time';
     document.getElementById('settings-time-sub').textContent = isKo ? '구독 혜택' : 'Subscription benefit';
     document.getElementById('settings-badge-label').textContent = isKo ? '오늘 받은 배지' : 'Badges received today';
+    document.getElementById('settings-rank-label').textContent = isKo ? '내 랭크' : 'My rank';
+    document.getElementById('settings-rank-sub').textContent = isKo ? '누적 배지' : 'Total badges';
 }
 async function loadSettingsMyPage() {
     const uid = auth.currentUser ? auth.currentUser.uid : null;
@@ -6018,6 +6028,16 @@ async function loadSettingsMyPage() {
         document.getElementById('settings-time-value').textContent = isKo ? '미구독' : 'Not subscribed';
         document.getElementById('settings-time-value').style.color = 'rgba(255,255,255,0.3)';
     }
+    // 내 랭크
+    const allBadgeSnap = await database.ref('users/' + uid + '/badges').once('value');
+    const allB = allBadgeSnap.val() || {};
+    const rankTotal = (allB.manner||0)+(allB.logic||0)+(allB.humor||0)+(allB.empathy||0)+(allB.passion||0);
+    const rankEmoji = getRankEmoji(rankTotal);
+    const rankNames = { ko: ['뉴비','떠오르는 토커','이야기꾼','여운이 남는','영혼의 단짝'], en: ['Newcomer','Rising Talker','Storyteller','Lingering Voice','Soulmate'] };
+    const rankIdx = rankTotal>=200?4: rankTotal>=100?3: rankTotal>=50?2: rankTotal>=10?1:0;
+    document.getElementById('settings-rank-emoji').textContent = rankEmoji;
+    document.getElementById('settings-rank-name').textContent = rankNames[isKo?'ko':'en'][rankIdx];
+    document.getElementById('settings-rank-sub').textContent = (isKo ? '누적 배지 ' : 'Total badges ') + rankTotal;
     // 오늘 받은 배지
     const badgeSnap = await database.ref('users/' + uid + '/dailyBadges/' + today).once('value');
     const daily = badgeSnap.val() || {};
