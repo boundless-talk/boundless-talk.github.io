@@ -2276,7 +2276,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         guestLoginBtn: "👀 Try as Guest",
         addFriendBtn: "➕ ADD FRIEND",
         friendsModalTitle: "MY FRIEND LIST",
-        noFriends: "No friends added yet. Make some friends after a talk!",
+        noFriends: "No friends added yet.<br>Make some friends after a talk!",
         lastTalked: "Last talked:",
         callBtn: "Call",
         editNickname: "✏️ Rename",
@@ -5759,7 +5759,7 @@ function loadFriendsList() {
         if (accepted.length === 0) {
             const noFriendsDiv = document.createElement('div');
             noFriendsDiv.style.cssText = 'padding: 20px; text-align: center; font-size: 13px; color: rgba(255,255,255,0.4);';
-            noFriendsDiv.textContent = textData[currentLang].noFriends;
+            noFriendsDiv.innerHTML = textData[currentLang].noFriends;
             container.appendChild(noFriendsDiv);
             return;
         }
