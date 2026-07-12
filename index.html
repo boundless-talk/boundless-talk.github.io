@@ -995,6 +995,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .pp-relay-item { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; transition: all 0.35s ease; }
         .pp-relay-item.removing { opacity: 0; transform: scale(0.6); }
         .pp-relay-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); transition: all 0.3s; }
+        .pp-relay-avatar.guest { border-style: dashed; border-color: rgba(255,255,255,0.25); }
         .pp-relay-avatar.speaking { border-color: #00e5ff; background: rgba(0,229,255,0.12); box-shadow: 0 0 10px rgba(0,229,255,0.25); }
         .pp-relay-avatar.new-join { border-color: #7b61ff; background: rgba(123,97,255,0.12); box-shadow: 0 0 10px rgba(123,97,255,0.2); }
         .pp-relay-name { font-size: 8px; color: rgba(255,255,255,0.35); font-weight: 600; max-width: 36px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -4201,11 +4202,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const baseName = isMe
                 ? (currentLang === 'ko' ? '나' : 'Me')
                 : (uidToNickname[uid] || 'User');
-            const guestTag = (!isMe && uidToIsGuest[uid]) ? ' <span style="font-size:8px;opacity:0.5;">(Guest)</span>' : (isMe && isGuest ? ' <span style="font-size:8px;opacity:0.5;">(Guest)</span>' : '');
+            const isGuestUser = (!isMe && uidToIsGuest[uid]) || (isMe && isGuest);
 
             item.innerHTML = `
-                <div class="pp-relay-avatar ${isSpeaking ? 'speaking' : ''}">${emoji}</div>
-                <div class="pp-relay-name ${isSpeaking ? 'speaking' : ''}">${baseName}${guestTag}</div>`;
+                <div class="pp-relay-avatar ${isSpeaking ? 'speaking' : ''} ${isGuestUser ? 'guest' : ''}">${emoji}</div>
+                <div class="pp-relay-name ${isSpeaking ? 'speaking' : ''}">${baseName}</div>`;
             bar.appendChild(item);
         });
     }
