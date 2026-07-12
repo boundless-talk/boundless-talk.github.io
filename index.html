@@ -3693,6 +3693,29 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         // }
     }
 
+    // 같은 주제의 채널이 이미 정원을 채웠으면 "_r2", "_r3"... 다음 방을 찾아서 반환
+    async function resolveChannelForCapacity(baseChannelId, maxPeople) {
+        for (let n = 1; n <= 30; n++) {
+            const candidateId = n === 1 ? baseChannelId : baseChannelId + '_r' + n;
+            try {
+                const [membersSnap, capSnap] = await Promise.all([
+                    database.ref(`channels/${candidateId}/members`).once('value'),
+                    database.ref(`channels/${candidateId}/maxPeople`).once('value')
+                ]);
+                const count = membersSnap.exists() ? Object.keys(membersSnap.val() || {}).length : 0;
+                const cap = capSnap.val();
+                if (count === 0 || count < (cap || maxPeople)) {
+                    return { channelId: candidateId, isNewRoom: count === 0, roomIndex: n };
+                }
+            } catch (e) {
+                console.warn('capacity check failed, using candidate anyway:', e.message);
+                return { channelId: candidateId, isNewRoom: true, roomIndex: n };
+            }
+        }
+        // 안전장치: 30개 방이 전부 꽉 찼으면 새 방을 강제로 만듦
+        return { channelId: baseChannelId + '_r' + Date.now(), isNewRoom: true, roomIndex: 31 };
+    }
+
     // 6. 60초 최신 대화 오디오 롤링 버퍼 및 녹음 아키텍처 (Web Audio API 기반)
     function setupRollingAudioRecorder() {
         try {
@@ -3813,7 +3836,15 @@ document.getElementById('max-people-group').style.visibility = "hidden";
         currentChannelName = finalTopic;
 
         // 🚨 전역 변수에 저장 — 저장/조회 시 항상 동일값 보장
-        safeAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 60) + (pingpongMode && !finalTopic.startsWith('🔒_') ? '_pp' : '');
+        const baseAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 60) + (pingpongMode && !finalTopic.startsWith('🔒_') ? '_pp' : '');
+        let joinedOverflowRoom = false;
+        if (finalTopic.startsWith('🔒_')) {
+            safeAgoraChannelId = baseAgoraChannelId;
+        } else {
+            const resolved = await resolveChannelForCapacity(baseAgoraChannelId, maxPeople);
+            safeAgoraChannelId = resolved.channelId;
+            joinedOverflowRoom = resolved.roomIndex > 1;
+        }
 
     
 
@@ -3884,6 +3915,10 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 try {
                     await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
                     database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+                    if (!finalTopic.startsWith('🔒_')) {
+                        // 이 방의 정원은 최초 입장자가 정함 (트랜잭션으로 이미 있으면 덮어쓰지 않음)
+                        database.ref(`channels/${safeAgoraChannelId}/maxPeople`).transaction(cur => cur === null ? maxPeople : cur);
+                    }
                     if (isGuest) {
                         database.ref(`channels/${safeAgoraChannelId}/guestFlags/${firebaseUser.uid}`).set(true);
                         database.ref(`channels/${safeAgoraChannelId}/guestFlags/${firebaseUser.uid}`).onDisconnect().remove();
@@ -3935,6 +3970,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             startVolumeIndicator(); // 발화자 감지 시작
 
             document.getElementById('join-btn').style.display = "none";
+            if (joinedOverflowRoom) {
+                document.getElementById('matching-status').innerText = currentLang === 'ko'
+                    ? '이 주제방이 꽉 차서 새 방으로 안내해드렸어요 🚪'
+                    : "This topic room was full, so we moved you to a new one 🚪";
+            }
             const maxPeopleGroup = document.getElementById('max-people-group');
             maxPeopleGroup.style.display = "none";
             maxPeopleGroup.style.visibility = "hidden";
