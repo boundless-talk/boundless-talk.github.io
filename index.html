@@ -233,7 +233,42 @@
         #ban-overlay > p { font-size: 16px; color: #a0aec0; max-width: 500px; line-height: 1.6; }
         #appeal-textarea:focus { border-color: rgba(255,59,48,0.5); box-shadow: 0 0 12px rgba(255,59,48,0.15); }
 
-        .lang-container { position: fixed; top: 20px; right: 20px; z-index: 9000; }
+        .lang-container { position: fixed; top: 20px; right: 20px; z-index: 9000; display: flex; align-items: center; gap: 8px; }
+        .settings-gear-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.55); font-size: 16px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .settings-gear-btn:hover { background: rgba(0,229,255,0.08); border-color: rgba(0,229,255,0.3); color: #00e5ff; }
+        /* 설정 모달 */
+        #settings-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9800;
+            align-items: flex-end; justify-content: center;
+        }
+        #settings-modal-overlay.open { display: flex; }
+        #settings-modal {
+            width: 100%; max-width: 480px; background: #16161f;
+            border-radius: 22px 22px 0 0; padding: 16px 20px 40px;
+            animation: slideUp 0.28s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .settings-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 18px; }
+        .settings-section-label { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; margin-top: 16px; }
+        .settings-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; }
+        .settings-row-left { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.7); }
+        .lang-pills { display: flex; gap: 6px; }
+        .lang-pill { padding: 5px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
+        .lang-pill.active { background: #00e5ff; color: #000; }
+        .lang-pill.inactive { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.1); }
+        .settings-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+        .settings-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 12px; }
+        .settings-card-icon { font-size: 18px; margin-bottom: 6px; }
+        .settings-card-label { font-size: 10px; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
+        .settings-card-value { font-size: 17px; font-weight: 700; }
+        .settings-card-sub { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 2px; }
+        .settings-badge-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+        .settings-badge-chip { font-size: 10px; background: rgba(255,213,102,0.1); border: 1px solid rgba(255,213,102,0.25); color: #ffd166; border-radius: 20px; padding: 2px 7px; }
         .lang-btn {
             background: transparent; border: 1px solid rgba(255,255,255,0.15);
             color: rgba(255,255,255,0.6); padding: 6px 14px; font-size: 12px; font-weight: 600;
@@ -1268,7 +1303,41 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
 
     <div class="lang-container" id="lang-container">
-        <button id="lang-toggle-btn" class="lang-btn">KO</button>
+        <button id="lang-toggle-btn" style="display:none;">KO</button>
+        <button class="settings-gear-btn" id="settings-gear-btn" onclick="openSettingsModal()">⚙</button>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div id="settings-modal-overlay" onclick="if(event.target===this)closeSettingsModal()">
+        <div id="settings-modal">
+            <div class="settings-handle"></div>
+            <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:4px;" id="settings-title">⚙ Settings</div>
+
+            <div class="settings-section-label" id="settings-lang-label">Language</div>
+            <div class="settings-row">
+                <div class="settings-row-left">🌐 <span id="settings-lang-text">Display language</span></div>
+                <div class="lang-pills">
+                    <button class="lang-pill" id="pill-ko" onclick="setLangFromSettings('ko')">KO</button>
+                    <button class="lang-pill" id="pill-en" onclick="setLangFromSettings('en')">EN</button>
+                </div>
+            </div>
+
+            <div class="settings-section-label" id="settings-mypage-label">My page</div>
+            <div class="settings-cards">
+                <div class="settings-card">
+                    <div class="settings-card-icon">⏱</div>
+                    <div class="settings-card-label" id="settings-time-label">오늘 남은 시간</div>
+                    <div class="settings-card-value" id="settings-time-value" style="color:#00e5ff;">--:--:--</div>
+                    <div class="settings-card-sub" id="settings-time-sub">구독 혜택</div>
+                </div>
+                <div class="settings-card">
+                    <div class="settings-card-icon">🏅</div>
+                    <div class="settings-card-label" id="settings-badge-label">오늘 받은 배지</div>
+                    <div class="settings-card-value" id="settings-badge-count" style="color:#ffd166;">0</div>
+                    <div class="settings-badge-chips" id="settings-badge-chips"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -2801,7 +2870,7 @@ function updateUI() {
         const s7 = document.getElementById('intro2-s7'); if (s7) s7.innerHTML = lang.intro2S7;
         if(document.getElementById('label-add-friend')) document.getElementById('label-add-friend').innerText = lang.addFriendBtn;
         if(document.getElementById('friends-m-title')) document.getElementById('friends-m-title').innerText = lang.friendsModalTitle;
-        const friendsCloseBtn = document.getElementById('friends-close-btn'); if (friendsCloseBtn) friendsCloseBtn.textContent = isKo ? '닫기' : 'Close';
+        const friendsCloseBtn = document.getElementById('friends-close-btn'); if (friendsCloseBtn) friendsCloseBtn.textContent = currentLang === 'ko' ? '닫기' : 'Close';
 
         // 인연 레이더 배너 다국어
         const wlTitle = document.getElementById('wl-title'); if (wlTitle) wlTitle.textContent = lang.wlTitle;
@@ -3080,6 +3149,7 @@ function updateUI() {
             document.getElementById('summary-headline').innerText = lang.aiLoading;
         }
         document.getElementById('join-btn').innerText = isJoined ? lang.joinBtn : lang.startBtn;
+        if (typeof updateSettingsModalLang === 'function') updateSettingsModalLang();
     }
 
     // 구글 로그인: 기본은 Popup 방식 (authDomain과 사이트 도메인이 달라도 안정적으로 동작).
@@ -5535,9 +5605,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 });
             } catch(e) { console.warn('Signal write failed:', e); }
 
-            // 2. 서버 사이드 increment — 읽기 권한 불필요, 쓰기만으로 원자적 증가
+            // 2. 서버 사이드 increment
             const targetBadgeRef = database.ref('users/' + selectedVoteTarget + '/badges/' + badgeType);
             await targetBadgeRef.set(firebase.database.ServerValue.increment(1));
+            // 오늘 받은 배지 일별 기록
+            const today = new Date().toISOString().slice(0, 10);
+            database.ref('users/' + selectedVoteTarget + '/dailyBadges/' + today + '/' + badgeType).set(firebase.database.ServerValue.increment(1));
 
             alert(textData[currentLang].badgeSuccess);
             removeVoteTarget(selectedVoteTarget);
@@ -5865,6 +5938,74 @@ function toggleRankDesc(id) {
         const el = document.getElementById(d);
         if (el) el.style.display = (d === id && el.style.display === 'none') ? 'block' : 'none';
     });
+}
+
+// ── 설정 모달 ──
+function openSettingsModal() {
+    const overlay = document.getElementById('settings-modal-overlay');
+    overlay.classList.add('open');
+    updateSettingsModalLang();
+    loadSettingsMyPage();
+}
+function closeSettingsModal() {
+    document.getElementById('settings-modal-overlay').classList.remove('open');
+}
+function setLangFromSettings(lang) {
+    if (currentLang === lang) return;
+    document.getElementById('lang-toggle-btn').click();
+    updateSettingsModalLang();
+}
+function updateSettingsModalLang() {
+    const isKo = currentLang === 'ko';
+    document.getElementById('pill-ko').className = 'lang-pill ' + (isKo ? 'active' : 'inactive');
+    document.getElementById('pill-en').className = 'lang-pill ' + (!isKo ? 'active' : 'inactive');
+    document.getElementById('settings-title').textContent = isKo ? '⚙ 설정' : '⚙ Settings';
+    document.getElementById('settings-lang-label').textContent = isKo ? '언어' : 'Language';
+    document.getElementById('settings-lang-text').textContent = isKo ? '표시 언어' : 'Display language';
+    document.getElementById('settings-mypage-label').textContent = isKo ? '마이페이지' : 'My page';
+    document.getElementById('settings-time-label').textContent = isKo ? '오늘 남은 시간' : 'Today\'s remaining time';
+    document.getElementById('settings-time-sub').textContent = isKo ? '구독 혜택' : 'Subscription benefit';
+    document.getElementById('settings-badge-label').textContent = isKo ? '오늘 받은 배지' : 'Badges received today';
+}
+async function loadSettingsMyPage() {
+    const uid = auth.currentUser ? auth.currentUser.uid : null;
+    const isKo = currentLang === 'ko';
+    if (!uid) {
+        document.getElementById('settings-time-value').textContent = isKo ? '로그인 필요' : 'Login required';
+        document.getElementById('settings-badge-count').textContent = '-';
+        return;
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    // 잔여 시간
+    const usageSnap = await database.ref('users/' + uid + '/dailyUsage/' + today).once('value');
+    const usedSec = usageSnap.val() || 0;
+    const subSnap = await database.ref('users/' + uid + '/subscription').once('value');
+    const sub = subSnap.val();
+    const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
+    if (subValid) {
+        const rem = Math.max(0, 7200 - usedSec);
+        const h = String(Math.floor(rem / 3600)).padStart(2, '0');
+        const m = String(Math.floor((rem % 3600) / 60)).padStart(2, '0');
+        const s = String(rem % 60).padStart(2, '0');
+        document.getElementById('settings-time-value').textContent = h + ':' + m + ':' + s;
+    } else {
+        document.getElementById('settings-time-value').textContent = isKo ? '미구독' : 'Not subscribed';
+        document.getElementById('settings-time-value').style.color = 'rgba(255,255,255,0.3)';
+    }
+    // 오늘 받은 배지
+    const badgeSnap = await database.ref('users/' + uid + '/dailyBadges/' + today).once('value');
+    const daily = badgeSnap.val() || {};
+    const badgeMap = { manner:'👍', logic:'🧠', humor:'🤣', empathy:'🤗', passion:'🔥' };
+    const badgeName = { manner:{ko:'친절',en:'NICE'}, logic:{ko:'논리',en:'LOGIC'}, humor:{ko:'유머',en:'FUN'}, empathy:{ko:'공감',en:'WARM'}, passion:{ko:'열정',en:'BOLD'} };
+    let total = 0;
+    const chips = [];
+    Object.entries(badgeMap).forEach(([k, emoji]) => {
+        const cnt = daily[k] || 0;
+        if (cnt > 0) { total += cnt; chips.push(emoji + ' ' + badgeName[k][isKo ? 'ko' : 'en'] + (cnt > 1 ? ' x' + cnt : '')); }
+    });
+    document.getElementById('settings-badge-count').textContent = total;
+    const chipsEl = document.getElementById('settings-badge-chips');
+    chipsEl.innerHTML = chips.map(c => '<span class="settings-badge-chip">' + c + '</span>').join('');
 }
 
 function closeFriendsModal() {
