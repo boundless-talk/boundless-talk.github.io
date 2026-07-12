@@ -1790,6 +1790,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <span id="free-time-banner-text">🎁 첫 10분은 무료입니다. 마음껏 대화를 즐겨보세요.</span>
     </div>
 
+    <!-- 구독 시간 코너 위젯 -->
+    <div id="sub-time-widget" style="display:none; position:fixed; bottom:20px; right:16px; z-index:9001; background:rgba(20,18,40,0.92); border:1px solid rgba(123,97,255,0.4); border-radius:20px; padding:6px 12px; font-size:11px; color:rgba(255,255,255,0.7); white-space:nowrap;">
+        👑 <span id="sub-time-text">02:00:00</span>
+    </div>
+
     <!-- 7분 결제 모달 -->
     <div id="payment-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
         <div style="background:#1a1a2e; border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:28px 24px 20px; width:90%; max-width:340px; margin:auto; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
@@ -4876,6 +4881,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     // 7분 무료 타이머
     let freeTimerInterval = null;
     let payCountdownInterval = null;
+    let subTimerInterval = null;
+    let subRemainingSeconds = 7200; // 기본 2시간
 
     // WakeLock — 통화 중 화면 꺼짐 방지
     let wakeLock = null;
@@ -4927,7 +4934,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (elapsed >= TOTAL) {
                 clearInterval(freeTimerInterval);
                 banner.style.display = 'none';
-                showPaymentModal();
+                if (isSubscribed) {
+                    startSubTimer();
+                } else {
+                    showPaymentModal();
+                }
             }
         }, 1000);
     }
@@ -4936,8 +4947,67 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         releaseWakeLock();
         if (freeTimerInterval) { clearInterval(freeTimerInterval); freeTimerInterval = null; }
         clearPayCountdown();
+        clearSubTimer();
         document.getElementById('free-time-banner').style.display = 'none';
         document.getElementById('payment-modal').style.display = 'none';
+    }
+
+    async function startSubTimer() {
+        const uid = auth.currentUser ? auth.currentUser.uid : null;
+        if (!uid) return;
+
+        const today = new Date().toISOString().slice(0, 10);
+        const usageRef = database.ref(`users/${uid}/dailyUsage/${today}`);
+        const snap = await usageRef.once('value');
+        const usedSec = snap.val() || 0;
+        const MAX = 7200;
+        subRemainingSeconds = Math.max(0, MAX - usedSec);
+
+        // 전환 토스트
+        const widget = document.getElementById('sub-time-widget');
+        const banner = document.getElementById('free-time-banner');
+        const bannerText = document.getElementById('free-time-banner-text');
+        const fmt = s => {
+            const h = String(Math.floor(s / 3600)).padStart(2, '0');
+            const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+            const sec = String(s % 60).padStart(2, '0');
+            return `${h}:${m}:${sec}`;
+        };
+
+        bannerText.textContent = currentLang === 'ko'
+            ? `😊 구독 혜택으로 대화가 이어집니다. (오늘 남은 시간: ${fmt(subRemainingSeconds)})`
+            : `😊 Continuing with your subscription time. (Today remaining: ${fmt(subRemainingSeconds)})`;
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 5000);
+
+        if (subRemainingSeconds <= 0) { showPaymentModal(); return; }
+
+        widget.style.display = 'block';
+        document.getElementById('sub-time-text').textContent = fmt(subRemainingSeconds);
+
+        let saveAccum = 0;
+        subTimerInterval = setInterval(async () => {
+            subRemainingSeconds--;
+            saveAccum++;
+            document.getElementById('sub-time-text').textContent = fmt(subRemainingSeconds);
+
+            if (saveAccum >= 30) {
+                usageRef.set(MAX - subRemainingSeconds);
+                saveAccum = 0;
+            }
+
+            if (subRemainingSeconds <= 0) {
+                clearSubTimer();
+                usageRef.set(MAX);
+                showPaymentModal();
+            }
+        }, 1000);
+    }
+
+    function clearSubTimer() {
+        if (subTimerInterval) { clearInterval(subTimerInterval); subTimerInterval = null; }
+        const w = document.getElementById('sub-time-widget');
+        if (w) w.style.display = 'none';
     }
 
     function requestRefund() {
