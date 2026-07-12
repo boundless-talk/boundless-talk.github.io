@@ -4934,8 +4934,18 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (elapsed >= TOTAL) {
                 clearInterval(freeTimerInterval);
                 banner.style.display = 'none';
-                if (isSubscribed) {
-                    startSubTimer();
+                // 캐시 대신 Firebase에서 구독 상태 재확인
+                const uid = auth.currentUser ? auth.currentUser.uid : null;
+                if (uid) {
+                    database.ref('users/' + uid + '/subscription').once('value').then(snap => {
+                        const sub = snap.val();
+                        const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
+                        if (subValid) {
+                            startSubTimer();
+                        } else {
+                            showPaymentModal();
+                        }
+                    });
                 } else {
                     showPaymentModal();
                 }
