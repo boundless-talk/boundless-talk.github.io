@@ -6034,27 +6034,16 @@ async function loadSettingsMyPage() {
         document.getElementById('settings-badge-count').textContent = '-';
         return;
     }
-    const today = new Date().toISOString().slice(0, 10);
-    // 잔여 시간
-    const usageSnap = await database.ref('users/' + uid + '/dailyUsage/' + today).once('value');
-    const usedSec = usageSnap.val() || 0;
-    const subSnap = await database.ref('users/' + uid + '/subscription').once('value');
-    const sub = subSnap.val();
-    const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
-    if (subValid) {
-        const rem = Math.max(0, 7200 - usedSec);
-        const h = String(Math.floor(rem / 3600)).padStart(2, '0');
-        const m = String(Math.floor((rem % 3600) / 60)).padStart(2, '0');
-        const s = String(rem % 60).padStart(2, '0');
-        document.getElementById('settings-time-value').textContent = h + ':' + m + ':' + s;
-    } else {
-        document.getElementById('settings-time-value').textContent = isKo ? '미구독' : 'Not subscribed';
-        document.getElementById('settings-time-value').style.color = 'rgba(255,255,255,0.3)';
-    }
+    // KST 기준 오늘 날짜
+    const now = new Date();
+    const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+    const today = kst.toISOString().slice(0, 10);
+
     const rankNames = { ko: ['뉴비','떠오르는 토커','이야기꾼','여운이 남는','영혼의 단짝'], en: ['Newcomer','Rising Talker','Storyteller','Lingering Voice','Soulmate'] };
     const badgeMap = { manner:'👍', logic:'🧠', humor:'🤣', empathy:'🤗', passion:'🔥' };
     const badgeName = { manner:{ko:'친절',en:'NICE'}, logic:{ko:'논리',en:'LOGIC'}, humor:{ko:'유머',en:'FUN'}, empathy:{ko:'공감',en:'WARM'}, passion:{ko:'열정',en:'BOLD'} };
-    // 내 랭크 — 실시간
+
+    // 내 랭크 — 실시간 (리스너 먼저 등록)
     if (_settingsAllBadgeRef) { _settingsAllBadgeRef.off(); }
     _settingsAllBadgeRef = database.ref('users/' + uid + '/badges');
     _settingsAllBadgeRef.on('value', snap => {
@@ -6065,7 +6054,8 @@ async function loadSettingsMyPage() {
         document.getElementById('settings-rank-name').textContent = rankNames[isKo?'ko':'en'][rankIdx];
         document.getElementById('settings-rank-sub').textContent = (isKo ? '누적 배지 ' : 'Total badges ') + rankTotal;
     });
-    // 오늘 받은 배지 — 실시간
+
+    // 오늘 받은 배지 — 실시간 (리스너 먼저 등록)
     if (_settingsBadgeRef) { _settingsBadgeRef.off(); }
     _settingsBadgeRef = database.ref('users/' + uid + '/dailyBadges/' + today);
     _settingsBadgeRef.on('value', snap => {
@@ -6080,6 +6070,25 @@ async function loadSettingsMyPage() {
         const chipsEl = document.getElementById('settings-badge-chips');
         chipsEl.innerHTML = chips.map(c => '<span class="settings-badge-chip">' + c + '</span>').join('');
     });
+
+    // 잔여 시간 (await는 리스너 등록 후에 실행)
+    try {
+        const usageSnap = await database.ref('users/' + uid + '/dailyUsage/' + today).once('value');
+        const usedSec = usageSnap.val() || 0;
+        const subSnap = await database.ref('users/' + uid + '/subscription').once('value');
+        const sub = subSnap.val();
+        const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
+        if (subValid) {
+            const rem = Math.max(0, 7200 - usedSec);
+            const h = String(Math.floor(rem / 3600)).padStart(2, '0');
+            const m = String(Math.floor((rem % 3600) / 60)).padStart(2, '0');
+            const s = String(rem % 60).padStart(2, '0');
+            document.getElementById('settings-time-value').textContent = h + ':' + m + ':' + s;
+        } else {
+            document.getElementById('settings-time-value').textContent = isKo ? '미구독' : 'Not subscribed';
+            document.getElementById('settings-time-value').style.color = 'rgba(255,255,255,0.3)';
+        }
+    } catch(e) { console.warn('settings time load failed:', e); }
 }
 
 function closeFriendsModal() {
