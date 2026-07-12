@@ -4021,7 +4021,15 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (!agoraToFirebaseUid[user.uid]) {
                 try {
                     const snap = await database.ref(`channels/${safeAgoraChannelId}/members/${user.uid}`).once('value');
-                    const fbUid = snap.val();
+                    let fbUid = snap.val();
+                    // fallback: channels/members 쓰기 실패(게스트 권한 등)시 activeTopics에서 Firebase UID 조회
+                    if (!fbUid) {
+                        const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
+                        const atSnap = await database.ref(`activeTopics/${safeAgoraChannelId}`).once('value');
+                        const atData = atSnap.val() || {};
+                        fbUid = Object.keys(atData).find(uid => uid !== myFbUid) || null;
+                        if (fbUid && atData[fbUid] && atData[fbUid].guest) uidToIsGuest[fbUid] = true;
+                    }
                     if (fbUid) {
                         database.ref(`channels/${safeAgoraChannelId}/guestFlags/${fbUid}`).once('value').then(gs => { if (gs.val()) uidToIsGuest[fbUid] = true; });
                         agoraToFirebaseUid[user.uid] = fbUid;
