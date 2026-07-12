@@ -1360,10 +1360,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="input-group" style="position:relative;">
             <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
             <!-- 핑퐁 모드 토글 (인풋 오른쪽 위) -->
-            <div id="pingpong-toggle-row" onclick="togglePingpongMode()" style="position:absolute;top:-11px;right:8px;display:flex;align-items:center;gap:5px;background:rgba(20,18,32,0.92);border:1px solid rgba(123,97,255,0.35);border-radius:20px;padding:3px 8px 3px 6px;cursor:pointer;user-select:none;z-index:2;">
+            <div id="pingpong-toggle-row" onclick="togglePingpongMode()" style="position:absolute;top:-11px;right:8px;display:flex;align-items:center;gap:5px;background:rgba(20,18,32,0.92);border:1px solid rgba(123,97,255,0.35);border-radius:20px;padding:3px 8px 3px 6px;cursor:pointer;user-select:none;z-index:2;width:130px;box-sizing:border-box;">
                 <span style="font-size:12px;">🏓</span>
-                <span id="pp-toggle-sub" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.6);white-space:nowrap;">Ping-Pong</span>
-                <div class="pp-switch" id="pp-switch" style="width:28px;height:16px;border-radius:8px;"><div class="pp-switch-thumb" style="width:12px;height:12px;top:2px;left:2px;"></div></div>
+                <span id="pp-toggle-sub" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.6);white-space:nowrap;flex:1;overflow:hidden;text-overflow:ellipsis;">PING PONG</span>
+                <div class="pp-switch" id="pp-switch" style="width:28px;height:16px;border-radius:8px;flex-shrink:0;"><div class="pp-switch-thumb" style="width:12px;height:12px;top:2px;left:2px;"></div></div>
             </div>
         </div>
 
@@ -4149,10 +4149,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const sub = document.getElementById('pp-toggle-sub');
         if (pingpongMode) {
             sw.classList.add('on');
-            sub.textContent = currentLang === 'ko' ? '1분 30초씩 번갈아 말하는 턴제 대화' : 'Turn-based talk · 1:30 per turn';
+            sub.textContent = currentLang === 'ko' ? '1:30 / 턴' : '1:30 per turn';
         } else {
             sw.classList.remove('on');
-            sub.textContent = currentLang === 'ko' ? '1분 30초씩 번갈아 말하는 턴제 대화' : 'Turn-based talk · 1:30 per turn';
+            sub.textContent = 'PING PONG';
         }
     }
 
