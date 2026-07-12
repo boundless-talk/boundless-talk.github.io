@@ -1659,7 +1659,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <!-- 핑퐁 모드 통화 중 UI -->
             <div id="pingpong-section">
                 <div class="pp-relay-bar" id="pp-relay-bar">
-                    <span class="pp-relay-label">순서</span>
+                    <span class="pp-relay-label" id="pp-relay-label">Turn</span>
                 </div>
                 <div class="pp-turn-block">
                     <div class="pp-turn-label" id="pp-turn-label">내 차례예요!</div>
@@ -1670,7 +1670,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="pp-timer-total">/ 1:30</div>
                 </div>
                 <div class="pp-progress-track"><div class="pp-progress-fill" id="pp-progress-fill"></div></div>
-                <button class="pp-pass-btn" id="pp-pass-btn" onclick="pingpongPass()">⏭ 턴 넘기기 (Pass)</button>
+                <button class="pp-pass-btn" id="pp-pass-btn" onclick="pingpongPass()">⏭ Pass</button>
                 <div class="pp-reaction-bar" id="pp-reaction-bar">
                     <button class="pp-reaction-btn" onclick="sendPPReaction('❤️')">❤️</button>
                     <button class="pp-reaction-btn" onclick="sendPPReaction('👏')">👏</button>
@@ -1678,8 +1678,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <button class="pp-reaction-btn" onclick="sendPPReaction('😢')">😢</button>
                 </div>
                 <div class="pp-waiting-solo" id="pp-waiting-solo">
-                    <div class="pp-waiting-solo-title">⏸ 다른 참여자를 기다리는 중...</div>
-                    <div class="pp-waiting-solo-sub">핑퐁 타이머가 일시정지됐어요.<br>새 유저가 입장하면 바로 재개돼요!</div>
+                    <div class="pp-waiting-solo-title" id="pp-waiting-solo-title">⏸ Waiting for others...</div>
+                    <div class="pp-waiting-solo-sub" id="pp-waiting-solo-sub">Ping-Pong timer is paused.<br>It'll resume when someone joins!</div>
                 </div>
             </div>
 
@@ -2842,6 +2842,16 @@ function updateUI() {
         if (iosDesc) iosDesc.innerHTML = lang.iosBannerDesc;
         document.getElementById('topic-input').placeholder = lang.placeholder;
         document.getElementById('maxpeople').innerText = lang.maxPeopleLabel;
+        // 핑퐁 UI 다국어
+        const isKoPP = currentLang === 'ko';
+        const ppRelayLabel = document.getElementById('pp-relay-label');
+        if (ppRelayLabel) ppRelayLabel.textContent = isKoPP ? '순서' : 'Turn';
+        const ppPassBtn = document.getElementById('pp-pass-btn');
+        if (ppPassBtn) ppPassBtn.textContent = isKoPP ? '⏭ 턴 넘기기' : '⏭ Pass';
+        const ppWaitTitle = document.getElementById('pp-waiting-solo-title');
+        if (ppWaitTitle) ppWaitTitle.textContent = isKoPP ? '⏸ 다른 참여자를 기다리는 중...' : '⏸ Waiting for others...';
+        const ppWaitSub = document.getElementById('pp-waiting-solo-sub');
+        if (ppWaitSub) ppWaitSub.innerHTML = isKoPP ? '핑퐁 타이머가 일시정지됐어요.<br>새 유저가 입장하면 바로 재개돼요!' : "Ping-Pong timer is paused.<br>It'll resume when someone joins!";
         document.getElementById('leave-btn').innerText = lang.leaveBtn;
         document.getElementById('report-btn').innerText = lang.reportBtn;
         document.getElementById('lang-toggle-btn').innerText = lang.toggleBtn;
