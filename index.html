@@ -1937,6 +1937,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let roomParticipants = []; // 현재 방에 있는 참여자 (나간 사람은 제거됨)
     let sessionParticipants = []; // 세션 중 한번이라도 참여한 모든 사람 (평가용, 먼저 나간 사람 포함)
     let agoraToFirebaseUid = {}; // Agora UID → Firebase UID 매핑 테이블
+    let uidToRankEmoji = {}; // Firebase UID → rank emoji
+    let myRankEmoji = '👤';
+
+    function getRankEmoji(total) {
+        if (total >= 200) return '🔮';
+        if (total >= 100) return '☕';
+        if (total >= 50)  return '💬';
+        if (total >= 10)  return '🌱';
+        return '👋';
+    }
+
     let selectedVoteTarget = null;
     let selectedReportTarget = null;
 
@@ -2463,6 +2474,7 @@ database.ref('activeTopics').on('value', (snap) => {
 
                 // 랭크 계산
                 const total = manner + logic + humor + empathy + passion;
+                myRankEmoji = getRankEmoji(total);
                 const rankNames = currentLang === 'ko'
                     ? ['👋 뉴비', '🌱 떠오르는 토커', '💬 이야기꾼', '☕ 여운이 남는', '🔮 영혼의 단짝']
                     : ['👋 Newcomer', '🌱 Rising Talker', '💬 Storyteller', '☕ Lingering Voice', '🔮 Soulmate'];
@@ -3558,6 +3570,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             roomParticipants = [];
             sessionParticipants = [];
             agoraToFirebaseUid = {};
+            uidToRankEmoji = {};
             uidToAnimal = {};
             uidToNickname = {};
             uidToIsGuest = {};
@@ -3693,6 +3706,13 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                     const fbUid = snap.val();
                     if (fbUid) {
                         agoraToFirebaseUid[user.uid] = fbUid;
+                        // 랭크 이모지 로드
+                        database.ref('users/' + fbUid + '/badges').once('value').then(bs => {
+                            const b = bs.val() || {};
+                            const t = (b.manner||0)+(b.logic||0)+(b.humor||0)+(b.empathy||0)+(b.passion||0);
+                            uidToRankEmoji[fbUid] = getRankEmoji(t);
+                            renderParticipantsUI();
+                        }).catch(() => {});
                         renderParticipantsUI();
                     }
                 } catch(e) { console.warn('channels read failed:', e.message); }
@@ -4153,7 +4173,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const meLabel = currentLang === 'ko' ? '(나)' : '(You)';
             const myStyleBadge = selectedSpeechStyle ? `<span class="speech-style-badge">${textData[currentLang]['speechStyleBadge' + (selectedSpeechStyle === 'casual' ? 'Casual' : 'Polite')]}</span>` : '';
             const displayName = myNickname || 'Me';
-            meEl.innerHTML = `<span class="animal-avatar">👤</span><span class="animal-name">${displayName} ${meLabel}${myStyleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+            meEl.innerHTML = `<span class="animal-avatar">${myRankEmoji}</span><span class="animal-name">${displayName} ${meLabel}${myStyleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
             list.appendChild(meEl);
         }
 
@@ -4173,7 +4193,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 const guestBadge = guestFlag ? `<span style="font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.4);border-radius:10px;padding:1px 7px;margin-left:6px;font-weight:500;">Guest</span>` : '';
                 const style = speechStyleMap[fbUid];
                 const styleBadge = style ? `<span class="speech-style-badge">${textData[currentLang]['speechStyleBadge' + (style === 'casual' ? 'Casual' : 'Polite')]}</span>` : '';
-                el.innerHTML = `<span class="animal-avatar">👤</span><span class="animal-name">${nickname}${guestBadge}${styleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+                const rankEmoji = uidToRankEmoji[fbUid] || '👋';
+                el.innerHTML = `<span class="animal-avatar">${rankEmoji}</span><span class="animal-name">${nickname}${guestBadge}${styleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
                 list.appendChild(el);
             });
         }
