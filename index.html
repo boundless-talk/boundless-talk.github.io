@@ -4405,7 +4405,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (ppTurnRef) { ppTurnRef.off(); ppTurnRef = null; }
         ppTurnRef = database.ref(`channels/${channelId}/pingpong`);
 
-        // 첫 입장자가 핑퐁 노드 초기화
+        // 첫 입장자가 핑퐁 노드 초기화 (이전 세션 stale 데이터는 onDisconnect로 정리됨)
+        ppTurnRef.onDisconnect().remove();
         ppTurnRef.once('value').then(snap => {
             if (!snap.val()) {
                 ppTurnRef.set({
@@ -4477,7 +4478,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function stopPPMode() {
         isPingpong = false;
         if (ppTimerInterval) { clearInterval(ppTimerInterval); ppTimerInterval = null; }
-        if (ppTurnRef) { ppTurnRef.off(); ppTurnRef = null; }
+        if (ppTurnRef) { ppTurnRef.off(); ppTurnRef.remove().catch(()=>{}); ppTurnRef = null; }
         if (ppSlowMatchTimer) { clearTimeout(ppSlowMatchTimer); ppSlowMatchTimer = null; }
         if (ppReactionRef) { ppReactionRef.off(); ppReactionRef = null; }
         ppTurnQueue = [];
