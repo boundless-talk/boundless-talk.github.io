@@ -3885,7 +3885,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, rankEmoji: myRankEmoji || '👋', ts: firebase.database.ServerValue.TIMESTAMP });
+    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, rankEmoji: myRankEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP });
     myTopicRef.onDisconnect().remove();
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
     window._heartbeatInterval = setInterval(() => {
@@ -3893,8 +3893,9 @@ document.getElementById('max-people-group').style.visibility = "hidden";
         myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
     }, 2 * 60 * 1000);
                     } catch(e) { console.warn('activeTopics write failed (may be permission):', e.message); }
-                    // 리스너는 write 성공/실패와 무관하게 항상 등록 (게스트도 상대방 닉네임 수신 가능)
-                    try {
+                }
+                // 리스너는 토픽 종류와 무관하게 항상 등록 (상대방 Firebase UID 확보용)
+                try {
 database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     const data = snap.val() || {};
     if (!snap.exists()) return;
@@ -3904,6 +3905,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (val && val.nickname) uidToNickname[uid] = val.nickname;
         if (val && val.guest) uidToIsGuest[uid] = true;
         if (val && val.rankEmoji) uidToRankEmoji[uid] = val.rankEmoji;
+        // agoraUid 필드로 역방향 매핑 보강
+        if (val && val.agoraUid) agoraToFirebaseUid[val.agoraUid] = uid;
         // user-published보다 activeTopics 쓰기가 늦을 수 있으므로 여기서도 보충
         if (uid !== myFbUid && !sessionParticipants.includes(uid)) {
             sessionParticipants.push(uid);
@@ -3911,8 +3914,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     });
     updateRoomParticipants();
 });
-                    } catch(e) { console.warn('activeTopics listen failed:', e.message); }
-                }
+                } catch(e) { console.warn('activeTopics listen failed:', e.message); }
             }
 
             // 아고라 채널 퍼블리시
