@@ -4188,13 +4188,15 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
             const isSpeaking = i === ppCurrentTurnIdx;
             const emoji = (uid === myFbUid) ? myRankEmoji : (uidToRankEmoji[uid] || '👋');
-            const name = (uid === myFbUid)
+            const isMe = uid === myFbUid;
+            const baseName = isMe
                 ? (currentLang === 'ko' ? '나' : 'Me')
                 : (uidToNickname[uid] || 'User');
+            const guestTag = (!isMe && uidToIsGuest[uid]) ? ' <span style="font-size:8px;opacity:0.5;">(Guest)</span>' : (isMe && isGuest ? ' <span style="font-size:8px;opacity:0.5;">(Guest)</span>' : '');
 
             item.innerHTML = `
                 <div class="pp-relay-avatar ${isSpeaking ? 'speaking' : ''}">${emoji}</div>
-                <div class="pp-relay-name ${isSpeaking ? 'speaking' : ''}">${name}</div>`;
+                <div class="pp-relay-name ${isSpeaking ? 'speaking' : ''}">${baseName}${guestTag}</div>`;
             bar.appendChild(item);
         });
     }
