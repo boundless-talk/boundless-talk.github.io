@@ -3059,8 +3059,10 @@ function updateUI() {
             const currentText = waitingTxt.textContent;
             const isNone = currentText === textData['ko'].waitingNone || currentText === textData['en'].waitingNone;
             const isOne  = currentText === textData['ko'].waitingOne  || currentText === textData['en'].waitingOne;
+            const numMatch = currentText.match(/^(\d+)/);
             if (isNone) waitingTxt.textContent = lang.waitingNone;
             else if (isOne) waitingTxt.textContent = lang.waitingOne;
+            else if (numMatch && parseInt(numMatch[1]) >= 2) waitingTxt.textContent = lang.waitingMany(parseInt(numMatch[1]));
         }
 
         // room screen 라벨 업데이트
