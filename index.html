@@ -1564,6 +1564,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
             </div>
         </div>
+        <div class="stats-heatmap" style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
+            <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <span>🌍</span><span id="heatmap-title">지금 대화 흐름 (시간대별)</span>
+            </div>
+            <div id="heatmap-bars" style="display:none; align-items:flex-end; gap:2px; height:44px;"></div>
+            <div id="heatmap-ticks" style="display:none; justify-content:space-between; font-size:9px; color:rgba(255,255,255,0.25); margin-top:3px;">
+                <span>0</span><span>6</span><span>12</span><span>18</span><span>23</span>
+            </div>
+            <div id="heatmap-empty" style="font-size:11px; color:rgba(255,255,255,0.35); text-align:center; padding:14px 0;">📊</div>
+            <div id="heatmap-peak-text" style="font-size:11px; color:rgba(0,229,255,0.7); text-align:center; margin-top:6px;"></div>
+        </div>
         </div><!-- /rep-content-inner -->
     </div>
     <div style="text-align:center; margin-top:10px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
@@ -2228,6 +2239,64 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const rankRow = document.getElementById('stats-rank-row');
         if (rankRow) rankRow.childNodes[0].textContent = currentLang === 'ko' ? '랭크: ' : 'RANK: ';
     }
+
+    // 시간대별 접속 히트맵 — 실제로 쌓인 데이터가 충분할 때만 표시 (가짜 통계 금지)
+    const HEATMAP_MIN_TOTAL = 30;
+    let lastHourlyData = null;
+
+    function heatmapBarColor(ratio) {
+        if (ratio < 0.34) return 'rgba(0,229,255,0.28)';
+        if (ratio < 0.67) return 'rgba(255,180,60,0.6)';
+        return 'rgba(255,90,60,0.9)';
+    }
+
+    function renderHourlyHeatmap(data) {
+        lastHourlyData = data;
+        const barsEl = document.getElementById('heatmap-bars');
+        const ticksEl = document.getElementById('heatmap-ticks');
+        const emptyEl = document.getElementById('heatmap-empty');
+        const peakEl = document.getElementById('heatmap-peak-text');
+        if (!barsEl || !emptyEl) return;
+
+        const counts = Array.from({ length: 24 }, (_, h) => (data && data[h]) || 0);
+        const total = counts.reduce((a, b) => a + b, 0);
+
+        if (total < HEATMAP_MIN_TOTAL) {
+            barsEl.style.display = 'none';
+            if (ticksEl) ticksEl.style.display = 'none';
+            if (peakEl) peakEl.textContent = '';
+            emptyEl.style.display = 'block';
+            emptyEl.textContent = currentLang === 'ko'
+                ? `📊 아직 데이터를 모으고 있어요 (${total}건)`
+                : `📊 Still gathering data (${total} joins)`;
+            return;
+        }
+
+        emptyEl.style.display = 'none';
+        barsEl.style.display = 'flex';
+        if (ticksEl) ticksEl.style.display = 'flex';
+
+        const max = Math.max(...counts, 1);
+        barsEl.innerHTML = '';
+        counts.forEach((c, h) => {
+            const ratio = c / max;
+            const bar = document.createElement('div');
+            bar.style.cssText = 'flex:1; min-width:2px; border-radius:2px 2px 0 0;';
+            bar.style.height = Math.max(3, Math.round(ratio * 40)) + 'px';
+            bar.style.background = heatmapBarColor(ratio);
+            bar.title = h + ':00 — ' + c;
+            barsEl.appendChild(bar);
+        });
+
+        const peakHour = counts.indexOf(max);
+        if (peakEl) {
+            peakEl.textContent = currentLang === 'ko'
+                ? `가장 활발한 시간대는 ${peakHour}시예요`
+                : `Most active around ${peakHour}:00`;
+        }
+    }
+
+    database.ref('stats/hourlyJoins').on('value', snap => renderHourlyHeatmap(snap.val() || {}));
 
     let selectedVoteTarget = null;
     let selectedReportTarget = null;
@@ -2904,6 +2973,11 @@ function updateUI() {
 
         // 토글 버튼 텍스트 고정
         document.getElementById('toggle-rep-btn').innerText = currentLang === 'ko' ? "📊 대화스탯" : "📊 TALK STATS";
+
+        // 시간대별 히트맵 다국어
+        const heatmapTitleEl = document.getElementById('heatmap-title');
+        if (heatmapTitleEl) heatmapTitleEl.textContent = currentLang === 'ko' ? '지금 대화 흐름 (시간대별)' : 'Conversation Activity by Hour';
+        if (typeof renderHourlyHeatmap === 'function' && lastHourlyData !== null) renderHourlyHeatmap(lastHourlyData);
 
         // 랭크 팝업 다국어
         const rankInfoTitle = document.getElementById('rank-info-title');
@@ -3893,6 +3967,11 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             myUid = await client.join(AGORA_APP_ID, safeAgoraChannelId, agoraToken, 0);
             dbg('9. join 성공');
             isJoined = true;
+            // 시간대별 접속 통계 (히트맵용, KST 기준)
+            try {
+                const kstHour = new Date(Date.now() + 9 * 60 * 60 * 1000).getUTCHours();
+                database.ref('stats/hourlyJoins/' + kstHour).transaction(cur => (cur || 0) + 1);
+            } catch(e) { console.warn('hourlyJoins write failed:', e.message); }
             // 대화 시작 → 대기자 목록에서 제거
             if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).remove();
             document.getElementById('waiting-count-bar').style.display = 'none';
