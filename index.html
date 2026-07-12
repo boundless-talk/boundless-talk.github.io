@@ -1654,7 +1654,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
 
 
-            <div id="pay-translation-feature" style="font-size:11px; color:rgba(0,229,255,0.7); text-align:center; margin:4px 0 10px; letter-spacing:0.3px;">✦ + 실시간 번역 포함</div>
             <hr id="pay-modal-hr" style="border:none; border-top:1px solid rgba(255,255,255,0.07); margin:6px 0 8px;">
             <button id="pay-modal-close" onclick="document.getElementById('payment-modal').style.display='none'" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.25); font-size:12px; cursor:pointer; border-radius:10px;" id="pay-modal-close-btn">닫기</button>
             <button id="pay-modal-leave" style="width:100%; padding:11px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; border-radius:10px;">End conversation</button>
@@ -1686,7 +1685,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
             <!-- 플랜 변경 -->
             <button onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; margin-bottom:8px;">🔄 <span id="sub-btn-change">플랜 변경하기</span></button>
-            <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:2px; text-decoration:underline;" id="sub-btn-refund">💸 환불 요청</button>
+            <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:2px; text-decoration:underline;" id="sub-btn-refund">구독 취소하기</button>
             <button onclick="document.getElementById('subscription-modal').classList.remove('active')" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.15); font-size:12px; cursor:pointer; margin-top:2px;" id="sub-btn-close">닫기</button>
         </div>
     </div>
@@ -2071,11 +2070,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payModalSub: "Keep the conversation going",
         payModalClose: "Close",
         payPopular: "Popular",
-        payTranslationFeature: "✦ + Real-time Translation included",
-        payMonthlyTitle: "Monthly Plan",
+        payMonthlyTitle: "Monthly Plan  +  Real-time Translation",
         payMonthlyDesc: "2 hrs/day for a month",
         payMonthlyPeriod: "/ mo",
-        payWeeklyTitle: "Weekly Plan",
+        payWeeklyTitle: "Weekly Plan  +  Real-time Translation",
         payWeeklyDesc: "2 hrs/day for a week",
         payWeeklyPeriod: "/ wk",
         payLeave: "End conversation",
@@ -2193,11 +2191,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payModalSub: "대화를 계속 이어가보세요",
         payModalClose: "닫기",
         payPopular: "인기",
-        payTranslationFeature: "✦ + 실시간 번역 포함",
-        payMonthlyTitle: "월간 구독권",
+        payMonthlyTitle: "월간 구독권  +  실시간번역 포함",
         payMonthlyDesc: "매일 2시간 통화 (한 달간)",
         payMonthlyPeriod: "/ 월",
-        payWeeklyTitle: "주간 구독권",
+        payWeeklyTitle: "주간 구독권  +  실시간번역 포함",
         payWeeklyDesc: "매일 2시간 통화 (7일간)",
         payWeeklyPeriod: "/ 주",
         payLeave: "대화 종료",
@@ -2604,7 +2601,6 @@ function updateUI() {
         const pmMonthlyPeriod = document.getElementById('pay-monthly-period'); if (pmMonthlyPeriod) pmMonthlyPeriod.textContent = lang.payMonthlyPeriod;
         const pmWeeklyPeriod = document.getElementById('pay-weekly-period'); if (pmWeeklyPeriod) pmWeeklyPeriod.textContent = lang.payWeeklyPeriod;
         const pmLeave = document.getElementById('pay-modal-leave'); if (pmLeave) pmLeave.textContent = lang.payLeave;
-        const pmTranslation = document.getElementById('pay-translation-feature'); if (pmTranslation) pmTranslation.textContent = lang.payTranslationFeature;
         const s1 = document.getElementById('intro2-s1'); if (s1) s1.innerHTML = lang.intro2S1;
         const s2 = document.getElementById('intro2-s2'); if (s2) s2.innerHTML = lang.intro2S2;
         const s3 = document.getElementById('intro2-s3'); if (s3) s3.innerHTML = lang.intro2S3;
@@ -2742,7 +2738,7 @@ function updateUI() {
         const aboutNavBtn = document.getElementById('about-nav-btn');
         if (aboutNavBtn) aboutNavBtn.textContent = currentLang === 'ko' ? '서비스소개' : 'About';
         const refundBtn = document.getElementById('sub-btn-refund');
-        if (refundBtn) refundBtn.innerHTML = currentLang === 'ko' ? '💸 환불 요청' : '💸 Request a Refund';
+        if (refundBtn) refundBtn.innerHTML = currentLang === 'ko' ? '구독 취소하기' : 'Cancel Subscription';
         const rm = document.getElementById('refund-modal-title');
         if (rm) rm.textContent = isKo ? '어떤 점이 불편하셨나요?' : 'What was the issue?';
         const rs = document.getElementById('refund-modal-subtitle');
