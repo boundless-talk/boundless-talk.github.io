@@ -3867,8 +3867,12 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             // 내 Agora UID → Firebase UID 매핑을 채널 경로에 등록 (상대방이 참조용)
             if (firebaseUser) {
                 try {
-                    await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set({ fbUid: firebaseUser.uid, guest: !!isGuest });
+                    await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
                     database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+                    if (isGuest) {
+                        database.ref(`channels/${safeAgoraChannelId}/guestFlags/${firebaseUser.uid}`).set(true);
+                        database.ref(`channels/${safeAgoraChannelId}/guestFlags/${firebaseUser.uid}`).onDisconnect().remove();
+                    }
                 } catch(e) { console.warn('channels write failed (may be permission):', e.message); }
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
@@ -4007,10 +4011,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (!agoraToFirebaseUid[user.uid]) {
                 try {
                     const snap = await database.ref(`channels/${safeAgoraChannelId}/members/${user.uid}`).once('value');
-                    const memberVal = snap.val();
-                    const fbUid = memberVal && typeof memberVal === 'object' ? memberVal.fbUid : memberVal;
-                    if (memberVal && typeof memberVal === 'object' && memberVal.guest) uidToIsGuest[fbUid] = true;
+                    const fbUid = snap.val();
                     if (fbUid) {
+                        database.ref(`channels/${safeAgoraChannelId}/guestFlags/${fbUid}`).once('value').then(gs => { if (gs.val()) uidToIsGuest[fbUid] = true; });
                         agoraToFirebaseUid[user.uid] = fbUid;
                         // 랭크 이모지 로드
                         database.ref('users/' + fbUid + '/badges').once('value').then(bs => {
