@@ -6027,6 +6027,8 @@ function toggleRankDesc(id) {
 // ── 설정 모달 ──
 let _settingsBadgeRef = null;
 let _settingsAllBadgeRef = null;
+let _settingsAllBadgeData = null; // 랭크 재렌더링용 캐시 (언어 토글 시 DB 재조회 없이 사용)
+let _settingsDailyBadgeData = null; // 오늘 받은 배지 재렌더링용 캐시
 function openSettingsModal() {
     const overlay = document.getElementById('settings-modal-overlay');
     overlay.classList.add('open');
@@ -6056,7 +6058,40 @@ function updateSettingsModalLang() {
     document.getElementById('settings-badge-label').textContent = isKo ? '오늘 받은 배지' : 'Badges received today';
     document.getElementById('settings-rank-label').textContent = isKo ? '내 랭크' : 'My rank';
     document.getElementById('settings-rank-sub').textContent = isKo ? '누적 배지' : 'Total badges';
+    renderSettingsRank();
+    renderSettingsDailyBadges();
 }
+
+// currentLang을 매번 새로 읽어서 렌더링 — 언어 토글 시에도 정확히 반영됨
+function renderSettingsRank() {
+    if (!_settingsAllBadgeData) return;
+    const isKo = currentLang === 'ko';
+    const rankNames = { ko: ['뉴비','떠오르는 토커','이야기꾼','여운이 남는','영혼의 단짝'], en: ['Newcomer','Rising Talker','Storyteller','Lingering Voice','Soulmate'] };
+    const allB = _settingsAllBadgeData;
+    const rankTotal = (allB.manner||0)+(allB.logic||0)+(allB.humor||0)+(allB.empathy||0)+(allB.passion||0);
+    const rankIdx = rankTotal>=200?4: rankTotal>=100?3: rankTotal>=50?2: rankTotal>=10?1:0;
+    document.getElementById('settings-rank-emoji').textContent = getRankEmoji(rankTotal);
+    document.getElementById('settings-rank-name').textContent = rankNames[isKo?'ko':'en'][rankIdx];
+    document.getElementById('settings-rank-sub').textContent = (isKo ? '누적 배지 ' : 'Total badges ') + rankTotal;
+}
+
+function renderSettingsDailyBadges() {
+    if (!_settingsDailyBadgeData) return;
+    const isKo = currentLang === 'ko';
+    const badgeMap = { manner:'👍', logic:'🧠', humor:'🤣', empathy:'🤗', passion:'🔥' };
+    const badgeName = { manner:{ko:'친절',en:'NICE'}, logic:{ko:'논리',en:'LOGIC'}, humor:{ko:'유머',en:'FUN'}, empathy:{ko:'공감',en:'WARM'}, passion:{ko:'열정',en:'BOLD'} };
+    const daily = _settingsDailyBadgeData;
+    let total = 0;
+    const chips = [];
+    Object.entries(badgeMap).forEach(([k, emoji]) => {
+        const cnt = daily[k] || 0;
+        if (cnt > 0) { total += cnt; chips.push(emoji + ' ' + badgeName[k][isKo ? 'ko' : 'en'] + (cnt > 1 ? ' x' + cnt : '')); }
+    });
+    document.getElementById('settings-badge-count').textContent = total;
+    const chipsEl = document.getElementById('settings-badge-chips');
+    chipsEl.innerHTML = chips.map(c => '<span class="settings-badge-chip">' + c + '</span>').join('');
+}
+
 async function loadSettingsMyPage() {
     const uid = auth.currentUser ? auth.currentUser.uid : null;
     const isKo = currentLang === 'ko';
@@ -6070,36 +6105,20 @@ async function loadSettingsMyPage() {
     const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
     const today = kst.toISOString().slice(0, 10);
 
-    const rankNames = { ko: ['뉴비','떠오르는 토커','이야기꾼','여운이 남는','영혼의 단짝'], en: ['Newcomer','Rising Talker','Storyteller','Lingering Voice','Soulmate'] };
-    const badgeMap = { manner:'👍', logic:'🧠', humor:'🤣', empathy:'🤗', passion:'🔥' };
-    const badgeName = { manner:{ko:'친절',en:'NICE'}, logic:{ko:'논리',en:'LOGIC'}, humor:{ko:'유머',en:'FUN'}, empathy:{ko:'공감',en:'WARM'}, passion:{ko:'열정',en:'BOLD'} };
-
     // 내 랭크 — 실시간 (리스너 먼저 등록)
     if (_settingsAllBadgeRef) { _settingsAllBadgeRef.off(); }
     _settingsAllBadgeRef = database.ref('users/' + uid + '/badges');
     _settingsAllBadgeRef.on('value', snap => {
-        const allB = snap.val() || {};
-        const rankTotal = (allB.manner||0)+(allB.logic||0)+(allB.humor||0)+(allB.empathy||0)+(allB.passion||0);
-        const rankIdx = rankTotal>=200?4: rankTotal>=100?3: rankTotal>=50?2: rankTotal>=10?1:0;
-        document.getElementById('settings-rank-emoji').textContent = getRankEmoji(rankTotal);
-        document.getElementById('settings-rank-name').textContent = rankNames[isKo?'ko':'en'][rankIdx];
-        document.getElementById('settings-rank-sub').textContent = (isKo ? '누적 배지 ' : 'Total badges ') + rankTotal;
+        _settingsAllBadgeData = snap.val() || {};
+        renderSettingsRank();
     });
 
     // 오늘 받은 배지 — 실시간 (리스너 먼저 등록)
     if (_settingsBadgeRef) { _settingsBadgeRef.off(); }
     _settingsBadgeRef = database.ref('users/' + uid + '/dailyBadges/' + today);
     _settingsBadgeRef.on('value', snap => {
-        const daily = snap.val() || {};
-        let total = 0;
-        const chips = [];
-        Object.entries(badgeMap).forEach(([k, emoji]) => {
-            const cnt = daily[k] || 0;
-            if (cnt > 0) { total += cnt; chips.push(emoji + ' ' + badgeName[k][isKo ? 'ko' : 'en'] + (cnt > 1 ? ' x' + cnt : '')); }
-        });
-        document.getElementById('settings-badge-count').textContent = total;
-        const chipsEl = document.getElementById('settings-badge-chips');
-        chipsEl.innerHTML = chips.map(c => '<span class="settings-badge-chip">' + c + '</span>').join('');
+        _settingsDailyBadgeData = snap.val() || {};
+        renderSettingsDailyBadges();
     });
 
     // 잔여 시간 (await는 리스너 등록 후에 실행)
