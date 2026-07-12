@@ -1438,10 +1438,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="input-group" style="position:relative;">
             <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
             <!-- 핑퐁 모드 토글 (인풋 오른쪽 위) -->
-            <div id="pingpong-toggle-row" onclick="togglePingpongMode()" style="position:absolute;top:-11px;right:8px;display:flex;align-items:center;gap:5px;background:rgba(20,18,32,0.92);border:1px solid rgba(0,229,255,0.35);border-radius:20px;padding:3px 8px 3px 6px;cursor:pointer;user-select:none;z-index:2;width:130px;box-sizing:border-box;">
+            <div id="pingpong-toggle-row" onclick="togglePingpongMode()" style="position:absolute;top:-11px;right:8px;display:flex;align-items:center;gap:5px;background:rgba(20,18,32,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:3px 8px 3px 7px;cursor:pointer;user-select:none;z-index:2;white-space:nowrap;">
                 <span style="font-size:12px;">🏓</span>
-                <span id="pp-toggle-sub" style="font-size:10px;font-weight:600;color:#ffd166;white-space:nowrap;flex:1;overflow:hidden;text-overflow:ellipsis;">PING PONG</span>
-                <div class="pp-switch pp-switch-badge" id="pp-switch"><div class="pp-switch-thumb"></div></div>
+                <span id="pp-toggle-sub" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);white-space:nowrap;">PING PONG</span>
+                <span id="pp-onoff-tag" style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);border-radius:10px;padding:1px 6px;">OFF</span>
             </div>
         </div>
 
@@ -4237,14 +4237,23 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     // ── 핑퐁 모드 토글 ──
     function togglePingpongMode() {
         pingpongMode = !pingpongMode;
-        const sw = document.getElementById('pp-switch');
+        const row = document.getElementById('pingpong-toggle-row');
         const sub = document.getElementById('pp-toggle-sub');
+        const tag = document.getElementById('pp-onoff-tag');
         if (pingpongMode) {
-            sw.classList.add('on');
             sub.textContent = '1m30s';
+            sub.style.color = '#ffd166';
+            tag.textContent = 'ON';
+            tag.style.color = '#000';
+            tag.style.background = '#00e5ff';
+            row.style.border = '1px solid rgba(0,229,255,0.45)';
         } else {
-            sw.classList.remove('on');
             sub.textContent = 'PING PONG';
+            sub.style.color = 'rgba(255,255,255,0.3)';
+            tag.textContent = 'OFF';
+            tag.style.color = 'rgba(255,255,255,0.18)';
+            tag.style.background = 'rgba(255,255,255,0.06)';
+            row.style.border = '1px solid rgba(255,255,255,0.12)';
         }
     }
 
@@ -4437,10 +4446,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         document.getElementById('leave-btn').click();
         setTimeout(() => {
             pingpongMode = false;
-            const sw = document.getElementById('pp-switch');
-            if (sw) sw.classList.remove('on');
             const sub = document.getElementById('pp-toggle-sub');
-            if (sub) sub.textContent = 'PING PONG';
+            const tag = document.getElementById('pp-onoff-tag');
+            const row = document.getElementById('pingpong-toggle-row');
+            if (sub) { sub.textContent = 'PING PONG'; sub.style.color = 'rgba(255,255,255,0.3)'; }
+            if (tag) { tag.textContent = 'OFF'; tag.style.color = 'rgba(255,255,255,0.18)'; tag.style.background = 'rgba(255,255,255,0.06)'; }
+            if (row) row.style.border = '1px solid rgba(255,255,255,0.12)';
             if (savedTopic) {
                 const topicInput = document.getElementById('topic-input');
                 if (topicInput) topicInput.value = savedTopic;
