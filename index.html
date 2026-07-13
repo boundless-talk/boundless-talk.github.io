@@ -5373,7 +5373,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 const expires = new Date(sub.expiresAt);
                 const daysInPlan = sub.plan === 'weekly' ? 7 : 30;
                 const startedAt = new Date(expires.getTime() - daysInPlan * 86400000);
-                isWithin7Days = (Date.now() - startedAt.getTime()) <= 7 * 86400000;
+                isWithin14Days = (Date.now() - startedAt.getTime()) <= 7 * 86400000;
             }
 
             await database.ref('refundRequests/' + user.uid + '_' + Date.now()).set({
