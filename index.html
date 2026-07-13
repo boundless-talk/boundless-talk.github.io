@@ -3934,15 +3934,24 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 dbg('2. getUserMedia 시도');
                 micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 dbg('3. getUserMedia 성공');
-            } catch(permErr) {
-                dbg('마이크 권한 실패: ' + permErr.message);
-                alert(currentLang === 'ko'
-                    ? '마이크 권한을 허용해 주세요.'
-                    : 'Please allow microphone access.');
+                        } catch(permErr) {
+                dbg('마이크 권한 실패: ' + permErr.name + ' - ' + permErr.message);
+                let micErrMsg;
+                if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
+                    micErrMsg = currentLang === 'ko' ? '마이크 장치를 찾을 수 없습니다.' : 'No microphone device found.';
+                } else if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+                    micErrMsg = currentLang === 'ko' ? '마이크 권한을 허용해 주세요.' : 'Please allow microphone access.';
+                } else if (permErr.name === 'NotReadableError' || permErr.name === 'TrackStartError') {
+                    micErrMsg = currentLang === 'ko' ? '다른 앱이 마이크를 사용 중입니다.' : 'Microphone is being used by another app.';
+                } else {
+                    micErrMsg = currentLang === 'ko' ? '마이크에 접근할 수 없습니다.' : 'Unable to access microphone.';
+                }
+                alert(micErrMsg);
                 isJoining = false;
                 document.getElementById('join-btn').disabled = false;
                 return;
             }
+
             dbg('4. custom audio track 생성 시도');
             const micTrack = micStream.getAudioTracks()[0];
             localAudioTrack = AgoraRTC.createCustomAudioTrack({ mediaStreamTrack: micTrack });
