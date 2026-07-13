@@ -3929,24 +3929,30 @@ document.getElementById('max-people-group').style.visibility = "hidden";
         try {
             dbg('1. 시작');
             // iOS Safari: getUserMedia로 직접 스트림 획득 후 Agora custom track으로 사용
-              let micStream;
+                        let micStream;
             try {
                 dbg('2. getUserMedia 시도');
                 micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
                 dbg('3. getUserMedia 성공');
             } catch(permErr) {
-                dbg('마이크 실패, 무음 트랙으로 대체 (테스트 모드): ' + permErr.name + ' - ' + permErr.message);
-                // ⚠️ TEMP: 테스트 전용 — 마이크 없어도 무음 트랙으로 입장 허용
-                const testCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const dest = testCtx.createMediaStreamDestination();
-                const oscillator = testCtx.createOscillator();
-                const gainNode = testCtx.createGain();
-                gainNode.gain.value = 0; // 완전 무음
-                oscillator.connect(gainNode);
-                gainNode.connect(dest);
-                oscillator.start();
-                micStream = dest.stream;
+                dbg('마이크 권한 실패: ' + permErr.name + ' - ' + permErr.message);
+                let micErrMsg;
+                if (permErr.name === 'NotFoundError' || permErr.name === 'DevicesNotFoundError') {
+                    micErrMsg = currentLang === 'ko' ? '마이크 장치를 찾을 수 없습니다.' : 'No microphone device found.';
+                } else if (permErr.name === 'NotAllowedError' || permErr.name === 'PermissionDeniedError') {
+                    micErrMsg = currentLang === 'ko' ? '마이크 권한을 허용해 주세요.' : 'Please allow microphone access.';
+                } else if (permErr.name === 'NotReadableError' || permErr.name === 'TrackStartError') {
+                    micErrMsg = currentLang === 'ko' ? '다른 앱이 마이크를 사용 중입니다.' : 'Microphone is being used by another app.';
+                } else {
+                    micErrMsg = currentLang === 'ko' ? '마이크에 접근할 수 없습니다.' : 'Unable to access microphone.';
+                }
+                alert(micErrMsg);
+                isJoining = false;
+                document.getElementById('join-btn').disabled = false;
+                return;
             }
+
+
 
 
             dbg('4. custom audio track 생성 시도');
