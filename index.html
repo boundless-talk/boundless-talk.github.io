@@ -98,19 +98,20 @@
         }
 
         /* ── 인트로 화면 ── */
-        #intro-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-gradient);
-            z-index: 5000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            text-align: center;
-            padding: 120px 30px 40px;
-            opacity: 1;
-        }
+#intro-screen {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-gradient);
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    padding: max(120px, calc(env(safe-area-inset-top) + 100px)) 30px max(40px, env(safe-area-inset-bottom)) 30px;
+    opacity: 1;
+}
+
         @keyframes fadeInIntro {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
