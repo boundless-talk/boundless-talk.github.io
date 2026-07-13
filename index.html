@@ -67,7 +67,8 @@
             margin: 0;
             overflow-x: hidden;
             position: relative;
-            padding: 20px;
+            padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)) 20px;
+
         }
         body.room-open { overflow: hidden; }
 
