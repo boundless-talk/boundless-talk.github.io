@@ -1300,8 +1300,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- How It Works 팝업 -->
     <div id="intro-screen-2" class="modal-overlay">
         <div class="modal-content" style="max-width:400px; max-height:85vh; overflow-y:auto;">
-            <div class="intro-title" style="font-size:18px; letter-spacing:3px; margin-bottom:24px; text-align:center;" id="intro2-title">HOW IT WORKS</div>
-            <div id="intro2-steps" style="text-align:left; margin-bottom:28px; display:flex; flex-direction:column; gap:20px;">
+            <div class="intro-title" style="font-size:18px; letter-spacing:3px; margin-bottom:36px; text-align:center;" id="intro2-title">HOW IT WORKS</div>
+            <div id="intro2-steps" style="text-align:left; margin-bottom:14px; display:flex; flex-direction:column; gap:20px;">
                 <div class="intro2-step"><span class="intro2-num">01</span><p id="intro2-s1"><strong>Pick a Topic</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">02</span><p id="intro2-s2"><strong>Fuel the Chat</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3"><strong>Tag &amp; Collect</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and unlock unique Talk Badges!</span></p></div>
@@ -2463,6 +2463,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         privateChannelAlert: (name) => `Connecting to private channel with ${name}...`,
         roomHeaderLabel: "Conversation Topic",
         icebrkLabel: "Icebreaker",
+        convoTipLabel: "Conversation tip",
+        convoTipHint: "Tap for next tip →",
         roomPartTitle: "Participants",
         roomLeaveBtn: "🚪 LEAVE",
         roomReportBtn: "🚨 REPORT",
@@ -2584,6 +2586,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         privateChannelAlert: (name) => `${name} 님과의 비밀 채널로 연결합니다...`,
         roomHeaderLabel: "대화 주제",
         icebrkLabel: "아이스브레이킹 제안",
+        convoTipLabel: "대화 팁",
+        convoTipHint: "탭하면 다음 팁 →",
         roomPartTitle: "참여자",
         roomLeaveBtn: "🚪 대화방 나가기",
         roomReportBtn: "🚨 신고하기",
@@ -3710,8 +3714,8 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             document.getElementById('icebreaker-sub').textContent = pick.sub;
             const tips = CONVO_TIPS[currentLang] || CONVO_TIPS.ko;
             document.getElementById('convo-tip-text').textContent = tips[convoTipIndex % tips.length];
-            document.getElementById('convo-tip-label').textContent = currentLang === 'ko' ? '대화 팁' : 'Conversation tip';
-            document.getElementById('convo-tip-hint').textContent = currentLang === 'ko' ? '탭하면 다음 팁 →' : 'Tap for next tip →';
+            document.getElementById('convo-tip-label').textContent = textData[currentLang].convoTipLabel;
+            document.getElementById('convo-tip-hint').textContent = textData[currentLang].convoTipHint;
         }
     });
 
@@ -4374,6 +4378,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const lang = textData[currentLang];
         document.getElementById('room-header-label').textContent = lang.roomHeaderLabel;
         document.getElementById('icebreaker-label').textContent = lang.icebrkLabel;
+        document.getElementById('convo-tip-label').textContent = lang.convoTipLabel;
+        document.getElementById('convo-tip-hint').textContent = lang.convoTipHint;
         document.getElementById('room-part-title').textContent = lang.roomPartTitle;
         document.getElementById('room-leave-btn').textContent = lang.roomLeaveBtn;
         document.getElementById('room-report-btn').textContent = lang.roomReportBtn;
