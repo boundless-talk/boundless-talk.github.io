@@ -1485,7 +1485,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <button id="join-btn" disabled>Start Talk</button>
         <div id="waiting-count-bar" style="display:none; align-items:center; justify-content:center; gap:8px; margin-top:10px; font-size:13px; color:rgba(255,255,255,0.45);">
             <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#00e5ff; animation:pulse-dot 1.4s infinite;"></span>
-            <span id="waiting-count-text">현재 대화 상대를 찾는 중인 사람이 없어요.</span>
+            <span id="waiting-count-text">아직 대화를 시작할 사람이 없어요.</span>
         </div>
         <button id="report-btn">🚨 Report Toxic User</button>
         <button id="leave-btn">Leave Room</button>
@@ -2475,9 +2475,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         speechStyleBadgeCasual: "Friendly",
         speechStyleBadgePolite: "Polite",
         liveTopicsLabel: "Topics in conversation",
-        waitingNone: "No one is looking for a conversation partner right now.",
-        waitingOne: "1 person is also online and ready to chat!",
-        waitingMany: (n) => `${n} people are online and ready to chat!`,
+        waitingNone: "No one is ready to chat right now.",
+        waitingOne: "1 person is ready to chat!",
+        waitingMany: (n) => `${n} people are ready to chat!`,
         pwaBannerTitle: "Add to Home Screen for a better experience",
         pwaBannerDesc: "Launches instantly like an app — one tap and you're in.",
         pwaInstallBtn: "Add to Home Screen",
@@ -2598,9 +2598,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         speechStyleBadgeCasual: "친구처럼",
         speechStyleBadgePolite: "정중하게",
         liveTopicsLabel: "지금 대화 중인 주제",
-        waitingNone: "현재 대화 상대를 찾는 중인 사람이 없어요.",
-        waitingOne: "1명이 대화 상대를 찾고 있어요!",
-        waitingMany: (n) => `${n}명이 대화 상대를 찾고 있어요!`,
+        waitingNone: "아직 대화를 시작할 사람이 없어요.",
+        waitingOne: "1명이 대화 준비가 되었어요!",
+        waitingMany: (n) => `${n}명이 대화 준비가 되었어요!`,
         pwaBannerTitle: "홈 화면에 추가하고 더 편하게 대화하세요",
         pwaBannerDesc: "앱처럼 빠르게 실행되고, 한 번의 터치로 바로 접속할 수 있습니다.",
         pwaInstallBtn: "홈 화면에 추가",
