@@ -109,7 +109,7 @@
     align-items: center;
     justify-content: flex-start;
     text-align: center;
-    padding: max(140px, calc(env(safe-area-inset-top) + 120px)) 30px max(40px, env(safe-area-inset-bottom)) 30px;
+    padding: max(70px, calc(env(safe-area-inset-top) + 50px)) 30px max(30px, env(safe-area-inset-bottom)) 30px;
     opacity: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -134,7 +134,7 @@
             text-transform: uppercase;
             color: #fff;
             text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2);
-            margin-bottom: 84px;
+            margin-bottom: 40px;
         }
         .intro-desc {
             font-size: 16px;
@@ -330,17 +330,17 @@
             width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
             justify-content: center;
-            padding: 40px 0;
+            padding: 24px 0;
         }
 
         .title-block {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 60px;
+            margin-bottom: 32px;
         }
 
-        h2 { font-size: 36px; font-weight: 700; letter-spacing: 8px; margin-bottom: 10px; text-transform: uppercase; text-align: center; color: #fff; text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2); }
+        h2 { font-size: 30px; font-weight: 700; letter-spacing: 6px; margin-bottom: 10px; text-transform: uppercase; text-align: center; color: #fff; text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2); }
 
         /* 추가된 서브타이틀 스타일 */
         .sub-title { font-size: 14px; color: rgba(255,255,255,0.6); text-align: center; margin-top: -4px; margin-bottom: 0; letter-spacing: 1px; }
@@ -1196,8 +1196,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         @media (max-width: 400px) {
             body { padding: 12px; }
 
-            .intro-title { font-size: 28px; letter-spacing: 5px; }
-            h2 { font-size: 28px; letter-spacing: 5px; }
+            .intro-title { font-size: 24px; letter-spacing: 4px; }
+            h2 { font-size: 22px; letter-spacing: 4px; }
 
             .badge-list { flex-wrap: wrap; gap: 8px; justify-content: center; }
             .badge-item { font-size: 12px; padding: 6px 10px; }
@@ -1205,8 +1205,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             .auth-btn-group { width: 100%; }
             .auth-form-panel { width: 100%; }
 
-            #main-container { padding: 20px 0; }
-            .title-block { margin-bottom: 80px; }
+            #main-container { padding: 16px 0; }
+            .title-block { margin-bottom: 30px; }
 
             .room-body { padding: 16px 14px; }
             .room-header { padding: 20px 16px 16px; }
@@ -1285,11 +1285,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 인트로 화면 -->
     <div id="intro-screen" style="display:none;">
         <div style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <img src="logo-transparent.png" alt="" style="position:absolute; width:220px; height:220px; opacity:0.45; clip-path:inset(0 0 30% 0); pointer-events:none; transform:translateY(-28px);">
-            <div class="intro-title" style="position:relative; z-index:1; white-space:nowrap; font-size:clamp(18px, 6vw, 38px); letter-spacing:clamp(3px, 1.5vw, 8px);">BOUNDLESS TALK</div>
+            <img src="logo-transparent.png" alt="" style="position:absolute; width:160px; height:160px; opacity:0.45; clip-path:inset(0 0 30% 0); pointer-events:none; transform:translateY(-20px);">
+            <div class="intro-title" style="position:relative; z-index:1; white-space:nowrap; font-size:clamp(16px, 5vw, 30px); letter-spacing:clamp(2px, 1.2vw, 6px);">BOUNDLESS TALK</div>
         </div>
-        <p class="intro-desc" id="intro-desc">Some conversations <strong style="color:var(--accent-color);">change you.</strong><br><br>Discover <strong style="color:var(--accent-color);">diverse perspectives.</strong><br><br>Driven by nothing but <strong style="color:#c9a84c;">shared topics.</strong><br>No boundaries of routine or background.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">A topic-driven live group voice discussion platform.</span><br><br>Ready for a conversation<br><strong style="color:var(--accent-color);">unlike any</strong> you've had before?</p>
-        <div style="margin-bottom: 24px;">
+        <p class="intro-desc" id="intro-desc" style="margin-top:10px; margin-bottom:14px;">Some conversations <strong style="color:var(--accent-color);">change you.</strong><br><br>Discover <strong style="color:var(--accent-color);">diverse perspectives.</strong><br><br>Driven by nothing but <strong style="color:#c9a84c;">shared topics.</strong><br>No boundaries of routine or background.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">A topic-driven live group voice discussion platform.</span><br><br>Ready for a conversation<br><strong style="color:var(--accent-color);">unlike any</strong> you've had before?</p>
+        <div style="margin-bottom: 10px;">
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
@@ -1364,8 +1364,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="main-container">
         <div class="title-block">
-            <img src="logo-transparent.png" alt="B-Talk" style="width:100px; height:100px; display:block; margin:0 auto -30px;">
-            <h2 id="app-title" style="font-size:28px; letter-spacing:6px;">BOUNDLESS TALK</h2>
+            <img src="logo-transparent.png" alt="B-Talk" style="width:72px; height:72px; display:block; margin:0 auto -22px;">
+            <h2 id="app-title" style="font-size:22px; letter-spacing:4px;">BOUNDLESS TALK</h2>
             <p id="app-subtitle" class="sub-title">talk about anything with anyone!</p>
         </div>
 
@@ -2190,7 +2190,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
 
     // 2. Global State Management
-    let currentLang = "en";
+    // 브라우저(기기) 언어가 한국어면 한국어, 그 외에는 영어를 기본값으로 사용
+    let currentLang = (() => {
+        const saved = localStorage.getItem('btalk_lang');
+        if (saved === 'ko' || saved === 'en') return saved;
+        const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+        return browserLang.startsWith('ko') ? 'ko' : 'en';
+    })();
     const AGORA_APP_ID = "71b6f8c1cb424be1b2b5480d447e69e2";
     const TOKEN_SERVER_URL = "https://b-talk-0gi0.onrender.com";
     const SIGNAL_SERVER_URL = "https://kvdb.io/YAPuhyeXZWiNidFcsstzqK/";
@@ -3698,6 +3704,8 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
 
     document.getElementById('lang-toggle-btn').addEventListener('click', () => {
         currentLang = (currentLang === "en") ? "ko" : "en";
+        localStorage.setItem('btalk_lang', currentLang);
+        document.documentElement.lang = currentLang;
         // 언어 전환 시 동물 레이블만 업데이트 (uid 캐시 유지)
         Object.keys(uidToAnimal).forEach(uid => {
             const hash = hashUid(String(uid));
@@ -5868,6 +5876,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     // 초기 실행 구동부 체인 링크
     window.addEventListener('DOMContentLoaded', () => {
+        document.documentElement.lang = currentLang;
         updateUI();
 
         // 주제 입력과 무관하게 인원 선택창은 항상 표시
