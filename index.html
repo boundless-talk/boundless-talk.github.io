@@ -1781,17 +1781,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <!-- 친구 요청 수신 배너 -->
     <!-- 혼자 대기 중 → 인연 레이더 켜두기 배너 -->
-    <div id="waitlist-banner" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:360px; background:rgba(15,15,22,0.97); border:1px solid rgba(0,229,255,0.2); border-radius:16px; padding:16px; z-index:9500; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
-        <div style="font-size:13px; font-weight:700; color:var(--accent-color); margin-bottom:6px;">📡 <span id="wl-title">지금은 이 주제를 공유할 사람이 없네요.</span></div>
+    <div id="waitlist-banner" class="glass-card" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:360px; border-radius:16px; padding:16px; z-index:9500;">
+        <div style="font-size:13px; font-weight:700; color:#00f0ff; margin-bottom:6px;">📡 <span id="wl-title">지금은 이 주제를 공유할 사람이 없네요.</span></div>
         <div style="font-size:11.5px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:12px;" id="wl-desc">24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 신호를 보내드릴게요.</div>
         <div style="display:flex; gap:8px; align-items:center;">
-            <button id="wl-enable-btn" onclick="subscribeWaitlist()" style="flex:3; background:var(--accent-color); color:#000; border:none; border-radius:8px; padding:12px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;"></button>
-            <button id="wl-close-btn" onclick="document.getElementById('waitlist-banner').style.display='none'" style="flex:1; background:transparent; border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.4); border-radius:8px; padding:9px 8px; font-size:11px; cursor:pointer; white-space:nowrap;"></button>
+            <button id="wl-enable-btn" class="intro2-start-btn" onclick="subscribeWaitlist()" style="flex:3; padding:12px; font-size:13px; white-space:nowrap; margin:0;"></button>
+            <button id="wl-close-btn" onclick="document.getElementById('waitlist-banner').style.display='none'" style="flex:1; background:transparent; border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.4); border-radius:8px; padding:9px 8px; font-size:11px; cursor:pointer; white-space:nowrap; margin:0;"></button>
         </div>
     </div>
 
     <!-- User B 대기 카운트다운 -->
-    <div id="waitlist-countdown" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:360px; background:rgba(15,15,22,0.97); border:1px solid rgba(180,100,255,0.25); border-radius:16px; padding:16px; z-index:9500; box-shadow:0 8px 32px rgba(0,0,0,0.5); text-align:center;">
+    <div id="waitlist-countdown" class="glass-card" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:360px; border-radius:16px; padding:16px; z-index:9500; text-align:center;">
         <div style="font-size:13px; font-weight:700; color:#b46fff; margin-bottom:6px;">🌌 당신이 보낸 신호가 은하수를 건너고 있어요.</div>
         <div style="font-size:11.5px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:10px;">이 키워드를 기다리던 상대에게 알림을 보냈습니다.<br>잠시만 나가지 말고 기다려 주세요.</div>
         <div id="wl-countdown-timer" style="font-size:32px; font-weight:800; color:#fff; letter-spacing:2px;">3:00</div>
