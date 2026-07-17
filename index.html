@@ -57,7 +57,10 @@
 
         body {
             font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
-            background: var(--bg-gradient);
+            background:
+                linear-gradient(180deg, rgba(10,10,15,0.5) 0%, rgba(10,10,15,0.55) 50%, rgba(10,10,15,0.8) 100%),
+                url('intro-bg.png') center center / cover no-repeat;
+            background-attachment: fixed;
             color: #ffffff;
             display: flex;
             flex-direction: column;
@@ -210,9 +213,9 @@
             box-shadow: 0 0 10px rgba(0,240,255,0.25);
         }
         .intro2-step p {
-            font-size: 14px;
+            font-size: 13.5px;
             color: rgba(255,255,255,0.7);
-            line-height: 1.7;
+            line-height: 1.5;
             margin: 0;
         }
         .intro2-step p strong {
@@ -238,36 +241,30 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.55), 0 0 40px rgba(255,170,90,0.08);
         }
         .intro2-subheader {
-            font-size: 10.5px;
+            font-size: 10px;
             font-weight: 600;
-            letter-spacing: 1.6px;
+            letter-spacing: 1.4px;
             color: rgba(0,240,255,0.6);
             text-align: center;
             text-transform: uppercase;
-            margin: -2px 0 28px;
+            margin: 0 0 18px;
         }
         .intro2-warn-bar {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             flex-wrap: wrap;
-            margin-top: 10px;
+            margin-top: 6px;
         }
         .intro2-warn-step {
             font-size: 10.5px;
             font-weight: 700;
             letter-spacing: 0.3px;
             color: #ffb020;
-            background: rgba(255,176,32,0.1);
-            border: 1px solid rgba(255,176,32,0.3);
-            border-radius: 20px;
-            padding: 4px 10px;
             white-space: nowrap;
         }
         .intro2-warn-step.intro2-warn-final {
             color: #ff5c7a;
-            background: rgba(255,92,122,0.1);
-            border-color: rgba(255,92,122,0.35);
         }
         .intro2-warn-arrow {
             color: rgba(255,255,255,0.25);
@@ -1376,10 +1373,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <!-- How It Works 팝업 -->
     <div id="intro-screen-2" class="modal-overlay">
-        <div class="modal-content" style="max-width:400px; max-height:85vh; overflow-y:auto;">
-            <div class="intro-title" style="font-size:18px; letter-spacing:3px; margin-bottom:6px; text-align:center;" id="intro2-title">WELCOME TO BOUNDLESS TALK</div>
+        <div class="modal-content" style="max-width:400px; max-height:94vh; overflow-y:auto; padding:24px 26px;">
+            <div class="intro-title" style="font-size:17px; line-height:1.35; letter-spacing:3px; margin-bottom:4px; text-align:center;" id="intro2-title">WELCOME TO<br>BOUNDLESS TALK</div>
             <div class="intro2-subheader" id="intro2-subheader">A TOPIC-DRIVEN GLOBAL VOICE DISCUSSION PLATFORM</div>
-            <div id="intro2-steps" style="text-align:left; margin-bottom:14px; display:flex; flex-direction:column; gap:20px;">
+            <div id="intro2-steps" style="text-align:left; margin-bottom:12px; display:flex; flex-direction:column; gap:14px;">
                 <div class="intro2-step"><span class="intro2-num">01</span><p id="intro2-s1"><strong>Pick a Topic</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">02</span><p id="intro2-s2"><strong>Fuel the Chat</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3"><strong>Tag &amp; Collect</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and unlock unique Talk Badges!</span></p></div>
@@ -2507,7 +2504,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         introDesc: `Some conversations <strong style="color:var(--accent-color);">change you.</strong><br><br>Discover <strong style="color:var(--accent-color);">diverse perspectives.</strong><br><br>Driven by nothing but <strong style="color:#c9a84c;">shared topics.</strong><br>No boundaries of routine or background.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">A topic-driven live group voice discussion platform.</span><br><br>Ready for a conversation<br><strong style="color:var(--accent-color);">unlike any</strong> you've had before?`,
         introBtn: "Get Started",
         intro2Btn: "Let's Start Talking",
-        intro2Title: "WELCOME TO BOUNDLESS TALK",
+        intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "A TOPIC-DRIVEN GLOBAL VOICE DISCUSSION PLATFORM",
         payModalTitle: "Too good to stop now? 😊",
         payModalSub: "Keep the conversation going",
@@ -2631,7 +2628,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         introDesc: `어떤 대화는 당신을 <strong style="color:var(--accent-color);">변화시킵니다</strong>.<br><br>평소라면 <strong style="color:var(--accent-color);">마주치지 않았을</strong> 새로운 관점과의 만남.<br><br>일상의 배경도, 조건의 장벽도 없이<br>오직 하나의 <strong style="color:#c9a84c;">공통된 주제</strong>로 연결됩니다.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">관심 주제 기반의 라이브 그룹 음성 토론 플랫폼</span><br><br>지금까지 <strong style="color:var(--accent-color);">겪어본 적 없는 대화</strong>를<br>시작할 준비가 되셨나요?`,
         introBtn: "시작하기",
         intro2Btn: "대화 시작하기",
-        intro2Title: "WELCOME TO BOUNDLESS TALK",
+        intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "전 세계와 연결되는 주제 기반 라이브 음성 토론 플랫폼",
         payModalTitle: "대화가 너무 좋았나요? 😊",
         payModalSub: "대화를 계속 이어가보세요",
@@ -3032,7 +3029,7 @@ function updateUI() {
         if (introDescEl) introDescEl.innerHTML = lang.introDesc;
         if (introBtnEl) introBtnEl.textContent = lang.introBtn;
         const intro2TitleEl = document.getElementById('intro-screen-2') && document.querySelector('#intro-screen-2 .intro-title');
-        if (intro2TitleEl) intro2TitleEl.textContent = lang.intro2Title;
+        if (intro2TitleEl) intro2TitleEl.innerHTML = lang.intro2Title;
         const intro2SubEl = document.getElementById('intro2-subheader');
         if (intro2SubEl) intro2SubEl.textContent = lang.intro2Subheader;
         const intro2StartBtn = document.getElementById('intro2-start-btn');
