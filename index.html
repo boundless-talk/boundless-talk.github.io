@@ -677,6 +677,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             padding: 20px;
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
+        .glass-card {
+            background:
+                linear-gradient(rgba(15,15,20,0.78), rgba(15,15,20,0.78)) padding-box,
+                linear-gradient(135deg, rgba(255,176,110,0.5), rgba(0,240,255,0.3) 45%, rgba(255,176,110,0.2) 100%) border-box;
+            border: 1px solid transparent;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.55), 0 0 40px rgba(255,170,90,0.08);
+        }
         .modal-content {
             background:
                 linear-gradient(rgba(15,15,20,0.75), rgba(15,15,20,0.75)) padding-box,
@@ -1989,22 +1998,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <span id="sub-time-text" style="display:none;"></span>
 
     <!-- 7분 결제 모달 -->
-    <div id="payment-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
-        <div style="background:#1a1a2e; border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:28px 24px 20px; width:90%; max-width:340px; margin:auto; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+    <div id="payment-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+        <div class="glass-card" style="border-radius:20px; padding:28px 24px 20px; width:90%; max-width:340px; margin:auto; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
             <div style="font-size:26px; text-align:center; margin-bottom:10px;">💬</div>
             <div style="font-size:17px; font-weight:700; color:rgba(255,255,255,0.92); text-align:center; margin-bottom:6px;" id="pay-modal-title">Too good to stop now? 😊</div>
             <div style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; margin-bottom:20px;" id="pay-modal-sub">Keep the conversation going</div>
 
             <!-- Monthly Plan -->
-            <div class="pay-plan-btn" id="pay-monthly" style="border:1.5px solid #00e5ff; background:rgba(0,229,255,0.06); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
+            <div class="pay-plan-btn" id="pay-monthly" style="border:1.5px solid #00f0ff; background:rgba(0,240,255,0.06); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; box-shadow:0 0 16px rgba(0,240,255,0.15);">
                 <div>
-                    <div id="pay-popular-badge" style="font-size:10px; background:rgba(0,229,255,0.15); color:#00e5ff; border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:4px;">Popular</div>
+                    <div id="pay-popular-badge" style="font-size:10px; background:rgba(0,240,255,0.15); color:#00f0ff; border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:4px;">Popular</div>
                     <div id="pay-monthly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9);">Monthly Plan</div>
                     <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;" id="pay-monthly-desc">2 hrs/day for a month</div>
                     <div id="pay-event-badge" style="font-size:10px; color:#ffcc00; margin-top:5px;"></div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="font-size:16px; font-weight:700; color:#00e5ff;">$4.99</div>
+                    <div style="font-size:16px; font-weight:700; color:#00f0ff;">$4.99</div>
                     <div id="pay-monthly-period" style="font-size:10px; color:rgba(255,255,255,0.35);">/ mo</div>
                 </div>
             </div>
