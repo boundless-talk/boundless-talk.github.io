@@ -102,7 +102,9 @@
 #intro-screen {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg-gradient);
+    background:
+        linear-gradient(180deg, rgba(10,10,15,0.4) 0%, rgba(10,10,15,0.45) 50%, rgba(10,10,15,0.7) 100%),
+        url('intro-bg.png') center center / cover no-repeat;
     z-index: 5000;
     display: flex;
     flex-direction: column;
@@ -133,21 +135,23 @@
             letter-spacing: 8px;
             text-transform: uppercase;
             color: #fff;
-            text-shadow: 0 0 30px rgba(0,229,255,0.5), 0 0 60px rgba(0,229,255,0.2);
+            text-shadow: 0 0 30px rgba(0,240,255,0.55), 0 0 60px rgba(0,240,255,0.25), 0 2px 10px rgba(0,0,0,0.5);
             margin-bottom: 56px;
         }
         .intro-desc {
             font-size: 16px;
-            color: rgba(255,255,255,0.65);
+            color: rgba(255,255,255,0.88);
             line-height: 1.7;
             max-width: 360px;
             margin-top: 24px;
             margin-bottom: 32px;
             letter-spacing: 0.3px;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.65), 0 0 20px rgba(255,255,255,0.14);
         }
         .intro-desc strong {
             color: var(--accent-color);
             font-weight: 600;
+            text-shadow: 0 0 16px rgba(0,229,255,0.5), 0 1px 6px rgba(0,0,0,0.5);
         }
         .intro-start-btn {
             width: auto !important;
@@ -192,9 +196,9 @@
         .intro2-num {
             font-size: 11px;
             font-weight: 700;
-            color: var(--accent-color);
-            background: rgba(0,229,255,0.1);
-            border: 1px solid rgba(0,229,255,0.25);
+            color: #00f0ff;
+            background: rgba(0,240,255,0.08);
+            border: 1px solid rgba(0,240,255,0.35);
             border-radius: 50%;
             width: 28px;
             height: 28px;
@@ -203,6 +207,7 @@
             justify-content: center;
             flex-shrink: 0;
             margin-top: 2px;
+            box-shadow: 0 0 10px rgba(0,240,255,0.25);
         }
         .intro2-step p {
             font-size: 14px;
@@ -220,6 +225,74 @@
         }
         #intro-screen-2.show {
             animation: fadeInIntro2 0.4s ease forwards;
+        }
+
+        /* 인트로2 모달 — 웜(노을) x 쿨(틸) 글래스모피즘 리디자인 */
+        #intro-screen-2 .modal-content {
+            background:
+                linear-gradient(rgba(15,15,20,0.75), rgba(15,15,20,0.75)) padding-box,
+                linear-gradient(135deg, rgba(255,176,110,0.5), rgba(0,240,255,0.3) 45%, rgba(255,176,110,0.2) 100%) border-box;
+            border: 1px solid transparent;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.55), 0 0 40px rgba(255,170,90,0.08);
+        }
+        .intro2-subheader {
+            font-size: 10.5px;
+            font-weight: 600;
+            letter-spacing: 1.6px;
+            color: rgba(0,240,255,0.6);
+            text-align: center;
+            text-transform: uppercase;
+            margin: -2px 0 28px;
+        }
+        .intro2-warn-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .intro2-warn-step {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: #ffb020;
+            background: rgba(255,176,32,0.1);
+            border: 1px solid rgba(255,176,32,0.3);
+            border-radius: 20px;
+            padding: 4px 10px;
+            white-space: nowrap;
+        }
+        .intro2-warn-step.intro2-warn-final {
+            color: #ff5c7a;
+            background: rgba(255,92,122,0.1);
+            border-color: rgba(255,92,122,0.35);
+        }
+        .intro2-warn-arrow {
+            color: rgba(255,255,255,0.25);
+            font-size: 11px;
+        }
+        .intro2-start-btn {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0,240,255,0.06);
+            border: 1px solid rgba(0,240,255,0.4);
+            color: #00f0ff;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 16px rgba(0,240,255,0.2);
+            transition: all 0.25s ease;
+        }
+        .intro2-start-btn:hover {
+            background: rgba(255,158,89,0.08);
+            border-color: rgba(255,158,89,0.5);
+            color: #ffb066;
+            box-shadow: 0 0 20px rgba(255,158,89,0.3);
+            transform: translateY(-1px);
         }
 
         /* 영구 정지 스크린 */
@@ -1304,14 +1377,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- How It Works 팝업 -->
     <div id="intro-screen-2" class="modal-overlay">
         <div class="modal-content" style="max-width:400px; max-height:85vh; overflow-y:auto;">
-            <div class="intro-title" style="font-size:18px; letter-spacing:3px; margin-bottom:36px; text-align:center;" id="intro2-title">HOW IT WORKS</div>
+            <div class="intro-title" style="font-size:18px; letter-spacing:3px; margin-bottom:6px; text-align:center;" id="intro2-title">WELCOME TO BOUNDLESS TALK</div>
+            <div class="intro2-subheader" id="intro2-subheader">A TOPIC-DRIVEN GLOBAL VOICE DISCUSSION PLATFORM</div>
             <div id="intro2-steps" style="text-align:left; margin-bottom:14px; display:flex; flex-direction:column; gap:20px;">
                 <div class="intro2-step"><span class="intro2-num">01</span><p id="intro2-s1"><strong>Pick a Topic</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">02</span><p id="intro2-s2"><strong>Fuel the Chat</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3"><strong>Tag &amp; Collect</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and unlock unique Talk Badges!</span></p></div>
-                <div class="intro2-step"><span class="intro2-num">04</span><p id="intro2-s4"><strong>Keep it Chill</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.<br><span style="color:#FF4D4D;">Warning → 24h Ban → Permanent Ban.</span></span></p></div>
+                <div class="intro2-step"><span class="intro2-num">04</span><p id="intro2-s4"><strong>Keep it Chill</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">Warning</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24h Ban</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">Permanent Ban</span></span></p></div>
             </div>
-            <button id="intro2-start-btn" onclick="startFromIntro()" style="width:100%; padding:14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:15px; font-weight:600; border-radius:12px; cursor:pointer; letter-spacing:0.5px; transition:all 0.2s;">Got it!</button>
+            <button id="intro2-start-btn" class="intro2-start-btn" onclick="startFromIntro()">Let's Start Talking</button>
         </div>
     </div>
 
@@ -2432,8 +2506,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMatch: "✓ Passwords match.",
         introDesc: `Some conversations <strong style="color:var(--accent-color);">change you.</strong><br><br>Discover <strong style="color:var(--accent-color);">diverse perspectives.</strong><br><br>Driven by nothing but <strong style="color:#c9a84c;">shared topics.</strong><br>No boundaries of routine or background.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">A topic-driven live group voice discussion platform.</span><br><br>Ready for a conversation<br><strong style="color:var(--accent-color);">unlike any</strong> you've had before?`,
         introBtn: "Get Started",
-        intro2Btn: "Got it!",
-        intro2Title: "HOW IT WORKS",
+        intro2Btn: "Let's Start Talking",
+        intro2Title: "WELCOME TO BOUNDLESS TALK",
+        intro2Subheader: "A TOPIC-DRIVEN GLOBAL VOICE DISCUSSION PLATFORM",
         payModalTitle: "Too good to stop now? 😊",
         payModalSub: "Keep the conversation going",
         payModalClose: "Close",
@@ -2449,7 +2524,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2S1: `<strong>Pick a Topic</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span>`,
         intro2S2: `<strong>Fuel the Chat</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span>`,
         intro2S3: `<strong>Tag &amp; Collect</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and unlock unique Talk Badges!</span>`,
-        intro2S4: `<strong>Keep it Chill</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.<br><span style="color:#FF4D4D;">Warning → 24h Ban → Permanent Ban.</span></span>`,
+        intro2S4: `<strong>Keep it Chill</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">Warning</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24h Ban</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">Permanent Ban</span></span>`,
         intro2S5: ``,
         intro2S6: ``,
         intro2S7: ``,
@@ -2555,8 +2630,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMatch: "✓ 비밀번호가 일치합니다.",
         introDesc: `어떤 대화는 당신을 <strong style="color:var(--accent-color);">변화시킵니다</strong>.<br><br>평소라면 <strong style="color:var(--accent-color);">마주치지 않았을</strong> 새로운 관점과의 만남.<br><br>일상의 배경도, 조건의 장벽도 없이<br>오직 하나의 <strong style="color:#c9a84c;">공통된 주제</strong>로 연결됩니다.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">관심 주제 기반의 라이브 그룹 음성 토론 플랫폼</span><br><br>지금까지 <strong style="color:var(--accent-color);">겪어본 적 없는 대화</strong>를<br>시작할 준비가 되셨나요?`,
         introBtn: "시작하기",
-        intro2Btn: "준비완료!",
-        intro2Title: "이용 방법",
+        intro2Btn: "대화 시작하기",
+        intro2Title: "WELCOME TO BOUNDLESS TALK",
+        intro2Subheader: "전 세계와 연결되는 주제 기반 라이브 음성 토론 플랫폼",
         payModalTitle: "대화가 너무 좋았나요? 😊",
         payModalSub: "대화를 계속 이어가보세요",
         payModalClose: "닫기",
@@ -2572,7 +2648,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2S1: `<strong>주제 던지기</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">지금 하고 싶은 이야기를 입력하거나, 이미 활기찬 대화방에 바로 조인하세요!</span>`,
         intro2S2: `<strong>10분의 몰입</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">매 세션 10분은 완전히 무료! 대화 흐름을 끊고 싶지 않다면 언제든 구독해보세요.</span>`,
         intro2S3: `<strong>크루 저장 &amp; 배지 겟</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">또 얘기하고 싶은 대화 상대를 저장하고, 나만의 유니크한 배지를 모아보세요!</span>`,
-        intro2S4: `<strong>매너가 필수</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">서로를 존중해주세요. 대화 흐름을 깨거나 불쾌감을 주면 바로 아웃입니다.<br><span style="color:#FF4D4D;">경고 → 24시간 정지 → 영구 정지</span></span>`,
+        intro2S4: `<strong>매너가 필수</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">서로를 존중해주세요. 대화 흐름을 깨거나 불쾌감을 주면 바로 아웃입니다.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">경고</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24시간 정지</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">영구 정지</span></span>`,
         intro2S5: ``,
         intro2S6: ``,
         intro2S7: ``,
@@ -2957,6 +3033,8 @@ function updateUI() {
         if (introBtnEl) introBtnEl.textContent = lang.introBtn;
         const intro2TitleEl = document.getElementById('intro-screen-2') && document.querySelector('#intro-screen-2 .intro-title');
         if (intro2TitleEl) intro2TitleEl.textContent = lang.intro2Title;
+        const intro2SubEl = document.getElementById('intro2-subheader');
+        if (intro2SubEl) intro2SubEl.textContent = lang.intro2Subheader;
         const intro2StartBtn = document.getElementById('intro2-start-btn');
         if (intro2StartBtn) intro2StartBtn.textContent = lang.intro2Btn;
         const pmTitle = document.getElementById('pay-modal-title'); if (pmTitle) pmTitle.textContent = lang.payModalTitle;
