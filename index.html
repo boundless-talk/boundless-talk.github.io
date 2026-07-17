@@ -1555,6 +1555,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
     <div id="live-topics-tags" style="display:flex; flex-wrap:wrap; gap:7px;"></div>
 </div>
+
+<div id="more-topics-modal" class="modal-overlay" onclick="if(event.target===this) closeMoreTopicsModal()">
+    <div style="width:100%; max-width:320px; background:rgba(255,255,255,0.03); border:1px solid rgba(0,229,255,0.25); border-radius:20px; padding:16px; box-shadow:0 0 24px rgba(0,229,255,0.08), 0 4px 20px rgba(0,0,0,0.3); position:relative;">
+        <span onclick="closeMoreTopicsModal()" style="position:absolute; top:14px; right:16px; color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer;">✕</span>
+        <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:2px;" id="more-topics-title">지금 대화 중인 주제</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:16px;" id="more-topics-sub">눌러서 바로 참여해보세요</div>
+        <div id="more-topics-list" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+    </div>
+</div>
             
         <div class="input-group" style="position:relative;">
             <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
@@ -2839,6 +2848,7 @@ database.ref('activeTopics').on('value', (snap) => {
     const bar = document.getElementById('live-topics-bar');
     const tagsEl = document.getElementById('live-topics-tags');
     if (!bar || !tagsEl) return;
+    allLiveTopics = topics;
     if (topics.length > 0 && !isJoined) {
         bar.style.display = 'block';
         tagsEl.innerHTML = '';
@@ -2849,10 +2859,49 @@ database.ref('activeTopics').on('value', (snap) => {
             btn.addEventListener('click', () => { document.getElementById('topic-input').value = t; });
             tagsEl.appendChild(btn);
         });
+        if (topics.length > 6) {
+            const moreBtn = document.createElement('button');
+            moreBtn.textContent = '+' + (topics.length - 6);
+            moreBtn.style.cssText = 'background:rgba(0,240,255,0.08);border:0.5px solid rgba(0,240,255,0.3);color:#00f0ff;border-radius:20px;padding:5px 13px;font-size:12px;font-weight:700;cursor:pointer;width:auto;';
+            moreBtn.addEventListener('click', openMoreTopicsModal);
+            tagsEl.appendChild(moreBtn);
+        }
+        const moreModal = document.getElementById('more-topics-modal');
+        if (moreModal && moreModal.classList.contains('active')) renderMoreTopicsList();
     } else {
         bar.style.display = 'none';
     }
 });
+
+let allLiveTopics = [];
+
+function renderMoreTopicsList() {
+    const list = document.getElementById('more-topics-list');
+    if (!list) return;
+    list.innerHTML = '';
+    allLiveTopics.forEach(t => {
+        const btn = document.createElement('button');
+        btn.textContent = t;
+        btn.style.cssText = 'background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.75);border-radius:20px;padding:6px 14px;font-size:12.5px;cursor:pointer;width:auto;';
+        btn.addEventListener('click', () => {
+            document.getElementById('topic-input').value = t;
+            closeMoreTopicsModal();
+        });
+        list.appendChild(btn);
+    });
+}
+
+function openMoreTopicsModal() {
+    renderMoreTopicsList();
+    document.getElementById('more-topics-modal').classList.add('active');
+}
+
+function closeMoreTopicsModal() {
+    document.getElementById('more-topics-modal').classList.remove('active');
+}
+// HTML의 inline onclick(✕ 닫기, 오버레이 클릭)은 전역 스코프에서 실행되므로 window에 노출
+window.openMoreTopicsModal = openMoreTopicsModal;
+window.closeMoreTopicsModal = closeMoreTopicsModal;
 
                 // 이메일 저장 (관리자 패널에서 식별용)
     if (user.email) {
