@@ -869,14 +869,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 /* 친구 요청 수신 알림 배너 */
 #friend-request-banner {
     position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-    background: #1a1f2e; border: 1px solid rgba(0,229,255,0.35);
     border-radius: 16px; padding: 16px 20px; z-index: 10500;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: calc(100% - 32px); max-width: 400px;
+    width: calc(100% - 32px); max-width: 400px;
     display: none; flex-direction: column; gap: 12px;
 }
 #friend-request-banner.show { display: flex; }
 .frb-top { display: flex; flex-direction: column; gap: 4px; }
-.frb-title { font-size: 14px; font-weight: 600; color: var(--accent-color); }
+.frb-title { font-size: 14px; font-weight: 600; color: #00f0ff; }
 .frb-desc { font-size: 12.5px; color: rgba(255,255,255,0.55); line-height: 1.4; }
 .frb-nickname-row { display: flex; align-items: center; gap: 8px; }
 .frb-nickname-row input {
@@ -887,10 +886,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 .frb-nickname-row input:focus { border-color: var(--accent-color); outline: none; }
 .frb-actions { display: flex; gap: 8px; }
 .frb-actions button { flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; margin: 0; }
-.frb-accept-btn { background: var(--accent-color); color: #000; }
-.frb-accept-btn:hover { background: #00cce0; }
-.frb-reject-btn { background: rgba(255,59,48,0.1); color: var(--danger-color); border: 1px solid rgba(255,59,48,0.25) !important; }
-.frb-reject-btn:hover { background: rgba(255,59,48,0.18); }
+.frb-reject-btn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1) !important; }
+.frb-reject-btn:hover { background: rgba(255,255,255,0.1); }
 
 /* 친구 목록 아이템 — 닉네임 편집 버튼 */
 .friend-edit-btn {
@@ -1798,7 +1795,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div id="wl-countdown-timer" style="font-size:32px; font-weight:800; color:#fff; letter-spacing:2px;">3:00</div>
     </div>
 
-    <div id="friend-request-banner">
+    <div id="friend-request-banner" class="glass-card">
         <div class="frb-top">
             <div class="frb-title" id="frb-title">💌 친구 요청이 왔어요!</div>
             <div class="frb-desc" id="frb-desc">통하는 게 있었나 봐요!<br>상대방이 '다음에 또 얘기하자'며 친구 요청을 슬쩍 던졌습니다.<br>잡을까요, 말까요?</div>
@@ -1808,7 +1805,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
         <div class="frb-actions">
             <button class="frb-reject-btn" id="frb-reject-btn" onclick="rejectFriendRequest()">즐거운 대화였어요, 안녕!</button>
-            <button class="frb-accept-btn" id="frb-accept-btn" onclick="acceptFriendRequest()">좋아요! 다음에 또 대화해요!</button>
+            <button class="frb-accept-btn intro2-start-btn" id="frb-accept-btn" onclick="acceptFriendRequest()">좋아요! 다음에 또 대화해요!</button>
         </div>
     </div>
 
@@ -4252,6 +4249,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             myUid = null;
             // 연결 해제 → 다시 대기자로 등록
             if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).set(true);
+            setSubtitleRequestSignal(false);
+            stopListenSubtitleRequesters();
             stopSubtitleRecognition();
             stopSubtitleListener();
             subtitlesEnabled = false;
@@ -4510,6 +4509,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         updateRoomParticipants();
         document.getElementById('room-screen').classList.add('active');
         document.body.classList.add('room-open');
+        listenSubtitleRequesters();
     }
 
     async function hideRoomScreen() {
@@ -4517,6 +4517,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         document.body.classList.remove('room-open');
         document.getElementById('topic-input').style.visibility = 'visible';
         stopConvoTip();
+        setSubtitleRequestSignal(false);
+        stopListenSubtitleRequesters();
         stopSubtitleRecognition();
         stopSubtitleListener();
         subtitlesEnabled = false;
@@ -4849,15 +4851,57 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             btn.textContent = isKo ? '💬 자막 켜짐 ●' : '💬 Translate ON ●';
             langRow.style.display = 'flex';
             list.style.display = 'flex';
-            startWhisperRecognition();
             listenSubtitles();
         } else {
             btn.classList.remove('on');
             btn.textContent = currentLang === 'ko' ? '💬 번역' : '💬 Translate';
             langRow.style.display = 'none';
             list.style.display = 'none';
-            stopSubtitleRecognition();
             stopSubtitleListener();
+        }
+        setSubtitleRequestSignal(subtitlesEnabled);
+        updateMicTranscriptionState();
+    }
+
+    // 상대방이 번역을 켜뒀으면, 내가 자막을 안 켜도 내 목소리는 인식되어야 함
+    let subtitleRequestersRef = null;
+    let peerWantsTranslation = false;
+
+    function setSubtitleRequestSignal(active) {
+        const cu = auth.currentUser;
+        if (!cu || !currentChannelName) return;
+        const ref = database.ref('subtitleRequesters/' + currentChannelName + '/' + cu.uid);
+        if (active) {
+            ref.set(true);
+            ref.onDisconnect().remove();
+        } else {
+            ref.remove().catch(()=>{});
+            ref.onDisconnect().cancel();
+        }
+    }
+
+    function listenSubtitleRequesters() {
+        if (!currentChannelName) return;
+        subtitleRequestersRef = database.ref('subtitleRequesters/' + currentChannelName);
+        subtitleRequestersRef.on('value', (snap) => {
+            const data = snap.val() || {};
+            const cu = auth.currentUser;
+            peerWantsTranslation = Object.keys(data).some(uid => !cu || uid !== cu.uid);
+            updateMicTranscriptionState();
+        });
+    }
+
+    function stopListenSubtitleRequesters() {
+        if (subtitleRequestersRef) { subtitleRequestersRef.off(); subtitleRequestersRef = null; }
+        peerWantsTranslation = false;
+    }
+
+    function updateMicTranscriptionState() {
+        const shouldRecord = subtitlesEnabled || peerWantsTranslation;
+        if (shouldRecord && !subtitleMicStream) {
+            startWhisperRecognition();
+        } else if (!shouldRecord && subtitleMicStream) {
+            stopSubtitleRecognition();
         }
     }
 
@@ -4879,7 +4923,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function startVADRecording() {
-        if (!subtitlesEnabled || !subtitleMicStream) return;
+        if (!subtitleMicStream) return;
 
         const VAD_THRESHOLD = 18;    // 이 볼륨 이상이면 "말하는 중"
         const SILENCE_DELAY = 550;   // 말 멈춘 후 이 시간(ms) 지나면 전송
@@ -4922,7 +4966,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             }
             recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
             recorder.onstop = async () => {
-                if (!subtitlesEnabled) return;
+                if (!subtitleMicStream) return;
                 const duration = Date.now() - recordingStart;
                 if (duration >= MIN_DURATION && chunks.length > 0) {
                     const blob = new Blob(chunks, { type: recorder.mimeType });
@@ -4948,11 +4992,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
 
         subtitleMicStream._vadInterval = setInterval(() => {
-            if (!subtitlesEnabled) {
-                clearInterval(subtitleMicStream._vadInterval);
-                stopRecording();
-                return;
-            }
+            // subtitleMicStream이 null이면 stopSubtitleRecognition()이 이미 인터벌/트랙을 정리한 상태
+            if (!subtitleMicStream) return;
             const vol = getVolume();
             if (vol > VAD_THRESHOLD) {
                 if (!isSpeaking) {
@@ -4987,14 +5028,13 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const text = (data.text || '').trim();
             if (!text) return;
             await database.ref('subtitles/' + currentChannelName + '/' + cu.uid).set({
-                text, lang: mySubtitleLang, ts: Date.now()
+                text, lang: document.getElementById('my-lang-select').value, ts: Date.now()
             });
             displaySubtitle(cu.uid, text, null, true);
         } catch(e) { console.warn('Whisper error:', e); }
     }
 
     function stopSubtitleRecognition() {
-        subtitlesEnabled = false;
         if (subtitleMicStream) {
             if (subtitleMicStream._vadInterval) clearInterval(subtitleMicStream._vadInterval);
             if (subtitleMicStream._vadCtx) subtitleMicStream._vadCtx.close().catch(()=>{});
