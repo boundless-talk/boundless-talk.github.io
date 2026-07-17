@@ -108,18 +108,9 @@ app.post('/transcribe', (req, res) => {
 
             const transcription = await client.audio.transcriptions.create({
                 file: await OpenAI.toFile(audioBuffer, `audio.${ext}`, { type: audioMime }),
-                model: 'whisper-1',
-                language: lang || undefined,
-                response_format: 'verbose_json'
+                model: 'gpt-4o-mini-transcribe',
+                language: lang || undefined
             });
-
-            // If no_speech_prob is high, it's silence/noise — discard
-            const noSpeechProb = transcription.segments && transcription.segments.length > 0
-                ? transcription.segments[0].no_speech_prob
-                : 0;
-            if (noSpeechProb > 0.5) {
-                return res.json({ text: '' });
-            }
 
             const raw = (transcription.text || '').trim();
 
