@@ -3688,7 +3688,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             // 서버에서 코드 생성 및 발송 (클라이언트는 코드를 알 수 없음)
             signupVerifyEmail = email;
 
-            const res = await fetch(TOKEN_SERVER_URL + "/sendVerifyEmail", {
+            const res = await fetch("https://b-talk.netlify.app/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
@@ -3714,7 +3714,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         const btn = document.getElementById('check-verify-btn');
         btn.disabled = true;
         try {
-            const res = await fetch(TOKEN_SERVER_URL + "/verifyEmailCode", {
+            const res = await fetch("https://b-talk.netlify.app/.netlify/functions/verifyEmailCode", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: signupVerifyEmail, code: inputCode })
@@ -3739,7 +3739,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
     document.getElementById('resend-verify-btn').addEventListener('click', async () => {
         if (!signupVerifyEmail) return;
         try {
-            await fetch(TOKEN_SERVER_URL + "/sendVerifyEmail", {
+            await fetch("https://b-talk.netlify.app/.netlify/functions/sendVerifyEmail", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: signupVerifyEmail })
