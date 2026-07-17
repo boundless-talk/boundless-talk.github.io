@@ -6121,7 +6121,6 @@ async function confirmFriendRequest() {
 
         alert(currentLang === 'ko' ? "✅ 친구 요청을 보냈습니다! 상대방이 수락하면 친구가 됩니다." : "✅ Friend request sent!");
         closeNicknameModal();
-        document.getElementById('btn-add-friend').disabled = true;
     } catch(e) {
         console.error("Friend request failed:", e);
     }
