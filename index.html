@@ -2327,6 +2327,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     // ── 핑퐁 모드 상태 ──
     let pingpongMode = false;       // 토글 ON/OFF
     let isPingpong = false;         // 현재 통화가 핑퐁 모드인지
+    let ppAutoSwitchInProgress = false; // 매칭 지연 → 일반 모드 자동 전환 중이면 대화 종료 세리머니(배지 모달) 생략
     let ppTurnQueue = [];           // Firebase UID 순서 배열
     let ppCurrentTurnIdx = 0;       // 현재 화자 인덱스
     let ppTurnStartedAt = 0;        // 턴 시작 타임스탬프
@@ -4753,6 +4754,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function ppSwitchToNormal() {
         document.getElementById('pp-slow-match-modal').style.display = 'none';
         const savedTopic = finalTopic || document.getElementById('topic-input').value;
+        ppAutoSwitchInProgress = true;
         document.getElementById('leave-btn').click();
         setTimeout(() => {
             pingpongMode = false;
@@ -4767,7 +4769,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 if (topicInput) topicInput.value = savedTopic;
                 setTimeout(() => {
                     document.getElementById('join-btn').click();
+                    ppAutoSwitchInProgress = false;
                 }, 300);
+            } else {
+                ppAutoSwitchInProgress = false;
             }
         }, 600);
     }
@@ -4838,6 +4843,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function toggleSubtitles() {
+        if (!isSubscribed && !subtitlesEnabled) {
+            const isKo = currentLang === 'ko';
+            alert(isKo ? '실시간 번역 서비스는 Premium 기능입니다.\nGo Premium에서 구독 후 이용하실 수 있어요 ✨' : 'Real-time translation is a Premium feature.\nSubscribe via Go Premium to unlock it ✨');
+            return;
+        }
         subtitlesEnabled = !subtitlesEnabled;
         const btn = document.getElementById('subtitle-toggle-btn');
         const langRow = document.getElementById('subtitle-lang-row');
@@ -5821,14 +5831,17 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
             // 모바일 ghost tap 방지: 터치 이벤트 소멸 후 모달 오픈
             // AI 대화 요약본 분석 브리핑 레이아웃 활성화
-            setTimeout(() => {
-                badgeSentThisSession = false;
-                document.getElementById('badge-modal').classList.add('active');
-                document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
-                document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
-                requestAISummary();
-                uidToAnimal = {};
-            }, 400);
+            // 핑퐁 매칭 지연 → 일반 모드 자동 전환인 경우, 실제 대화가 없었으므로 이 세리머니는 생략
+            if (!ppAutoSwitchInProgress) {
+                setTimeout(() => {
+                    badgeSentThisSession = false;
+                    document.getElementById('badge-modal').classList.add('active');
+                    document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
+                    document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
+                    requestAISummary();
+                    uidToAnimal = {};
+                }, 400);
+            }
 
         } catch (error) {
             console.error("Error occurred while leaving room:", error);
@@ -5846,16 +5859,18 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             try { document.getElementById('max-people-group').style.display = "flex"; } catch(e) {}
             try { document.getElementById('my-animal-tag').style.display = "none"; } catch(e) {}
             document.getElementById('matching-status').innerText = "";
-            // 에러가 나도 배지 모달은 열어줌
+            // 에러가 나도 배지 모달은 열어줌 (핑퐁 자동 전환 중이 아닐 때만)
             setupVoteTargetsUI();
-            setTimeout(() => {
-                badgeSentThisSession = false;
-                document.getElementById('badge-modal').classList.add('active');
-                document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
-                document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
-                requestAISummary();
-                uidToAnimal = {};
-            }, 400);
+            if (!ppAutoSwitchInProgress) {
+                setTimeout(() => {
+                    badgeSentThisSession = false;
+                    document.getElementById('badge-modal').classList.add('active');
+                    document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
+                    document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
+                    requestAISummary();
+                    uidToAnimal = {};
+                }, 400);
+            }
         }
     };
 
