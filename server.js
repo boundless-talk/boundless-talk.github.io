@@ -7,14 +7,17 @@ const { Resend } = require('resend');
 const admin = require('firebase-admin');
 
 // Firebase Admin 초기화
+let storageBucket;
 if (!admin.apps.length && process.env.FIREBASE_SERVICE_ACCOUNT) {
     try {
         const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
         admin.initializeApp({
             credential: admin.credential.cert(sa),
-            databaseURL: 'https://b-talk-login-default-rtdb.firebaseio.com/'
+            databaseURL: 'https://b-talk-login-default-rtdb.firebaseio.com/',
+            storageBucket: 'b-talk-login.firebasestorage.app'
         });
         console.log('Firebase Admin initialized');
+        try { storageBucket = admin.storage().bucket(); } catch (e) { console.error('Storage bucket init failed:', e.message); }
     } catch (e) {
         console.error('Firebase Admin init failed:', e.message);
     }
@@ -193,6 +196,114 @@ app.post('/summarize', (req, res) => {
     req.pipe(bb);
 });
 
+app.post('/reportUser', (req, res) => {
+    const bb = Busboy({ headers: req.headers });
+    const chunks = [];
+    let fields = {};
+
+    bb.on('file', (name, file) => {
+        file.on('data', chunk => chunks.push(chunk));
+    });
+
+    bb.on('field', (name, val) => { fields[name] = val; });
+
+    bb.on('close', async () => {
+        const audioBuffer = Buffer.concat(chunks);
+        const { reportedUid, reporterUid, channel, reason } = fields;
+
+        if (!reportedUid) {
+            return res.status(400).json({ error: 'Missing reportedUid' });
+        }
+
+        const hasAudio = audioBuffer.length > 0;
+        let audioStorageUrl = null;
+        let aiResult = null;
+
+        // 1. Storage 저장 (실패해도 계속)
+        if (hasAudio && storageBucket) {
+            try {
+                const storagePath = `reports/${reportedUid}/${Date.now()}.webm`;
+                const file = storageBucket.file(storagePath);
+                await file.save(audioBuffer, { metadata: { contentType: 'audio/webm' } });
+                const [signedUrl] = await file.getSignedUrl({
+                    action: 'read',
+                    expires: Date.now() + 7 * 24 * 60 * 60 * 1000
+                });
+                audioStorageUrl = signedUrl;
+            } catch (e) { console.error('[reportUser] storage error:', e.message); }
+        }
+
+        // 2. Gemini AI 유해성 분석 (실패해도 계속)
+        if (hasAudio && process.env.GEMINI_API_KEY) {
+            try {
+                const prompt = '이 음성 채팅 대화에 심한 욕설, 성희롱, 혐오 발언이 포함되어 있는지 판별하세요. JSON으로만 응답: {"isToxic": true/false, "reason": "간단한 이유"}';
+                const geminiRes = await fetch(
+                    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: prompt },
+                                    { inline_data: { mime_type: 'audio/webm', data: audioBuffer.toString('base64') } }
+                                ]
+                            }]
+                        })
+                    }
+                );
+                const geminiData = await geminiRes.json();
+                const text = (geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+                const jsonMatch = text.match(/\{[\s\S]*\}/);
+                if (jsonMatch) aiResult = JSON.parse(jsonMatch[0]);
+            } catch (e) { console.error('[reportUser] Gemini error:', e.message); }
+        }
+
+        // 3. Firebase DB 저장 (항상 실행)
+        if (!admin.apps.length) {
+            return res.status(503).json({ error: 'Firebase Admin not initialized' });
+        }
+        try {
+            const db = admin.database();
+            await db.ref('reports').push({
+                reporterUid: reporterUid || null,
+                reportedUid,
+                channel: channel || null,
+                reason: reason || (aiResult ? aiResult.reason : null) || null,
+                isToxic: aiResult ? aiResult.isToxic : null,
+                audioUrl: audioStorageUrl,
+                hasAudio,
+                submittedAt: Date.now(),
+                resolved: false
+            });
+
+            // 4. 유해성 감지 시 제재 (경고 → 24시간 정지 → 영구 정지)
+            if (aiResult && aiResult.isToxic) {
+                const userRef = db.ref('users/' + reportedUid);
+                const snap = await userRef.once('value');
+                const userData = snap.val() || {};
+                const reportCount = (userData.reportCount || 0) + 1;
+                const now = Date.now();
+
+                if (reportCount === 1) {
+                    await userRef.update({ reportCount, warnedAt: now, lastReportReason: aiResult.reason });
+                } else if (reportCount === 2) {
+                    await userRef.update({ reportCount, suspendedUntil: now + 86400000, suspendReason: aiResult.reason, lastReportReason: aiResult.reason });
+                } else {
+                    await userRef.update({ reportCount, banned: true, bannedAt: now, banReason: aiResult.reason });
+                }
+            }
+
+            res.json({ success: true, toxic: aiResult ? aiResult.isToxic : false });
+        } catch (e) {
+            console.error('[reportUser] DB error:', e.message);
+            res.status(500).json({ error: 'DB write failed' });
+        }
+    });
+
+    req.pipe(bb);
+});
+
 app.post('/getTopic', async (req, res) => {
     if (!process.env.GEMINI_API_KEY) {
         return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
@@ -234,11 +345,30 @@ app.get('/listmodels', async (req, res) => {
     res.json(d);
 });
 
+// 이메일을 Firebase RTDB 키로 쓸 수 있도록 안전하게 치환 (.#$[] 금지 문자)
+function emailToKey(email) {
+    return email.trim().toLowerCase().replace(/[.#$[\]]/g, '_');
+}
+
 app.post('/sendVerifyEmail', async (req, res) => {
-    const { email, code } = req.body;
-    if (!email || !code) return res.status(400).json({ error: 'email and code required' });
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'email required' });
     if (!process.env.RESEND_API_KEY) {
         return res.status(500).json({ error: 'Email not configured' });
+    }
+    if (!admin.apps.length) {
+        return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    }
+
+    // 서버에서 인증 코드 생성 및 10분 유효기간으로 저장 (클라이언트는 코드를 알 수 없음)
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    try {
+        await admin.database().ref('emailVerifications/' + emailToKey(email)).set({
+            code, expiresAt: Date.now() + 10 * 60 * 1000
+        });
+    } catch (e) {
+        console.error('sendVerifyEmail DB write failed:', e.message);
+        return res.status(500).json({ error: 'Failed to store verification code' });
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY);
@@ -290,6 +420,33 @@ app.post('/sendVerifyEmail', async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('sendVerifyEmail error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/verifyEmailCode', async (req, res) => {
+    const { email, code } = req.body;
+    if (!email || !code) return res.status(400).json({ error: 'email and code required' });
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+
+    try {
+        const ref = admin.database().ref('emailVerifications/' + emailToKey(email));
+        const snap = await ref.once('value');
+        const data = snap.val();
+
+        if (!data) return res.json({ ok: false, error: 'invalid_code' });
+        if (data.expiresAt < Date.now()) {
+            await ref.remove();
+            return res.json({ ok: false, error: 'code_expired' });
+        }
+        if (String(data.code) !== String(code)) {
+            return res.json({ ok: false, error: 'invalid_code' });
+        }
+
+        await ref.remove(); // 1회용 코드
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('verifyEmailCode error:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
