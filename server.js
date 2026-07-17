@@ -7,10 +7,10 @@ const nodemailer = require('nodemailer');
 const admin = require('firebase-admin');
 
 // Gmail SMTP (Resend 샌드박스는 계정 소유자 본인 메일로만 발송 가능해서, 임의 수신자에게 보내려면 이쪽을 씀)
-const gmailTransporter = (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)
+const gmailTransporter = (process.env.GMAIL_USER && process.env.GMAIL_PASS)
     ? nodemailer.createTransport({
         service: 'gmail',
-        auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD }
+        auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
     })
     : null;
 
