@@ -4768,6 +4768,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 const topicInput = document.getElementById('topic-input');
                 if (topicInput) topicInput.value = savedTopic;
                 setTimeout(() => {
+                    // 방금 같은 세션에서 이미 닉네임/스타일을 정했으므로, 재입력 모달 없이 바로 재입장
+                    nicknameConfirmed = true;
+                    speechStyleConfirmed = true;
                     document.getElementById('join-btn').click();
                     ppAutoSwitchInProgress = false;
                 }, 300);
