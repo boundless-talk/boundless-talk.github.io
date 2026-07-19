@@ -54,6 +54,93 @@ setInterval(async () => {
 
 const app = express();
 app.use(cors());
+
+// ── Dodo Payments (구독 결제) ──
+const DodoPaymentsSDK = require('dodopayments');
+const DodoPayments = DodoPaymentsSDK.default || DodoPaymentsSDK;
+
+const dodoClient = process.env.DODO_PAYMENTS_API_KEY
+    ? new DodoPayments({
+        bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+        webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_KEY,
+        environment: process.env.DODO_PAYMENTS_ENV || 'test_mode' // 실결제 전환 시 'live_mode'로 변경
+    })
+    : null;
+
+// Dodo 대시보드에서 만든 구독 상품(Product)의 ID를 여기에 매핑
+const DODO_PRODUCTS = {
+    monthly: process.env.DODO_PRODUCT_MONTHLY,
+    weekly: process.env.DODO_PRODUCT_WEEKLY
+};
+
+// 체크아웃 세션 생성 — 프론트엔드가 이 URL로 리다이렉트하면 Dodo 결제 페이지로 이동
+app.post('/dodo/create-checkout', express.json(), async (req, res) => {
+    if (!dodoClient) return res.status(503).json({ error: 'Dodo Payments not configured' });
+    const { plan, uid, email } = req.body;
+    if (!plan || !uid || !DODO_PRODUCTS[plan]) {
+        return res.status(400).json({ error: 'Invalid plan or missing uid' });
+    }
+    try {
+        const session = await dodoClient.checkoutSessions.create({
+            product_cart: [{ product_id: DODO_PRODUCTS[plan], quantity: 1 }],
+            customer: email ? { email } : undefined,
+            return_url: 'https://boundless-talk.github.io/B-Talk/?payment=success',
+            // metadata는 웹훅에서 그대로 돌려받으므로, uid/plan을 실어 보내면
+            // 웹훅 처리 시 어떤 유저의 어떤 플랜인지 바로 알 수 있음
+            metadata: { uid, plan }
+        });
+        res.json({ checkout_url: session.checkout_url });
+    } catch (e) {
+        console.error('[dodo/create-checkout] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 웹훅 — 결제 완료/갱신 시 Dodo가 이 URL로 이벤트를 보내면 Firebase에 구독 상태 반영
+// 서명 검증을 위해 raw body가 필요하므로, 아래 express.json() 전역 미들웨어보다 먼저 선언하고
+// 이 라우트에만 express.raw()를 사용함 (전역 json() 이 먼저 body를 파싱해버리면 서명 검증 불가)
+app.post('/dodo/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    if (!dodoClient) return res.status(503).send('Dodo Payments not configured');
+
+    let event;
+    try {
+        event = dodoClient.webhooks.unwrap(req.body.toString(), {
+            headers: {
+                'webhook-id': req.headers['webhook-id'],
+                'webhook-signature': req.headers['webhook-signature'],
+                'webhook-timestamp': req.headers['webhook-timestamp']
+            }
+        });
+    } catch (e) {
+        console.error('[dodo/webhook] signature verification failed:', e.message);
+        return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    console.log('[dodo/webhook] event received:', JSON.stringify(event));
+
+    try {
+        const type = event.type || event.event_type || '';
+        const data = event.data || {};
+        const metadata = data.metadata || {};
+        const uid = metadata.uid;
+        const plan = metadata.plan;
+
+        // 실제 이벤트 타입 이름은 위 로그로 확인 후 필요하면 이 정규식을 조정하세요
+        const isGrantEvent = /active|renewed|succeeded/i.test(type);
+
+        if (isGrantEvent && uid && plan && admin.apps.length) {
+            const days = plan === 'monthly' ? 30 : 7;
+            const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
+            await admin.database().ref('users/' + uid + '/subscription').set({ plan, expiresAt });
+            console.log(`[dodo/webhook] subscription granted: uid=${uid} plan=${plan} expiresAt=${expiresAt}`);
+        }
+        res.json({ received: true });
+    } catch (e) {
+        console.error('[dodo/webhook] processing error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.use(express.json());
 
 const APP_ID = process.env.AGORA_APP_ID;

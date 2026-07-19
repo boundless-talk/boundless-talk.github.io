@@ -29,7 +29,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js"></script>
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
-    <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0d0e12">
@@ -5675,7 +5674,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function openManageSubscription() {
-        // Paddle 고객 포털 — Webhook 연동 후 실제 URL로 교체
+        // Dodo Payments 고객 포털 URL이 준비되면 여기서 바로가기로 교체
         alert(currentLang === 'ko'
             ? '구독 관리는 결제 이메일을 확인해 주세요.'
             : 'Check your billing email to manage your subscription.');
@@ -5715,9 +5714,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function switchPlan(plan) {
-        const isKo = currentLang === 'ko';
         document.getElementById('change-plan-modal').classList.remove('active');
-        Paddle.Checkout.open({ items: [{ priceId: PADDLE_PRICES['pay-' + plan], quantity: 1 }] });
+        startDodoCheckout(plan);
     }
 
     async function openMainPayModal() {
@@ -5801,42 +5799,48 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (payCountdownInterval) { clearInterval(payCountdownInterval); payCountdownInterval = null; }
     }
 
-    // Paddle 초기화 (샌드박스)
-    Paddle.Environment.set('sandbox');
-    Paddle.Initialize({
-        token: 'test_9a59f7cb93453205c684170d542',
-        eventCallback: function(data) {
-            if (data.name === 'checkout.completed') {
-                document.getElementById('payment-modal').style.display = 'none';
-                clearPayCountdown();
-                alert(currentLang === 'ko'
-                    ? '구독이 완료되었습니다! 대화를 계속 즐기세요 😊'
-                    : 'Subscription activated! Enjoy your conversation 😊');
-            }
+    // Dodo Payments 체크아웃 — 서버(/dodo/create-checkout)에서 세션을 만들고 받은 URL로 이동
+    async function startDodoCheckout(plan) {
+        const user = auth.currentUser;
+        if (!user || user.isAnonymous) {
+            alert(currentLang === 'ko'
+                ? '프리미엄 기능을 이용하려면 로그인해 주세요.\n\n프리미엄 기능을 이용하시면 더 넉넉한 통화 시간과 함께\n더 깊은 대화를 나누실 수 있습니다!'
+                : 'Please sign in to unlock Premium features.\n\nWith Premium, enjoy extended talk time\nand deeper conversations!');
+            return;
         }
-    });
-
-    const PADDLE_PRICES = {
-        'pay-monthly': 'pri_01kx0zcn1rbc4htvnqhh51ct68',
-        'pay-weekly':  'pri_01kx0ze9crj1awb24ppzhp3kjh'
-    };
+        try {
+            const res = await fetch(TOKEN_SERVER_URL + '/dodo/create-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan, uid: user.uid, email: user.email || undefined })
+            });
+            const data = await res.json();
+            if (data.checkout_url) {
+                window.location.href = data.checkout_url;
+            } else {
+                alert(currentLang === 'ko' ? '결제 페이지를 여는 중 오류가 발생했습니다.' : 'Failed to open checkout.');
+            }
+        } catch (e) {
+            alert(currentLang === 'ko' ? '결제 페이지를 여는 중 오류가 발생했습니다.' : 'Failed to open checkout.');
+        }
+    }
 
     ['pay-monthly', 'pay-weekly'].forEach(id => {
-        document.getElementById(id).onclick = () => {
-            const user = auth.currentUser;
-            if (!user || user.isAnonymous) {
-                alert(currentLang === 'ko'
-                    ? '프리미엄 기능을 이용하려면 로그인해 주세요.\n\n프리미엄 기능을 이용하시면 더 넉넉한 통화 시간과 함께\n더 깊은 대화를 나누실 수 있습니다!'
-                    : 'Please sign in to unlock Premium features.\n\nWith Premium, enjoy extended talk time\nand deeper conversations!');
-                return;
-            }
-            Paddle.Checkout.open({
-                items: [{ priceId: PADDLE_PRICES[id], quantity: 1 }],
-                customer: user.email ? { email: user.email } : undefined,
-                customData: { uid: user.uid }
-            });
-        };
+        document.getElementById(id).onclick = () => startDodoCheckout(id === 'pay-monthly' ? 'monthly' : 'weekly');
     });
+
+    // Dodo 결제 페이지에서 return_url로 돌아왔을 때 완료 안내
+    (function checkDodoReturn() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('payment') === 'success') {
+            alert(currentLang === 'ko'
+                ? '구독이 완료되었습니다! 대화를 계속 즐기세요 😊'
+                : 'Subscription activated! Enjoy your conversation 😊');
+            params.delete('payment');
+            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        }
+    })();
 
     document.getElementById('pay-modal-leave').onclick = () => {
         document.getElementById('payment-modal').style.display = 'none';
