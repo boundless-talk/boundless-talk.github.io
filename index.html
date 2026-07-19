@@ -1592,29 +1592,31 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
         </div>
 
-        <!-- 주제 추천 안내 팝업 -->
+        <!-- 주제 추천 안내 팝업 (설정 모달과 동일한 톤: 그라데이션 테두리 + 카드형 섹션) -->
         <div class="modal-overlay" id="topic-info-modal" onclick="if(event.target===this) closeTopicInfoModal()">
-            <div style="background:#161920; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; width:320px; max-width:90vw; max-height:80vh; overflow-y:auto; text-align:left;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+            <div style="position:relative; width:400px; max-width:92vw; max-height:80vh; overflow-y:auto; text-align:left;
+                background:
+                    linear-gradient(rgba(15,15,20,0.92), rgba(15,15,20,0.92)) padding-box,
+                    linear-gradient(135deg, rgba(255,176,110,0.5), rgba(0,240,255,0.3) 45%, rgba(255,176,110,0.2) 100%) border-box;
+                border:1px solid transparent; border-radius:16px; padding:20px 22px 22px; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <div style="font-size:15px; font-weight:700; color:#fff;">💡 대화 주제가 고민되신다면</div>
                     <span onclick="closeTopicInfoModal()" style="color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer;">✕</span>
                 </div>
-                <div style="font-size:13px; color:rgba(255,255,255,0.6); line-height:1.6; margin-bottom:18px;">
-                    어떤 이야기를 해야 할지 고민되시나요? 🤔<br>Boundless Talk에서는 어떤 주제든 환영해요! 아래 추천 키워드를 참고해 보세요.
+                <div style="font-size:12.5px; color:rgba(255,255,255,0.5); line-height:1.6; margin-bottom:6px;">
+                    어떤 이야기를 해야 할지 고민되시나요? 🤔 아래 추천 키워드를 참고해 보세요.
                 </div>
-                <div style="margin-bottom:14px;">
-                    <div style="font-size:12px; font-weight:700; color:#00e5ff; margin-bottom:6px;">가벼운 스몰토크가 필요할 때</div>
-                    <div style="font-size:13px; color:rgba(255,255,255,0.75); line-height:1.8;">#오늘있었던일 · #요즘최애 · #주말일정 · #아무말대잔치</div>
-                </div>
-                <div style="margin-bottom:14px;">
-                    <div style="font-size:12px; font-weight:700; color:#00e5ff; margin-bottom:6px;">서로의 취향을 공유하고 싶을 때</div>
-                    <div style="font-size:13px; color:rgba(255,255,255,0.75); line-height:1.8;">#MBTI · #영화후기 · #나만아는맛집 · #소비일기</div>
-                </div>
-                <div style="margin-bottom:18px;">
-                    <div style="font-size:12px; font-weight:700; color:#00e5ff; margin-bottom:6px;">진솔하고 깊은 대화를 원할 때</div>
-                    <div style="font-size:13px; color:rgba(255,255,255,0.75); line-height:1.8;">#꿈 · #이직커리어 · #고민상담 · #자기계발</div>
-                </div>
-                <div style="font-size:12px; color:rgba(255,255,255,0.35); border-top:1px solid rgba(255,255,255,0.08); padding-top:12px;">
+
+                <div class="settings-section-label" style="margin-top:14px;">가벼운 스몰토크가 필요할 때</div>
+                <div class="settings-card" style="white-space:nowrap; overflow-x:auto; font-size:13px; color:rgba(255,255,255,0.75);">#오늘있었던일 · #요즘최애 · #주말일정 · #아무말대잔치</div>
+
+                <div class="settings-section-label">서로의 취향을 공유하고 싶을 때</div>
+                <div class="settings-card" style="white-space:nowrap; overflow-x:auto; font-size:13px; color:rgba(255,255,255,0.75);">#MBTI · #영화후기 · #나만아는맛집 · #소비일기</div>
+
+                <div class="settings-section-label">진솔하고 깊은 대화를 원할 때</div>
+                <div class="settings-card" style="white-space:nowrap; overflow-x:auto; font-size:13px; color:rgba(255,255,255,0.75);">#꿈 · #이직커리어 · #고민상담 · #자기계발</div>
+
+                <div style="font-size:11.5px; color:rgba(255,255,255,0.35); border-top:1px solid rgba(255,255,255,0.08); padding-top:12px; margin-top:16px;">
                     👉 Tip: 마음에 드는 키워드가 있다면 직접 입력창에 적고 대화를 시작해 보세요!
                 </div>
             </div>
