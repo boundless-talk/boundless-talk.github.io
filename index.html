@@ -4246,7 +4246,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         // 큐에 못 들어간 상대를 여기서 뒤늦게라도 추가 (안 그러면 영원히 큐에 안 잡힘)
         if (isPingpong && ppTurnRef && uid !== myFbUid && !ppTurnQueue.includes(uid)) {
             const newQueue = [...ppTurnQueue, uid];
-            ppTurnRef.update({ turnQueue: newQueue, paused: false });
+            // 혼자 대기하던 중이었다면(paused) 이제 막 대화가 시작되는 시점이므로
+            // turnStartedAt도 새로 갱신해야 첫 발언자가 1:30을 온전히 다 씀
+            const update = { turnQueue: newQueue, paused: false };
+            if (ppTurnQueue.length < 2) update.turnStartedAt = Date.now();
+            ppTurnRef.update(update);
         }
     });
     updateRoomParticipants();
@@ -4396,7 +4400,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                         // 핑퐁 큐에 신규 유저 추가
                         if (isPingpong && ppTurnRef && !ppTurnQueue.includes(fbUid)) {
                             const newQueue = [...ppTurnQueue, fbUid];
-                            ppTurnRef.update({ turnQueue: newQueue, paused: false });
+                            // 혼자 대기하던 중이었다면(paused) 이제 막 대화가 시작되는 시점이므로
+                            // turnStartedAt도 새로 갱신해야 첫 발언자가 1:30을 온전히 다 씀
+                            const ppUpdate = { turnQueue: newQueue, paused: false };
+                            if (ppTurnQueue.length < 2) ppUpdate.turnStartedAt = Date.now();
+                            ppTurnRef.update(ppUpdate);
                         }
                         renderParticipantsUI();
                     }
