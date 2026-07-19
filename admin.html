@@ -500,6 +500,9 @@
         <span class="icon">✉️</span> 문의 내역
         <span class="nav-badge" id="inquiry-badge" style="display:none">0</span>
     </div>
+    <div class="nav-item" onclick="navigate('withdrawals')">
+        <span class="icon">🚪</span> 탈퇴 사유
+    </div>
     <div class="nav-item" onclick="navigate('refunds')">
         <span class="icon">💸</span> 환불 요청
         <span class="nav-badge" id="refund-badge" style="display:none">0</span>
@@ -686,6 +689,15 @@
                 <div class="section-count" id="inquiries-count"></div>
             </div>
             <div id="inquiries-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
+        </div>
+
+        <!-- 탈퇴 사유 -->
+        <div class="page" id="page-withdrawals">
+            <div class="section-header">
+                <div class="section-title">탈퇴 사유</div>
+                <div class="section-count" id="withdrawals-count"></div>
+            </div>
+            <div id="withdrawals-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
         </div>
 
         <!-- 구독 현황 -->
@@ -1070,9 +1082,10 @@
         currentPage = page;
         if (page === 'online') startOnlineListener();
         if (page === 'inquiries') loadInquiries();
+        if (page === 'withdrawals') loadWithdrawals();
         if (page === 'refunds') loadRefunds();
         if (page === 'subscriptions') loadSubscriptions();
-        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', refunds:'환불 요청', subscriptions:'구독 현황' };
+        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', withdrawals:'탈퇴 사유', refunds:'환불 요청', subscriptions:'구독 현황' };
         document.getElementById('page-title').textContent = titles[page] || page;
     }
 
@@ -1278,6 +1291,25 @@
                     </div>
                     <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;">${v.message}</div>
                     ${v.status==='unread' ? `<button onclick="markInquiryRead('${id}')" style="margin-top:10px;padding:5px 14px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:6px;cursor:pointer;">✔ 확인 처리</button>` : ''}
+                </div>`).join('');
+        });
+    }
+
+    function loadWithdrawals() {
+        db.ref('accountDeletions').once('value', snap => {
+            const list = document.getElementById('withdrawals-list');
+            const data = snap.val();
+            if (!data) {
+                list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">탈퇴 사유가 없습니다.</div>';
+                document.getElementById('withdrawals-count').textContent = '0건';
+                return;
+            }
+            const items = Object.entries(data).reverse();
+            document.getElementById('withdrawals-count').textContent = `총 ${items.length}건`;
+            list.innerHTML = items.map(([id, v]) => `
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;">
+                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">${v.email || v.uid || '—'} &nbsp;·&nbsp; ${v.deletedAt ? new Date(v.deletedAt).toLocaleString('ko-KR') : '—'}</div>
+                    <div style="font-size:14px;line-height:1.6;white-space:pre-wrap;">${v.reason || '(사유 미입력)'}</div>
                 </div>`).join('');
         });
     }

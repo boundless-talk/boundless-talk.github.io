@@ -131,8 +131,9 @@ app.post('/dodo/webhook', express.raw({ type: 'application/json' }), async (req,
         if (isGrantEvent && uid && plan && admin.apps.length) {
             const days = plan === 'monthly' ? 30 : 7;
             const expiresAt = new Date(Date.now() + days * 86400000).toISOString();
-            await admin.database().ref('users/' + uid + '/subscription').set({ plan, expiresAt });
-            console.log(`[dodo/webhook] subscription granted: uid=${uid} plan=${plan} expiresAt=${expiresAt}`);
+            const subscriptionId = data.subscription_id || data.id || null;
+            await admin.database().ref('users/' + uid + '/subscription').set({ plan, expiresAt, subscriptionId });
+            console.log(`[dodo/webhook] subscription granted: uid=${uid} plan=${plan} expiresAt=${expiresAt} subscriptionId=${subscriptionId}`);
         }
         res.json({ received: true });
     } catch (e) {
@@ -189,6 +190,66 @@ app.post('/claim-early-access', async (req, res) => {
         res.json({ granted: true, count, expiresAt });
     } catch (e) {
         console.error('[claim-early-access] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// ── 회원탈퇴 ──
+// 신고/제재 이력(banned, suspendedUntil, warnedAt 등)은 남기고 나머지 개인 데이터만 지움.
+// Auth 계정 자체도 삭제하므로 같은 이메일로는 재가입해야 재이용 가능.
+const SANCTION_FIELDS = ['banned', 'bannedAt', 'banReason', 'suspendedUntil', 'suspendReason', 'warnedAt', 'lastReportReason', 'reportCount'];
+
+app.post('/delete-account', async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, reason } = req.body;
+    if (!idToken) return res.status(400).json({ error: 'idToken required' });
+
+    let uid, email;
+    try {
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        uid = decoded.uid;
+        email = decoded.email || null;
+    } catch (e) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    try {
+        const db = admin.database();
+        const userRef = db.ref('users/' + uid);
+        const snap = await userRef.once('value');
+        const userData = snap.val() || {};
+
+        // 유료 구독이 살아있으면 Dodo 쪽 구독도 취소 시도 (실패해도 탈퇴 자체는 계속 진행)
+        const sub = userData.subscription;
+        if (dodoClient && sub && sub.subscriptionId && sub.plan !== 'early50' && sub.expiresAt && new Date(sub.expiresAt) > new Date()) {
+            try {
+                await dodoClient.subscriptions.update(sub.subscriptionId, { status: 'cancelled' });
+                console.log(`[delete-account] Dodo subscription cancelled: uid=${uid} subscriptionId=${sub.subscriptionId}`);
+            } catch (e) {
+                console.error(`[delete-account] Dodo subscription cancel failed (needs manual follow-up): uid=${uid} subscriptionId=${sub.subscriptionId} error=${e.message}`);
+            }
+        }
+
+        // 탈퇴 사유 기록 (서비스 개선용)
+        if (reason) {
+            await db.ref('accountDeletions').push({
+                uid, email, reason,
+                deletedAt: new Date().toISOString()
+            });
+        }
+
+        // 신고/제재 이력만 남기고 나머지 필드 삭제
+        const preserved = {};
+        SANCTION_FIELDS.forEach(f => { if (userData[f] !== undefined) preserved[f] = userData[f]; });
+        preserved.accountDeleted = true;
+        preserved.deletedAt = Date.now();
+        await userRef.set(preserved);
+
+        await admin.auth().deleteUser(uid);
+        console.log(`[delete-account] account deleted: uid=${uid}`);
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[delete-account] error:', e.message);
         res.status(500).json({ error: e.message });
     }
 });

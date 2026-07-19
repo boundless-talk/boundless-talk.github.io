@@ -1459,6 +1459,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="settings-badge-chips" id="settings-badge-chips"></div>
                 </div>
             </div>
+            <div style="text-align:center; margin-top:18px;">
+                <span id="withdrawal-link" onclick="openWithdrawalModal()" style="font-size:11px; color:rgba(255,255,255,0.25); text-decoration:underline; cursor:pointer;">회원탈퇴</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원탈퇴 모달 -->
+    <div class="modal-overlay" id="withdrawal-modal">
+        <div style="background:#161920; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:26px; width:320px; max-width:90vw;">
+            <div style="font-size:15px; font-weight:700; color:#fff; margin-bottom:8px;" id="withdrawal-title">정말 탈퇴하시겠어요?</div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.5); line-height:1.6; margin-bottom:16px;" id="withdrawal-desc">탈퇴 시 계정 정보는 삭제되며 되돌릴 수 없습니다. 진행 중인 구독이 있다면 함께 해지됩니다.</div>
+            <textarea id="withdrawal-reason" placeholder="탈퇴 사유 (선택사항: 서비스개선에 큰 도움이 됩니다)" style="width:100%; min-height:80px; background:#1a1d26; border:1px solid rgba(255,255,255,0.08); border-radius:10px; color:#fff; padding:10px 12px; font-size:13px; resize:vertical; outline:none; font-family:inherit; box-sizing:border-box;"></textarea>
+            <div style="display:flex; gap:8px; margin-top:16px;">
+                <button onclick="document.getElementById('withdrawal-modal').classList.remove('active')" id="withdrawal-cancel-btn" style="flex:1; padding:11px; background:rgba(255,255,255,0.06); border:none; border-radius:10px; color:rgba(255,255,255,0.6); font-size:13px; cursor:pointer;">취소</button>
+                <button onclick="confirmWithdrawal()" id="withdrawal-confirm-btn" style="flex:1; padding:11px; background:#ff3b30; border:none; border-radius:10px; color:#fff; font-size:13px; font-weight:600; cursor:pointer;">탈퇴하기</button>
+            </div>
         </div>
     </div>
 
@@ -5689,6 +5705,47 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
     }
 
+    function openWithdrawalModal() {
+        const user = auth.currentUser;
+        if (!user || user.isAnonymous) {
+            alert(currentLang === 'ko' ? '게스트는 탈퇴할 계정이 없어요.' : 'Guest accounts have nothing to withdraw.');
+            return;
+        }
+        document.getElementById('withdrawal-reason').value = '';
+        document.getElementById('withdrawal-modal').classList.add('active');
+    }
+
+    async function confirmWithdrawal() {
+        const user = auth.currentUser;
+        if (!user) return;
+        const isKo = currentLang === 'ko';
+        if (!confirm(isKo ? '정말로 탈퇴하시겠어요? 이 작업은 되돌릴 수 없습니다.' : 'Are you sure you want to withdraw? This cannot be undone.')) return;
+
+        const reason = document.getElementById('withdrawal-reason').value.trim();
+        const confirmBtn = document.getElementById('withdrawal-confirm-btn');
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = isKo ? '처리 중...' : 'Processing...';
+
+        try {
+            const idToken = await user.getIdToken();
+            const res = await fetch(TOKEN_SERVER_URL + '/delete-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, reason: reason || null })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'unknown');
+
+            document.getElementById('withdrawal-modal').classList.remove('active');
+            alert(isKo ? '그동안 이용해 주셔서 감사합니다. 계정이 삭제되었습니다.' : 'Thank you for using B-TALK. Your account has been deleted.');
+            location.reload();
+        } catch (e) {
+            alert(isKo ? '탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.' : 'An error occurred while processing withdrawal. Please try again.');
+            confirmBtn.disabled = false;
+            confirmBtn.textContent = isKo ? '탈퇴하기' : 'Withdraw';
+        }
+    }
+
     function openManageSubscription() {
         // Dodo Payments 고객 포털 URL이 준비되면 여기서 바로가기로 교체
         alert(currentLang === 'ko'
@@ -7078,10 +7135,10 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
 모든 대화 세션은 10분 무료로 이용할 수 있습니다. 게스트로도 바로 체험 가능합니다.
 
 ─── 주간 구독 — $1.99 / 주 ───
-매일 최대 2시간 통화 + 실시간 번역 포함. 7일마다 자동 갱신되며 언제든 해지할 수 있습니다.
+대화세션당 10분이상 통화가능+실시간 번역포함+대화스탯모으기+친구추가가능 (일 2시간까지 통화가능). 7일마다 자동 갱신되며 언제든 해지할 수 있습니다.
 
 ─── 월간 구독 — $4.99 / 월 ───
-매일 최대 2시간 통화 + 실시간 번역 포함. 매월 자동 갱신되며 언제든 해지할 수 있습니다.
+대화세션당 10분이상 통화가능+실시간 번역포함+대화스탯모으기+친구추가가능 (일 2시간까지 통화가능). 매월 자동 갱신되며 언제든 해지할 수 있습니다.
 
 ─── 🎉 프로모션 (2026년 8월 31일까지) ───
 프로모션 기간 내에 월간 구독을 시작하면 첫 달은 통화 시간 제한 없이 무제한으로 이용할 수 있습니다. 이 혜택은 월간 구독에만 적용되며 주간 구독에는 적용되지 않습니다.
