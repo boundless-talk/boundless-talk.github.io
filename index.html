@@ -1581,12 +1581,42 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 </div>
             
         <div class="input-group" style="position:relative;">
-            <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)">
+            <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)" style="padding-right:40px;">
+            <!-- 주제 추천 안내 아이콘 -->
+            <span id="topic-info-icon" onclick="openTopicInfoModal()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:rgba(255,255,255,0.25);cursor:pointer;z-index:2;line-height:1;">ⓘ</span>
             <!-- 핑퐁 모드 토글 (인풋 오른쪽 위) -->
             <div id="pingpong-toggle-row" class="tip-card" onclick="togglePingpongMode()" style="position:absolute;top:-11px;right:8px;display:flex;align-items:center;gap:5px;border-radius:20px;padding:3px 8px 3px 7px;cursor:pointer;user-select:none;z-index:2;white-space:nowrap;">
                 <span style="font-size:12px;">🏓</span>
                 <span id="pp-toggle-sub" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);white-space:nowrap;">PING PONG</span>
                 <span id="pp-onoff-tag" style="font-size:9px;font-weight:800;color:rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);border-radius:10px;padding:1px 6px;">OFF</span>
+            </div>
+        </div>
+
+        <!-- 주제 추천 안내 팝업 -->
+        <div class="modal-overlay" id="topic-info-modal" onclick="if(event.target===this) closeTopicInfoModal()">
+            <div style="background:#161920; border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; width:320px; max-width:90vw; max-height:80vh; overflow-y:auto; text-align:left;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                    <div style="font-size:15px; font-weight:700; color:#fff;">💡 대화 주제가 고민되신다면</div>
+                    <span onclick="closeTopicInfoModal()" style="color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer;">✕</span>
+                </div>
+                <div style="font-size:13px; color:rgba(255,255,255,0.6); line-height:1.6; margin-bottom:18px;">
+                    어떤 이야기를 해야 할지 고민되시나요? 🤔<br>Boundless Talk에서는 어떤 주제든 환영해요! 아래 추천 키워드를 참고해 보세요.
+                </div>
+                <div style="margin-bottom:14px;">
+                    <div style="font-size:12px; font-weight:700; color:#00e5ff; margin-bottom:6px;">가벼운 스몰토크가 필요할 때</div>
+                    <div style="font-size:13px; color:rgba(255,255,255,0.75); line-height:1.8;">#오늘있었던일 · #요즘최애 · #주말일정 · #아무말대잔치</div>
+                </div>
+                <div style="margin-bottom:14px;">
+                    <div style="font-size:12px; font-weight:700; color:#00e5ff; margin-bottom:6px;">서로의 취향을 공유하고 싶을 때</div>
+                    <div style="font-size:13px; color:rgba(255,255,255,0.75); line-height:1.8;">#MBTI · #영화후기 · #나만아는맛집 · #소비일기</div>
+                </div>
+                <div style="margin-bottom:18px;">
+                    <div style="font-size:12px; font-weight:700; color:#00e5ff; margin-bottom:6px;">진솔하고 깊은 대화를 원할 때</div>
+                    <div style="font-size:13px; color:rgba(255,255,255,0.75); line-height:1.8;">#꿈 · #이직커리어 · #고민상담 · #자기계발</div>
+                </div>
+                <div style="font-size:12px; color:rgba(255,255,255,0.35); border-top:1px solid rgba(255,255,255,0.08); padding-top:12px;">
+                    👉 Tip: 마음에 드는 키워드가 있다면 직접 입력창에 적고 대화를 시작해 보세요!
+                </div>
             </div>
         </div>
 
@@ -2916,9 +2946,18 @@ function openMoreTopicsModal() {
 function closeMoreTopicsModal() {
     document.getElementById('more-topics-modal').classList.remove('active');
 }
+
+function openTopicInfoModal() {
+    document.getElementById('topic-info-modal').classList.add('active');
+}
+function closeTopicInfoModal() {
+    document.getElementById('topic-info-modal').classList.remove('active');
+}
 // HTML의 inline onclick(✕ 닫기, 오버레이 클릭)은 전역 스코프에서 실행되므로 window에 노출
 window.openMoreTopicsModal = openMoreTopicsModal;
 window.closeMoreTopicsModal = closeMoreTopicsModal;
+window.openTopicInfoModal = openTopicInfoModal;
+window.closeTopicInfoModal = closeTopicInfoModal;
 
                 // 이메일 저장 (관리자 패널에서 식별용)
     if (user.email) {
