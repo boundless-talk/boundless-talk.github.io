@@ -4795,8 +4795,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (ppTurnRef) { ppTurnRef.off(); ppTurnRef = null; }
         ppTurnRef = database.ref(`channels/${channelId}/pingpong`);
 
-        // 첫 입장자가 핑퐁 노드 초기화 (이전 세션 stale 데이터는 onDisconnect로 정리됨)
-        ppTurnRef.onDisconnect().remove();
+        // 주의: 여기서 onDisconnect().remove()를 걸면 안 됨 — 이 노드는 방의 모든 참가자가
+        // 공유하는 상태라서, 아무나 한 명만 연결이 끊겨도 전체가 삭제되어 나머지 참가자의
+        // 핑퐁 세션이 깨져버림. 퇴장한 유저를 큐에서 빼는 처리는 client.on("user-left")에서
+        // 개별적으로 이미 하고 있으므로 여기서는 초기화만 담당함.
         ppTurnRef.once('value').then(snap => {
             if (!snap.val()) {
                 ppTurnRef.set({
@@ -4889,7 +4891,16 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function stopPPMode() {
         isPingpong = false;
         if (ppTimerInterval) { clearInterval(ppTimerInterval); ppTimerInterval = null; }
-        if (ppTurnRef) { ppTurnRef.off(); ppTurnRef.remove().catch(()=>{}); ppTurnRef = null; }
+        if (ppTurnRef) {
+            // roomParticipants는 "나를 제외한" 인원이므로, 0이면 내가 마지막으로 나가는 것 →
+            // 이때만 공유 노드를 지움. 다른 사람이 남아있으면 내 리스너만 떼고 데이터는 보존
+            // (남은 사람들 쪽 turnQueue 갱신은 그들의 client.on("user-left")에서 이미 처리함)
+            if (roomParticipants.length === 0) {
+                ppTurnRef.remove().catch(()=>{});
+            }
+            ppTurnRef.off();
+            ppTurnRef = null;
+        }
         if (ppSlowMatchTimer) { clearTimeout(ppSlowMatchTimer); ppSlowMatchTimer = null; }
         if (ppReactionRef) { ppReactionRef.off(); ppReactionRef = null; }
         ppTurnQueue = [];
