@@ -245,6 +245,10 @@ app.post('/delete-account', async (req, res) => {
         preserved.deletedAt = Date.now();
         await userRef.set(preserved);
 
+        // users/{uid} 바깥에 따로 떠 있는 대기열 흔적도 정리 (안 지우면 연결이 끊기지 않아
+        // onDisconnect가 발동하지 않고, 탈퇴한 유저가 대기자 수에 영원히 잡혀 있게 됨)
+        await db.ref('waiting/' + uid).remove().catch(() => {});
+
         await admin.auth().deleteUser(uid);
         console.log(`[delete-account] account deleted: uid=${uid}`);
         res.json({ success: true });
