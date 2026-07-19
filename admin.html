@@ -535,6 +535,7 @@
                 <div class="stat-card">
                     <div class="stat-label">전체 회원</div>
                     <div class="stat-value accent" id="stat-total">—</div>
+                    <div style="font-size:11px;color:var(--text-dim);margin-top:6px;" id="stat-total-sub">—</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">영구 정지</div>
@@ -645,7 +646,7 @@
                         <th>액션</th>
                     </tr></thead>
                     <tbody id="report-list">
-                        <tr class="loading-row"><td colspan="6">불러오는 중...</td></tr>
+                        <tr class="loading-row"><td colspan="9">불러오는 중...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -871,7 +872,11 @@
     // ── 통계 ──
     function updateStats() {
         const users = Object.values(allUsers);
-        document.getElementById('stat-total').textContent = users.length;
+        // 이메일이 있으면 실제 회원가입(구글/이메일), 없으면 게스트(익명 로그인) 또는 탈퇴 계정
+        const realMembers = users.filter(u => u.email);
+        const guestOrDeleted = users.filter(u => !u.email);
+        document.getElementById('stat-total').textContent = realMembers.length;
+        document.getElementById('stat-total-sub').textContent = `게스트/탈퇴 세션 ${guestOrDeleted.length}건 별도 (전체 ${users.length})`;
         document.getElementById('stat-banned').textContent = users.filter(u => u.banned).length;
         document.getElementById('stat-suspended').textContent = users.filter(u => u.suspendedUntil && u.suspendedUntil > Date.now()).length;
         document.getElementById('stat-warned').textContent = users.filter(u => u.warnedAt).length;
@@ -1015,7 +1020,7 @@
         const tbody = document.getElementById('report-list');
         tbody.innerHTML = entries.length ? entries.map(([id, r]) => {
             const toxicPill = r.isToxic === true
-                ? '<span class="status-pill pill-ban">유해</span>'
+                ? '<span class="status-pill pill-banned">유해</span>'
                 : r.isToxic === false
                     ? '<span class="status-pill pill-normal">무해</span>'
                     : '<span class="status-pill pill-pending">미분석</span>';
