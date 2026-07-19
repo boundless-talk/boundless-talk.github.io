@@ -84,7 +84,7 @@ app.post('/dodo/create-checkout', express.json(), async (req, res) => {
         const session = await dodoClient.checkoutSessions.create({
             product_cart: [{ product_id: DODO_PRODUCTS[plan], quantity: 1 }],
             customer: email ? { email } : undefined,
-            return_url: 'https://boundless-talk.github.io/B-Talk/?payment=success',
+            return_url: 'https://boundless-talk.github.io/?payment=success',
             // metadata는 웹훅에서 그대로 돌려받으므로, uid/plan을 실어 보내면
             // 웹훅 처리 시 어떤 유저의 어떤 플랜인지 바로 알 수 있음
             metadata: { uid, plan }
