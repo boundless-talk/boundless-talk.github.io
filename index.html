@@ -2766,6 +2766,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const subBtn = document.getElementById('subscribe-btn');
             if (subBtn) subBtn.style.display = '';
 
+            // 로그인 직후 곧바로 화면을 열지 않고, 생년월일 확인이 끝난 뒤에만 공개함
+            // (그렇지 않으면 DOB 조회가 끝나기 전 잠깐 대화 화면이 노출되는 깜빡임이 생김)
+            function revealMainScreen() {
+                document.getElementById("auth-section").style.display = "none";
+                if (logoutBtn) logoutBtn.style.display = "inline-block";
+                if (talkControls) talkControls.style.display = "block";
+                if (startBtn && !isJoined) startBtn.disabled = false;
+                document.getElementById("toggle-rep-btn").style.display = "inline-block";
+                if (reputationSection) reputationSection.style.display = "none";
+                document.getElementById("btn-talk-again").style.display = "inline-block";
+                // 로그인 시 이전 세션의 잔류 상태 메시지 초기화
+                document.getElementById("matching-status").innerText = "";
+            }
+
             // ── Google 로그인: DOB 미등록 시 확인 모달 ──
             if (!isGuest) {
                 database.ref('users/' + user.uid + '/dob').once('value').then(snap => {
@@ -2774,6 +2788,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                         pendingDobCancelAction = () => auth.signOut(); // 취소 또는 미성년이면 로그아웃
                         requireDob(async (dobVal) => {
                             await database.ref('users/' + user.uid + '/dob').set(dobVal);
+                            revealMainScreen();
 
                             // 초기 회원 50명 프로모션 신청 (선착순 마감되면 조용히 무시됨)
                             try {
@@ -2791,8 +2806,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                                 }
                             } catch (e) { console.error('claim-early-access error:', e); }
                         });
+                    } else {
+                        revealMainScreen();
                     }
                 });
+            } else {
+                revealMainScreen();
             }
 
             // 게스트 배지 표시
@@ -2937,16 +2956,6 @@ window.closeMoreTopicsModal = closeMoreTopicsModal;
                     database.ref('users/' + user.uid + '/warnedAt').remove();
                 }
             });
-
-            document.getElementById("auth-section").style.display = "none";
-            if (logoutBtn) logoutBtn.style.display = "inline-block";
-            if (talkControls) talkControls.style.display = "block";
-            if (startBtn && !isJoined) startBtn.disabled = false;
-            document.getElementById("toggle-rep-btn").style.display = "inline-block";
-            if (reputationSection) reputationSection.style.display = "none";
-            document.getElementById("btn-talk-again").style.display = "inline-block";
-            // 로그인 시 이전 세션의 잔류 상태 메시지 초기화
-            document.getElementById("matching-status").innerText = "";
 
             // 푸시 알림 클릭으로 진입한 경우 자동 입장
             if (window._pushJoinTopic) {
