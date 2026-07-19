@@ -4262,6 +4262,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (uid !== myFbUid && !sessionParticipants.includes(uid)) {
             sessionParticipants.push(uid);
         }
+        // 핑퐁 큐도 동일하게 보충 — user-published 시점에 fbUid 조회가 늦어서
+        // 큐에 못 들어간 상대를 여기서 뒤늦게라도 추가 (안 그러면 영원히 큐에 안 잡힘)
+        if (isPingpong && ppTurnRef && uid !== myFbUid && !ppTurnQueue.includes(uid)) {
+            const newQueue = [...ppTurnQueue, uid];
+            ppTurnRef.update({ turnQueue: newQueue, paused: false });
+        }
     });
     updateRoomParticipants();
 });
