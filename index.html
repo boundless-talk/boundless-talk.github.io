@@ -2966,6 +2966,15 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                 // 이메일 저장 (관리자 패널에서 식별용)
     if (user.email) {
         database.ref('users/' + user.uid).update({ email: user.email });
+                // 가입일자 기록 (최초 1회만, Firebase Auth의 실제 가입 시각 사용)
+                if (user.metadata && user.metadata.creationTime) {
+                    const joinRef = database.ref('users/' + user.uid + '/createdAt');
+                    joinRef.once('value').then(snap => {
+                        if (!snap.exists()) {
+                            joinRef.set(new Date(user.metadata.creationTime).getTime());
+                        }
+                    });
+                }
     }
 
             // [보안 핵심] 로그인 즉시 Realtime DB에서 제재 상태 실시간 리스닝
