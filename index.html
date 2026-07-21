@@ -1580,7 +1580,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
 </div>
             
-        <div class="input-group" style="position:relative;">
+        <div id="fixed-room-banner" style="display:none; margin-bottom:10px; padding:8px 12px; background:rgba(0,229,255,0.08); border:1px solid rgba(0,229,255,0.25); border-radius:8px; font-size:13px; color:#00e5ff; font-weight:600;"></div> <div class="input-group" style="position:relative;">
             <input type="text" id="topic-input" placeholder="Enter a topic (e.g., tesla, love)" style="padding-right:40px;">
             <!-- 주제 추천 안내 아이콘 -->
             <span id="topic-info-icon" onclick="openTopicInfoModal()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:rgba(255,255,255,0.25);cursor:pointer;z-index:2;line-height:1;">ⓘ</span>
@@ -2923,7 +2923,7 @@ database.ref('activeTopics').on('value', (snap) => {
     }
 });
 
-let allLiveTopics = [];
+/* 고정 스케줄 방 (한국/미국) - 월수금토 9~12시 자동 오픈 배너 */ const FIXED_ROOMS = [ { key: 'korea', tz: 'Asia/Seoul', days: [1,3,5,6], openHour: 9, closeHour: 12 }, { key: 'us', tz: 'America/New_York', days: [1,3,5,6], openHour: 9, closeHour: 12 } ]; function getFixedRoomOpenNow(room) { const parts = new Intl.DateTimeFormat('en-US', { timeZone: room.tz, weekday: 'short', hour: 'numeric', hour12: false }).formatToParts(new Date()); const dayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }; const weekday = dayMap[parts.find(p => p.type === 'weekday').value]; let hour = parseInt(parts.find(p => p.type === 'hour').value, 10); if (hour === 24) hour = 0; return room.days.includes(weekday) && hour >= room.openHour && hour < room.closeHour; } function updateFixedRoomBanner() { const banner = document.getElementById('fixed-room-banner'); if (!banner) return; if (typeof isJoined !== 'undefined' && isJoined) { banner.style.display = 'none'; return; } const openRoom = FIXED_ROOMS.find(getFixedRoomOpenNow); if (!openRoom) { banner.style.display = 'none'; return; } database.ref('fixedRooms/' + openRoom.key + '/topic').once('value').then(snap => { const topic = snap.val(); if (!topic) { banner.style.display = 'none'; return; } banner.textContent = "Today's topic: " + topic; banner.style.display = 'block'; }); } updateFixedRoomBanner(); setInterval(updateFixedRoomBanner, 60000); let allLiveTopics = [];
 
 function renderMoreTopicsList() {
     const list = document.getElementById('more-topics-list');
