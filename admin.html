@@ -439,6 +439,43 @@
             background: rgba(255,255,255,0.05);
             border-radius: 10px; margin-right: 4px;
         }
+    
+        /* ── 모바일 반응형 ── */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 22px;
+            cursor: pointer;
+            padding: 4px 10px;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 150;
+        }
+        @media (max-width: 768px) {
+            #sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 200;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+            }
+            #sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.open { display: block; }
+            .menu-toggle { display: inline-flex; align-items: center; }
+            #topbar { padding: 0 14px; gap: 10px; }
+            .search-bar { width: auto; flex: 1; min-width: 0; }
+            #content { padding: 14px; }
+            .table-wrap { overflow-x: auto; }
+            table { min-width: 640px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
@@ -516,9 +553,12 @@
     </div>
 </div>
 
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
 <!-- 메인 -->
 <div id="main">
     <div id="topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="메뉴">☰</button>
         <div id="page-title">대시보드</div>
         <div class="search-bar">
             <span style="color:var(--text-dim); font-size:13px;">🔍</span>
@@ -558,13 +598,13 @@
                 <table>
                     <thead><tr>
                         <th>UID</th>
-                        <th>이메일</th>
+                        <th>이메일</th><th>가입일자</th>
                         <th>상태</th>
                         <th>배지</th>
                         <th>액션</th>
                     </tr></thead>
                     <tbody id="dash-user-list">
-                        <tr class="loading-row"><td colspan="5">불러오는 중...</td></tr>
+                        <tr class="loading-row"><td colspan="6">불러오는 중...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -585,14 +625,14 @@
                 <table>
                     <thead><tr>
                         <th>UID</th>
-                        <th>이메일</th>
+                        <th>이메일</th><th>가입일자</th>
                         <th>상태</th>
                         <th>배지 (매너/논리/유머)</th>
                         <th>친구 수</th>
                         <th>액션</th>
                     </tr></thead>
                     <tbody id="user-list">
-                        <tr class="loading-row"><td colspan="6">불러오는 중...</td></tr>
+                        <tr class="loading-row"><td colspan="7">불러오는 중...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -895,6 +935,11 @@
         return new Date(ts).toLocaleString('ko-KR', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
     }
 
+    function fmtJoinDate(ts) {
+        if (!ts) return '—';
+        return new Date(ts).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+    }
+
     function userRow(uid, u, cols) {
         const st = getUserStatus(u);
         const badges = u.badges || {};
@@ -905,7 +950,7 @@
             <tr>
                 <td class="uid-cell" title="${uid}">${uid.substring(0,10)}...</td>
                 <td>${email}</td>
-                <td><span class="status-pill ${st.cls}">${st.label}</span></td>
+                <td>${fmtJoinDate(u.createdAt)}</td><td><span class="status-pill ${st.cls}">${st.label}</span></td>
                 <td>
                     <span class="badge-small">🤝 ${badges.manner||0}</span>
                     <span class="badge-small">🧠 ${badges.logic||0}</span>
@@ -957,7 +1002,7 @@
             <tr>
                 <td class="uid-cell" title="${uid}">${uid.substring(0,10)}...</td>
                 <td>${email}</td>
-                <td><span class="status-pill ${st.cls}">${st.label}</span></td>
+                <td>${fmtJoinDate(u.createdAt)}</td><td><span class="status-pill ${st.cls}">${st.label}</span></td>
                 <td>
                     <span class="badge-small">🤝 ${badges.manner||0}</span>
                     <span class="badge-small">🧠 ${badges.logic||0}</span>
@@ -973,7 +1018,7 @@
         const tbody = document.getElementById('dash-user-list');
         tbody.innerHTML = entries.length
             ? entries.map(([uid, u]) => userRow(uid, u, 'dash')).join('')
-            : '<tr class="empty-row"><td colspan="5">회원 없음</td></tr>';
+            : '<tr class="empty-row"><td colspan="6">회원 없음</td></tr>';
 
         // 미처리 이의신청 (최대 3건)
         const container = document.getElementById('dash-appeals');
@@ -992,7 +1037,7 @@
         const tbody = document.getElementById('user-list');
         tbody.innerHTML = entries.length
             ? entries.map(([uid, u]) => userRow(uid, u, 'full')).join('')
-            : '<tr class="empty-row"><td colspan="6">결과 없음</td></tr>';
+            : '<tr class="empty-row"><td colspan="7">결과 없음</td></tr>';
     }
 
     function renderBannedLists() {
@@ -1092,6 +1137,7 @@
         if (page === 'subscriptions') loadSubscriptions();
         const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', withdrawals:'탈퇴 사유', refunds:'환불 요청', subscriptions:'구독 현황' };
         document.getElementById('page-title').textContent = titles[page] || page;
+        closeSidebar();
     }
 
     function switchTab(page, tabId) {
@@ -1102,6 +1148,15 @@
     }
 
     function onSearch() { if (currentPage === 'users') renderUserList(); }
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.querySelector('.sidebar-overlay').classList.toggle('open');
+    }
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.querySelector('.sidebar-overlay').classList.remove('open');
+    }
 
     // ── 유저 상세 모달 ──
     function openUserModal(uid) {
