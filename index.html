@@ -1267,74 +1267,87 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .room-pp-switch-btn:hover { background: rgba(0,229,255,0.12); }
         .room-pp-switch-btn:disabled { opacity: 0.4; cursor: default; }
 
-        /* ── Discover 화면 ── */
-        #discover-screen { width: 100%; display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
+        /* ── Discover 화면 (시안 1a 충실 재현: 레드 액센트 + 다크 카드) ── */
+        #discover-screen {
+            --dr: #e4362a; --dr-glow: rgba(228,54,42,.35); --dsurf: #141416; --dbord: rgba(255,255,255,.08);
+            width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
+        }
+        @keyframes discoWave1 { 0%,100%{height:5px} 50%{height:18px} }
+        @keyframes discoWave2 { 0%,100%{height:14px} 50%{height:6px} }
+        @keyframes discoWave3 { 0%,100%{height:9px} 50%{height:20px} }
+        @keyframes discoWave4 { 0%,100%{height:17px} 50%{height:7px} }
+        .disco-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--dr); margin-bottom: -6px; }
         .disco-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-        .disco-title { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: #fff; margin: 0; }
-        .disco-live-count { font-size: 11.5px; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
-        .disco-live-count .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-color); animation: pulse-dot 1.4s infinite; }
+        .disco-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #f5f4f2; margin: 0; }
+        .disco-live-count { font-size: 12px; color: rgba(255,255,255,0.4); white-space: nowrap; }
         .disco-search-row { display: flex; gap: 8px; }
         .disco-search-input {
-            flex: 1; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
-            color: #fff; font-size: 13.5px; padding: 11px 14px; outline: none; transition: border-color 0.2s;
+            flex: 1; background: var(--dsurf); border: 1px solid var(--dbord); border-radius: 8px;
+            color: #f5f4f2; font-size: 13.5px; padding: 11px 14px; outline: none; transition: border-color 0.2s;
         }
-        .disco-search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 12px var(--accent-glow); }
+        .disco-search-input:focus { border-color: var(--dr); box-shadow: 0 0 12px var(--dr-glow); }
         .disco-search-input::placeholder { color: rgba(255,255,255,0.3); }
         .disco-create-btn {
-            flex: none; background: var(--accent-color); color: #000; font-size: 13px; font-weight: 800;
-            border: none; border-radius: 14px; padding: 0 16px; cursor: pointer; white-space: nowrap;
+            flex: none; background: var(--dr); color: #fff; font-size: 13px; font-weight: 700;
+            border: none; border-radius: 8px; padding: 0 16px; cursor: pointer; white-space: nowrap;
         }
-        .disco-chip-row { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+        .disco-chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
         .disco-chip-row::-webkit-scrollbar { display: none; }
         .disco-chip {
-            flex: none; font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 20px;
-            background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: rgba(255,255,255,0.65);
+            flex: none; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 20px;
+            background: rgba(255,255,255,0.06); border: 1px solid var(--dbord); color: rgba(255,255,255,0.7);
             cursor: pointer; transition: all 0.15s; user-select: none;
         }
-        .disco-chip.active { background: rgba(0,229,255,0.14); border-color: var(--accent-color); color: var(--accent-color); }
-        .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .disco-chip.active { background: var(--dr); border-color: var(--dr); color: #fff; font-weight: 600; }
+        .disco-trending-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+        .disco-trending-row::-webkit-scrollbar { display: none; }
+        .disco-trending-label { font-size: 12px; color: rgba(255,255,255,0.35); flex: none; }
+        .disco-trending-tag { flex: none; font-size: 12px; color: var(--dr); padding: 5px 12px; border: 1px solid rgba(228,54,42,0.3); border-radius: 14px; cursor: pointer; background: none; }
+        .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
         .disco-card {
-            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
-            padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer;
+            background: var(--dsurf); border: 1px solid var(--dbord); border-radius: 8px;
+            padding: 20px; display: flex; flex-direction: column; gap: 16px; cursor: pointer;
             transition: border-color 0.15s, transform 0.15s; text-align: left;
         }
-        .disco-card:hover { border-color: rgba(0,229,255,0.4); transform: translateY(-1px); }
+        .disco-card:hover { border-color: rgba(228,54,42,0.4); transform: translateY(-1px); }
         .disco-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-        .disco-card-cat { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .disco-card-cat { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
         .disco-card-badges { display: flex; align-items: center; gap: 6px; flex-none; }
         .disco-pp-badge { font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; color: #ffd166; background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.35); border-radius: 8px; padding: 2px 6px; white-space: nowrap; }
-        .disco-live-badge { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; color: var(--accent-color); }
-        .disco-live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-color); animation: pulse-dot 1.4s infinite; }
-        .disco-card-mid { display: flex; align-items: center; gap: 13px; }
-        .disco-ring { position: relative; width: 44px; height: 44px; flex: none; }
-        .disco-ring .ring-o { position: absolute; inset: 0; border: 1px solid rgba(255,255,255,0.18); border-radius: 50%; }
-        .disco-ring .ring-n { position: absolute; width: 6px; height: 6px; border-radius: 50%; }
-        .disco-ring .ring-n.filled { background: var(--accent-color); }
-        .disco-ring .ring-n.empty { background: transparent; border: 1px solid rgba(255,255,255,0.22); }
-        .disco-card-title { margin: 0; font-size: 14.5px; font-weight: 700; line-height: 1.3; color: #fff; }
+        .disco-live-badge { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--dr); }
+        .disco-live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dr); animation: pulse-dot 1.4s infinite; }
+        .disco-card-mid { display: flex; align-items: center; gap: 16px; }
+        .disco-ring { position: relative; width: 56px; height: 56px; flex: none; }
+        .disco-ring .ring-o { position: absolute; inset: 0; border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; }
+        .disco-ring .ring-n { position: absolute; width: 7px; height: 7px; border-radius: 50%; }
+        .disco-ring .ring-n.filled { background: var(--dr); }
+        .disco-ring .ring-n.empty { background: transparent; border: 1px solid rgba(255,255,255,0.25); }
+        .disco-card-title { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; color: #f5f4f2; }
         .disco-card-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
-        .disco-occupancy { font-size: 11.5px; color: rgba(255,255,255,0.45); }
+        .disco-occupancy { font-size: 12px; color: rgba(255,255,255,0.4); }
+        .disco-wave { display: flex; align-items: center; gap: 2px; height: 20px; }
+        .disco-wave span { width: 2px; background: var(--dr); border-radius: 1px; display: inline-block; }
         .disco-empty { padding: 28px 14px; text-align: center; color: rgba(255,255,255,0.35); font-size: 13px; }
         .disco-toggle-manual { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 12px; text-decoration: underline; cursor: pointer; align-self: center; padding: 4px; }
         .disco-divider { display: flex; align-items: center; gap: 10px; margin: 4px 0 2px; }
         .disco-divider .line { flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
         .disco-divider span { font-size: 11px; color: rgba(255,255,255,0.3); white-space: nowrap; }
 
-        /* ── 방 만들기 모달 ── */
-        .disco-modal-box { width: 100%; max-width: 340px; background: rgba(15,15,20,0.96); border: 1px solid var(--card-border); border-radius: 18px; padding: 20px 20px 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        .disco-modal-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+        /* ── 방 만들기 모달 (같은 레드 액센트) ── */
+        .disco-modal-box { --dr: #e4362a; width: 100%; max-width: 340px; background: #0e0e0f; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 20px 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+        .disco-modal-title { font-size: 15px; font-weight: 700; color: #f5f4f2; margin-bottom: 14px; }
         .disco-modal-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin: 14px 0 7px; }
         .disco-modal-label:first-of-type { margin-top: 0; }
         .disco-modal-box input[type="text"] {
-            width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 10px;
-            color: #fff; font-size: 13.5px; padding: 10px 12px; outline: none;
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09); border-radius: 8px;
+            color: #f5f4f2; font-size: 13.5px; padding: 10px 12px; outline: none;
         }
-        .disco-modal-box input[type="text"]:focus { border-color: var(--accent-color); }
+        .disco-modal-box input[type="text"]:focus { border-color: var(--dr); }
         .disco-cat-grid { display: flex; flex-wrap: wrap; gap: 7px; }
-        .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; }
+        .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; padding: 10px 12px; }
         .disco-pp-row-label { font-size: 12.5px; color: rgba(255,255,255,0.7); }
-        .disco-modal-submit { width: 100%; margin-top: 18px; padding: 12px; border-radius: 12px; background: var(--accent-color); color: #000; font-weight: 800; font-size: 14px; border: none; cursor: pointer; }
-        .disco-modal-cancel { width: 100%; margin-top: 8px; padding: 10px; border-radius: 12px; background: none; color: rgba(255,255,255,0.4); font-weight: 600; font-size: 12.5px; border: none; cursor: pointer; }
+        .disco-modal-submit { width: 100%; margin-top: 18px; padding: 12px; border-radius: 8px; background: var(--dr); color: #fff; font-weight: 700; font-size: 14px; border: none; cursor: pointer; }
+        .disco-modal-cancel { width: 100%; margin-top: 8px; padding: 10px; border-radius: 8px; background: none; color: rgba(255,255,255,0.4); font-weight: 600; font-size: 12.5px; border: none; cursor: pointer; }
 
         /* ── 번역 자막 ── */
         .subtitle-section { width: 100%; max-width: 520px; padding: 0 4px; }
@@ -1643,15 +1656,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         <!-- ── Discover: 라이브 방 둘러보기 ── -->
         <div id="discover-screen">
+            <div class="disco-eyebrow" id="disco-eyebrow">Live now</div>
             <div class="disco-head">
                 <h2 class="disco-title" id="disco-title">Discover</h2>
-                <span class="disco-live-count"><span class="dot"></span><span id="disco-live-count-text">0개 방 진행 중</span></span>
+                <span class="disco-live-count" id="disco-live-count-text">0개 방 진행 중</span>
             </div>
             <div class="disco-search-row">
                 <input type="text" id="disco-search-input" class="disco-search-input" placeholder="주제 검색...">
                 <button class="disco-create-btn" id="disco-create-btn" onclick="openDiscoCreateModal()">+ 방 만들기</button>
             </div>
             <div class="disco-chip-row" id="disco-chip-row"></div>
+            <div class="disco-trending-row" id="disco-trending-row"></div>
             <div class="disco-grid" id="disco-grid"></div>
             <div class="disco-empty" id="disco-empty" style="display:none;">지금 진행 중인 방이 없어요. 첫 방을 만들어보세요!</div>
             <button class="disco-toggle-manual" id="disco-toggle-manual" onclick="toggleDiscoManualEntry()">직접 주제 입력하기 ↓</button>
@@ -2587,6 +2602,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         return wrap;
     }
 
+    function buildDiscoWaveEl(seed) {
+        const wave = document.createElement('div');
+        wave.className = 'disco-wave';
+        const anims = ['discoWave1', 'discoWave2', 'discoWave3', 'discoWave4'];
+        const barCount = 2 + (seed % 3); // 2~4개, 방마다 다르게
+        for (let i = 0; i < barCount; i++) {
+            const bar = document.createElement('span');
+            bar.style.animation = anims[(seed + i) % anims.length] + ' 1s ease-in-out infinite';
+            bar.style.animationDelay = (i * 0.1) + 's';
+            wave.appendChild(bar);
+        }
+        return wave;
+    }
+
     function createDiscoCardEl(room) {
         const card = document.createElement('button');
         card.className = 'disco-card';
@@ -2630,10 +2659,38 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const full = room.occupancy >= room.maxPeople;
         occ.textContent = room.occupancy + '/' + room.maxPeople + (full ? (currentLang === 'ko' ? ' · 가득참' : ' · full') : '');
         bottom.appendChild(occ);
+        let seed = 0;
+        for (let i = 0; i < room.channelId.length; i++) seed = (seed + room.channelId.charCodeAt(i)) % 97;
+        bottom.appendChild(buildDiscoWaveEl(seed));
         card.appendChild(bottom);
 
         card.onclick = () => joinDiscoRoom(room);
         return card;
+    }
+
+    function renderDiscoTrendingRow() {
+        const row = document.getElementById('disco-trending-row');
+        if (!row) return;
+        row.innerHTML = '';
+        const tags = (typeof allLiveTopics !== 'undefined' ? allLiveTopics : []).slice(0, 6);
+        if (tags.length === 0) { row.style.display = 'none'; return; }
+        row.style.display = 'flex';
+        const label = document.createElement('span');
+        label.className = 'disco-trending-label';
+        label.textContent = currentLang === 'ko' ? '트렌딩' : 'Trending';
+        row.appendChild(label);
+        tags.forEach(t => {
+            const tag = document.createElement('button');
+            tag.type = 'button';
+            tag.className = 'disco-trending-tag';
+            tag.textContent = t;
+            tag.onclick = () => {
+                discoSearchQuery = t;
+                document.getElementById('disco-search-input').value = t;
+                renderDiscoGrid();
+            };
+            row.appendChild(tag);
+        });
     }
 
     function renderDiscoGrid() {
@@ -2641,6 +2698,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const empty = document.getElementById('disco-empty');
         const countText = document.getElementById('disco-live-count-text');
         if (!grid) return;
+        renderDiscoTrendingRow();
 
         let rooms = discoRooms;
         if (discoActiveCategory !== 'all') rooms = rooms.filter(r => r.category === discoActiveCategory);
