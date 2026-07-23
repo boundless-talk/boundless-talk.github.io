@@ -1257,6 +1257,85 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .room-report-btn:hover { border-color: var(--accent-color); color: var(--accent-color); background: rgba(0,229,255,0.05); }
 
+        /* ── 핑퐁 전환 버튼 (통화 중) ── */
+        .room-pp-switch-btn {
+            width: 100%; max-width: 420px; margin: 0 0 8px; padding: 11px;
+            border-radius: 20px; background: rgba(0,229,255,0.06);
+            border: 1px solid rgba(0,229,255,0.3); color: var(--accent-color);
+            font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .room-pp-switch-btn:hover { background: rgba(0,229,255,0.12); }
+        .room-pp-switch-btn:disabled { opacity: 0.4; cursor: default; }
+
+        /* ── Discover 화면 ── */
+        #discover-screen { width: 100%; display: flex; flex-direction: column; gap: 14px; margin-bottom: 22px; }
+        .disco-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+        .disco-title { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: #fff; margin: 0; }
+        .disco-live-count { font-size: 11.5px; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+        .disco-live-count .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-color); animation: pulse-dot 1.4s infinite; }
+        .disco-search-row { display: flex; gap: 8px; }
+        .disco-search-input {
+            flex: 1; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 14px;
+            color: #fff; font-size: 13.5px; padding: 11px 14px; outline: none; transition: border-color 0.2s;
+        }
+        .disco-search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 12px var(--accent-glow); }
+        .disco-search-input::placeholder { color: rgba(255,255,255,0.3); }
+        .disco-create-btn {
+            flex: none; background: var(--accent-color); color: #000; font-size: 13px; font-weight: 800;
+            border: none; border-radius: 14px; padding: 0 16px; cursor: pointer; white-space: nowrap;
+        }
+        .disco-chip-row { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+        .disco-chip-row::-webkit-scrollbar { display: none; }
+        .disco-chip {
+            flex: none; font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 20px;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--card-border); color: rgba(255,255,255,0.65);
+            cursor: pointer; transition: all 0.15s; user-select: none;
+        }
+        .disco-chip.active { background: rgba(0,229,255,0.14); border-color: var(--accent-color); color: var(--accent-color); }
+        .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+        .disco-card {
+            background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px;
+            padding: 16px; display: flex; flex-direction: column; gap: 12px; cursor: pointer;
+            transition: border-color 0.15s, transform 0.15s; text-align: left;
+        }
+        .disco-card:hover { border-color: rgba(0,229,255,0.4); transform: translateY(-1px); }
+        .disco-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .disco-card-cat { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .disco-card-badges { display: flex; align-items: center; gap: 6px; flex-none; }
+        .disco-pp-badge { font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; color: #ffd166; background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.35); border-radius: 8px; padding: 2px 6px; white-space: nowrap; }
+        .disco-live-badge { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; color: var(--accent-color); }
+        .disco-live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-color); animation: pulse-dot 1.4s infinite; }
+        .disco-card-mid { display: flex; align-items: center; gap: 13px; }
+        .disco-ring { position: relative; width: 44px; height: 44px; flex: none; }
+        .disco-ring .ring-o { position: absolute; inset: 0; border: 1px solid rgba(255,255,255,0.18); border-radius: 50%; }
+        .disco-ring .ring-n { position: absolute; width: 6px; height: 6px; border-radius: 50%; }
+        .disco-ring .ring-n.filled { background: var(--accent-color); }
+        .disco-ring .ring-n.empty { background: transparent; border: 1px solid rgba(255,255,255,0.22); }
+        .disco-card-title { margin: 0; font-size: 14.5px; font-weight: 700; line-height: 1.3; color: #fff; }
+        .disco-card-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .disco-occupancy { font-size: 11.5px; color: rgba(255,255,255,0.45); }
+        .disco-empty { padding: 28px 14px; text-align: center; color: rgba(255,255,255,0.35); font-size: 13px; }
+        .disco-toggle-manual { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 12px; text-decoration: underline; cursor: pointer; align-self: center; padding: 4px; }
+        .disco-divider { display: flex; align-items: center; gap: 10px; margin: 4px 0 2px; }
+        .disco-divider .line { flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+        .disco-divider span { font-size: 11px; color: rgba(255,255,255,0.3); white-space: nowrap; }
+
+        /* ── 방 만들기 모달 ── */
+        .disco-modal-box { width: 100%; max-width: 340px; background: rgba(15,15,20,0.96); border: 1px solid var(--card-border); border-radius: 18px; padding: 20px 20px 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .disco-modal-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+        .disco-modal-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin: 14px 0 7px; }
+        .disco-modal-label:first-of-type { margin-top: 0; }
+        .disco-modal-box input[type="text"] {
+            width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 10px;
+            color: #fff; font-size: 13.5px; padding: 10px 12px; outline: none;
+        }
+        .disco-modal-box input[type="text"]:focus { border-color: var(--accent-color); }
+        .disco-cat-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+        .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px 12px; }
+        .disco-pp-row-label { font-size: 12.5px; color: rgba(255,255,255,0.7); }
+        .disco-modal-submit { width: 100%; margin-top: 18px; padding: 12px; border-radius: 12px; background: var(--accent-color); color: #000; font-weight: 800; font-size: 14px; border: none; cursor: pointer; }
+        .disco-modal-cancel { width: 100%; margin-top: 8px; padding: 10px; border-radius: 12px; background: none; color: rgba(255,255,255,0.4); font-weight: 600; font-size: 12.5px; border: none; cursor: pointer; }
+
         /* ── 번역 자막 ── */
         .subtitle-section { width: 100%; max-width: 520px; padding: 0 4px; }
         .subtitle-ctrl { display: flex; align-items: center; gap: 8px; padding: 12px 0 6px; flex-wrap: wrap; }
@@ -1562,6 +1641,55 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         <div id="talk-controls" style="display: none; width: 100%;">
 
+        <!-- ── Discover: 라이브 방 둘러보기 ── -->
+        <div id="discover-screen">
+            <div class="disco-head">
+                <h2 class="disco-title" id="disco-title">Discover</h2>
+                <span class="disco-live-count"><span class="dot"></span><span id="disco-live-count-text">0개 방 진행 중</span></span>
+            </div>
+            <div class="disco-search-row">
+                <input type="text" id="disco-search-input" class="disco-search-input" placeholder="주제 검색...">
+                <button class="disco-create-btn" id="disco-create-btn" onclick="openDiscoCreateModal()">+ 방 만들기</button>
+            </div>
+            <div class="disco-chip-row" id="disco-chip-row"></div>
+            <div class="disco-grid" id="disco-grid"></div>
+            <div class="disco-empty" id="disco-empty" style="display:none;">지금 진행 중인 방이 없어요. 첫 방을 만들어보세요!</div>
+            <button class="disco-toggle-manual" id="disco-toggle-manual" onclick="toggleDiscoManualEntry()">직접 주제 입력하기 ↓</button>
+        </div>
+
+        <!-- ── 방 만들기 모달 ── -->
+        <div class="modal-overlay" id="disco-create-modal" onclick="if(event.target===this) closeDiscoCreateModal()">
+            <div class="disco-modal-box">
+                <div class="disco-modal-title">새 방 만들기</div>
+
+                <div class="disco-modal-label">주제</div>
+                <input type="text" id="disco-create-topic-input" placeholder="예: 오늘 있었던 일, F1, 자취 꿀팁">
+
+                <div class="disco-modal-label">카테고리</div>
+                <div class="disco-cat-grid" id="disco-create-cat-grid"></div>
+
+                <div class="disco-modal-label">인원</div>
+                <select id="disco-create-maxpeople-select" class="tip-card" style="width:100%;">
+                    <option value="3">3명</option>
+                    <option value="4" selected>4명 (추천)</option>
+                    <option value="6">6명</option>
+                </select>
+
+                <div class="disco-modal-label">모드</div>
+                <div class="disco-pp-row">
+                    <span class="disco-pp-row-label">🏓 핑퐁 모드 (순서대로 1분 30초씩 발언)</span>
+                    <div id="disco-create-pp-toggle" onclick="toggleDiscoCreatePP()" style="display:flex;align-items:center;gap:2px;background:rgba(255,255,255,0.06);border-radius:16px;padding:3px;cursor:pointer;flex:none;">
+                        <div id="disco-create-pp-off" style="padding:5px 10px;border-radius:13px;font-size:10.5px;font-weight:700;background:rgba(255,255,255,0.1);color:#fff;">OFF</div>
+                        <div id="disco-create-pp-on" style="padding:5px 10px;border-radius:13px;font-size:10.5px;font-weight:700;color:rgba(255,255,255,0.35);">ON</div>
+                    </div>
+                </div>
+
+                <button class="disco-modal-submit" id="disco-create-submit-btn" onclick="submitDiscoCreate()">방 만들고 시작하기</button>
+                <button class="disco-modal-cancel" onclick="closeDiscoCreateModal()">취소</button>
+            </div>
+        </div>
+
+        <div class="disco-divider" id="manual-entry-divider"><div class="line"></div><span>직접 입력</span><div class="line"></div></div>
 
         <div id="live-topics-bar" style="display:none; margin-bottom:10px;">
     <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
@@ -1956,6 +2084,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div id="room-part-list"></div>
             </div>
         </div>
+        <button class="room-pp-switch-btn" id="room-pp-switch-btn" style="display:none;" onclick="switchToPingpong()">🏓 이 방을 핑퐁 모드로 전환하기</button>
         <div class="room-footer">
             <button class="room-leave-btn" id="room-leave-btn">🚪 대화방 나가기</button>
             <button class="room-report-btn" id="room-report-btn">🚨 신고하기</button>
@@ -2398,6 +2527,246 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let ppTurnRef = null;           // Firebase 리스너 ref
     let ppSlowMatchTimer = null;    // 매칭 지연 감지 타이머
     const PP_TURN_SEC = 90;         // 1분 30초
+
+    // ══════════════════ Discover 화면 ══════════════════
+    const DISCO_CATEGORIES = [
+        { id: 'debate',    ko: '토론',   en: 'Debate',     kws: ['토론','논쟁','정치','시사','찬반'] },
+        { id: 'tech',      ko: '테크',   en: 'Tech',       kws: ['테크','기술','개발','코딩','프로그래밍','ai','인공지능','it'] },
+        { id: 'latenight', ko: '심야',   en: 'Late Night', kws: ['심야','새벽','밤','불면','고민'] },
+        { id: 'music',     ko: '음악',   en: 'Music',      kws: ['음악','노래','플레이리스트','밴드','아이돌'] },
+        { id: 'life',      ko: '일상',   en: 'Life',       kws: ['일상','연애','썸','데이트','자취','직장','취준'] },
+        { id: 'gaming',    ko: '게임',   en: 'Gaming',     kws: ['게임','롤','배그','발로란트','오버워치','스팀'] },
+        { id: 'general',   ko: '기타',   en: 'General',    kws: [] }
+    ];
+    function discoCatLabel(id) {
+        const c = DISCO_CATEGORIES.find(c => c.id === id) || DISCO_CATEGORIES[DISCO_CATEGORIES.length - 1];
+        return currentLang === 'ko' ? c.ko : c.en;
+    }
+    function guessDiscoCategory(topic) {
+        const t = String(topic || '').toLowerCase();
+        for (const c of DISCO_CATEGORIES) {
+            if (c.kws.some(k => t.includes(k))) return c.id;
+        }
+        return 'general';
+    }
+
+    let discoRooms = [];              // activeTopics 리스너가 채움
+    let discoActiveCategory = 'all';
+    let discoSearchQuery = '';
+    let pendingRoomCategory = null;   // Discover에서 방 만들기/입장 시, join-btn 흐름에 실어 보낼 카테고리
+    let discoCreatePP = false;
+
+    function renderDiscoChipRow() {
+        const row = document.getElementById('disco-chip-row');
+        if (!row) return;
+        row.innerHTML = '';
+        const allChip = document.createElement('div');
+        allChip.className = 'disco-chip' + (discoActiveCategory === 'all' ? ' active' : '');
+        allChip.textContent = currentLang === 'ko' ? '전체' : 'All';
+        allChip.onclick = () => { discoActiveCategory = 'all'; renderDiscoChipRow(); renderDiscoGrid(); };
+        row.appendChild(allChip);
+        DISCO_CATEGORIES.forEach(c => {
+            const chip = document.createElement('div');
+            chip.className = 'disco-chip' + (discoActiveCategory === c.id ? ' active' : '');
+            chip.textContent = currentLang === 'ko' ? c.ko : c.en;
+            chip.onclick = () => { discoActiveCategory = c.id; renderDiscoChipRow(); renderDiscoGrid(); };
+            row.appendChild(chip);
+        });
+    }
+
+    function buildDiscoRingEl(occupancy, maxPeople) {
+        const wrap = document.createElement('div');
+        wrap.className = 'disco-ring';
+        const o = document.createElement('div');
+        o.className = 'ring-o';
+        wrap.appendChild(o);
+        const n = Math.max(1, Math.min(maxPeople || 4, 8));
+        for (let i = 0; i < n; i++) {
+            const angle = (-90 + (360 / n) * i) * Math.PI / 180;
+            const x = 22 + 19 * Math.cos(angle) - 3;
+            const y = 22 + 19 * Math.sin(angle) - 3;
+            const node = document.createElement('div');
+            node.className = 'ring-n ' + (i < occupancy ? 'filled' : 'empty');
+            node.style.left = x + 'px';
+            node.style.top = y + 'px';
+            wrap.appendChild(node);
+        }
+        return wrap;
+    }
+
+    function createDiscoCardEl(room) {
+        const card = document.createElement('button');
+        card.className = 'disco-card';
+        card.type = 'button';
+
+        const top = document.createElement('div');
+        top.className = 'disco-card-top';
+        const cat = document.createElement('span');
+        cat.className = 'disco-card-cat';
+        cat.textContent = discoCatLabel(room.category);
+        top.appendChild(cat);
+        const badges = document.createElement('div');
+        badges.className = 'disco-card-badges';
+        if (room.pingpong) {
+            const pp = document.createElement('span');
+            pp.className = 'disco-pp-badge';
+            pp.textContent = '🏓 PP';
+            badges.appendChild(pp);
+        }
+        const live = document.createElement('span');
+        live.className = 'disco-live-badge';
+        live.innerHTML = '<span class="dot"></span>';
+        live.appendChild(document.createTextNode(currentLang === 'ko' ? 'LIVE' : 'LIVE'));
+        badges.appendChild(live);
+        top.appendChild(badges);
+        card.appendChild(top);
+
+        const mid = document.createElement('div');
+        mid.className = 'disco-card-mid';
+        mid.appendChild(buildDiscoRingEl(room.occupancy, room.maxPeople));
+        const title = document.createElement('h3');
+        title.className = 'disco-card-title';
+        title.textContent = room.topic;
+        mid.appendChild(title);
+        card.appendChild(mid);
+
+        const bottom = document.createElement('div');
+        bottom.className = 'disco-card-bottom';
+        const occ = document.createElement('span');
+        occ.className = 'disco-occupancy';
+        const full = room.occupancy >= room.maxPeople;
+        occ.textContent = room.occupancy + '/' + room.maxPeople + (full ? (currentLang === 'ko' ? ' · 가득참' : ' · full') : '');
+        bottom.appendChild(occ);
+        card.appendChild(bottom);
+
+        card.onclick = () => joinDiscoRoom(room);
+        return card;
+    }
+
+    function renderDiscoGrid() {
+        const grid = document.getElementById('disco-grid');
+        const empty = document.getElementById('disco-empty');
+        const countText = document.getElementById('disco-live-count-text');
+        if (!grid) return;
+
+        let rooms = discoRooms;
+        if (discoActiveCategory !== 'all') rooms = rooms.filter(r => r.category === discoActiveCategory);
+        if (discoSearchQuery) {
+            const q = discoSearchQuery.toLowerCase();
+            rooms = rooms.filter(r => r.topic.toLowerCase().includes(q));
+        }
+
+        if (countText) countText.textContent = discoRooms.length + (currentLang === 'ko' ? '개 방 진행 중' : ' circles live');
+
+        grid.innerHTML = '';
+        if (rooms.length === 0) {
+            if (empty) {
+                empty.style.display = 'block';
+                empty.textContent = discoRooms.length === 0
+                    ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 첫 방을 만들어보세요!' : 'No circles live right now. Start the first one!')
+                    : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No circles match your filters.');
+            }
+            return;
+        }
+        if (empty) empty.style.display = 'none';
+        rooms.forEach(room => grid.appendChild(createDiscoCardEl(room)));
+    }
+
+    function joinDiscoRoom(room) {
+        if (isJoined || isJoining) return;
+        pendingRoomCategory = room.category;
+        pingpongMode = !!room.pingpong;
+        setPingpongToggleUI(pingpongMode);
+        document.getElementById('topic-input').value = room.topic;
+        document.getElementById('max-people-select').value = String(room.maxPeople || 4);
+        document.getElementById('join-btn').click();
+    }
+
+    function toggleDiscoManualEntry() {
+        const el = document.getElementById('manual-entry-divider');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── 방 만들기 모달 ──
+    let discoCreateSelectedCat = 'general';
+    function renderDiscoCreateCatGrid() {
+        const grid = document.getElementById('disco-create-cat-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        DISCO_CATEGORIES.forEach(c => {
+            const chip = document.createElement('div');
+            chip.className = 'disco-chip' + (discoCreateSelectedCat === c.id ? ' active' : '');
+            chip.textContent = currentLang === 'ko' ? c.ko : c.en;
+            chip.onclick = () => { discoCreateSelectedCat = c.id; renderDiscoCreateCatGrid(); };
+            grid.appendChild(chip);
+        });
+    }
+    function setDiscoCreatePPUI(on) {
+        const onEl = document.getElementById('disco-create-pp-on');
+        const offEl = document.getElementById('disco-create-pp-off');
+        if (!onEl || !offEl) return;
+        if (on) {
+            onEl.style.background = '#00e5ff'; onEl.style.color = '#000';
+            offEl.style.background = 'transparent'; offEl.style.color = 'rgba(255,255,255,0.35)';
+        } else {
+            offEl.style.background = 'rgba(255,255,255,0.1)'; offEl.style.color = '#fff';
+            onEl.style.background = 'transparent'; onEl.style.color = 'rgba(255,255,255,0.35)';
+        }
+    }
+    function toggleDiscoCreatePP() {
+        discoCreatePP = !discoCreatePP;
+        setDiscoCreatePPUI(discoCreatePP);
+    }
+    function openDiscoCreateModal() {
+        discoCreateSelectedCat = 'general';
+        discoCreatePP = false;
+        document.getElementById('disco-create-topic-input').value = '';
+        document.getElementById('disco-create-maxpeople-select').value = '4';
+        renderDiscoCreateCatGrid();
+        setDiscoCreatePPUI(false);
+        document.getElementById('disco-create-modal').classList.add('active');
+    }
+    function closeDiscoCreateModal() {
+        document.getElementById('disco-create-modal').classList.remove('active');
+    }
+    function submitDiscoCreate() {
+        if (isJoined || isJoining) return;
+        const topicInput = document.getElementById('disco-create-topic-input');
+        const topic = topicInput.value.normalize('NFC').trim();
+        if (!topic) {
+            alert(currentLang === 'ko' ? '주제를 입력해 주세요.' : 'Please enter a topic.');
+            topicInput.focus();
+            return;
+        }
+        pendingRoomCategory = discoCreateSelectedCat;
+        pingpongMode = discoCreatePP;
+        setPingpongToggleUI(pingpongMode);
+        document.getElementById('topic-input').value = topic;
+        document.getElementById('max-people-select').value = document.getElementById('disco-create-maxpeople-select').value;
+        closeDiscoCreateModal();
+        document.getElementById('join-btn').click();
+    }
+
+    document.getElementById('disco-search-input').addEventListener('input', function() {
+        discoSearchQuery = this.value;
+        renderDiscoGrid();
+    });
+    renderDiscoChipRow();
+    document.getElementById('lang-toggle-btn').addEventListener('click', () => {
+        setTimeout(() => {
+            renderDiscoChipRow();
+            renderDiscoGrid();
+            const disTitle = document.getElementById('disco-title');
+            if (disTitle) disTitle.textContent = 'Discover';
+            const createBtn = document.getElementById('disco-create-btn');
+            if (createBtn) createBtn.textContent = currentLang === 'ko' ? '+ 방 만들기' : '+ New circle';
+            const searchInput = document.getElementById('disco-search-input');
+            if (searchInput) searchInput.placeholder = currentLang === 'ko' ? '주제 검색...' : 'Search topics...';
+            const manualBtn = document.getElementById('disco-toggle-manual');
+            if (manualBtn) manualBtn.textContent = currentLang === 'ko' ? '직접 주제 입력하기 ↓' : 'Type your own topic ↓';
+        }, 0);
+    });
+    // ══════════════════ /Discover 화면 ══════════════════
 
     function getRankEmoji(total) {
         if (total >= 200) return '🔮';
@@ -2880,6 +3249,7 @@ database.ref('activeTopics').on('value', (snap) => {
     const topics = [];
     const STALE_MS = 5 * 60 * 1000; // 5분 이상 업데이트 없으면 유령 방으로 간주
     const now = Date.now();
+    const discoRoomsBuilt = [];
 
     Object.entries(data).forEach(([channelId, channelUsers]) => {
         const users = Object.entries(channelUsers || {});
@@ -2889,12 +3259,25 @@ database.ref('activeTopics').on('value', (snap) => {
             database.ref('activeTopics/' + channelId).remove();
             return;
         }
-        const entry = users.find(([, u]) => u.ts && (now - u.ts) <= STALE_MS);
+        const liveUsers = users.filter(([, u]) => u.ts && (now - u.ts) <= STALE_MS);
+        const entry = liveUsers[0];
         if (entry && entry[1].topic && !topics.includes(entry[1].topic)) {
             topics.push(entry[1].topic);
         }
+        if (entry) {
+            discoRoomsBuilt.push({
+                channelId,
+                topic: entry[1].topic,
+                category: entry[1].category || guessDiscoCategory(entry[1].topic),
+                maxPeople: entry[1].maxPeople || 4,
+                occupancy: liveUsers.length,
+                pingpong: channelId.endsWith('_pp')
+            });
+        }
     });
-    
+    discoRooms = discoRoomsBuilt;
+    renderDiscoGrid();
+
     const bar = document.getElementById('live-topics-bar');
     const tagsEl = document.getElementById('live-topics-tags');
     if (!bar || !tagsEl) return;
@@ -4259,7 +4642,8 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, rankEmoji: myRankEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP });
+    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, rankEmoji: myRankEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP, category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople });
+    pendingRoomCategory = null;
     myTopicRef.onDisconnect().remove();
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
     window._heartbeatInterval = setInterval(() => {
@@ -4338,6 +4722,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 if (myFbUid) startPPListener(safeAgoraChannelId, myFbUid, [myFbUid]);
                 startPPReactionListener(safeAgoraChannelId);
                 startPPSlowMatchTimer();
+                const ppSwitchBtn = document.getElementById('room-pp-switch-btn');
+                if (ppSwitchBtn) ppSwitchBtn.style.display = 'none';
+            } else if (!finalTopic.startsWith('🔒_')) {
+                const ppSwitchBtn = document.getElementById('room-pp-switch-btn');
+                if (ppSwitchBtn) { ppSwitchBtn.style.display = 'block'; ppSwitchBtn.disabled = false; }
             }
 
             // 핑퐁 토글 숨기기
@@ -4651,6 +5040,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         document.getElementById('subtitle-lang-row').style.display = 'none';
         document.getElementById('subtitle-list').style.display = 'none';
         document.getElementById('subtitle-list').innerHTML = '';
+        const ppSwitchBtn = document.getElementById('room-pp-switch-btn');
+        if (ppSwitchBtn) ppSwitchBtn.style.display = 'none';
         if (currentChannelName && auth.currentUser) {
             const channelRef = database.ref('activeTopics/' + safeAgoraChannelId);
             await channelRef.child(auth.currentUser.uid).remove();
@@ -4667,13 +5058,13 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     let targetSubtitleLang = 'en';
     let subtitleFbRef = null;
 
-    // ── 핑퐁 모드 토글 ──
-    function togglePingpongMode() {
-        pingpongMode = !pingpongMode;
+    // ── 핑퐁 모드 토글 UI 반영 (전역 pingpongMode 값을 화면에 그리기만 함) ──
+    function setPingpongToggleUI(on) {
         const row = document.getElementById('pingpong-toggle-row');
         const sub = document.getElementById('pp-toggle-sub');
         const tag = document.getElementById('pp-onoff-tag');
-        if (pingpongMode) {
+        if (!row || !sub || !tag) return;
+        if (on) {
             sub.textContent = '1m30s';
             sub.style.color = '#ffd166';
             tag.textContent = 'ON';
@@ -4688,6 +5079,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             tag.style.background = 'rgba(255,255,255,0.06)';
             row.style.border = '1px solid rgba(255,255,255,0.12)';
         }
+    }
+    function togglePingpongMode() {
+        pingpongMode = !pingpongMode;
+        setPingpongToggleUI(pingpongMode);
     }
 
     // ── 핑퐁 릴레이 바 렌더 ──
@@ -4915,6 +5310,41 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 speechStyleConfirmed = true;
                 document.getElementById('join-btn').click();
                 ppAutoSwitchInProgress = false;
+            }
+        }, 150);
+    }
+
+    // ── 일반 모드로 통화 중이던 방을 나가서, 같은 주제의 핑퐁 모드 방으로 재입장 ──
+    function switchToPingpong() {
+        const savedTopic = currentChannelName || document.getElementById('topic-input').value;
+        if (!savedTopic || savedTopic.startsWith('🔒_')) return;
+        const btn = document.getElementById('room-pp-switch-btn');
+        if (btn) { btn.disabled = true; btn.textContent = currentLang === 'ko' ? '전환 중...' : 'Switching...'; }
+
+        ppAutoSwitchInProgress = true;
+        document.getElementById('leave-btn').click();
+
+        pingpongMode = true;
+        setPingpongToggleUI(true);
+
+        let waited = 0;
+        const maxWait = 6000;
+        const pollInterval = setInterval(() => {
+            waited += 150;
+            const stillBlocked = isJoined || isJoining ||
+                client.connectionState === "CONNECTING" ||
+                client.connectionState === "CONNECTED" ||
+                client.connectionState === "RECONNECTING";
+            const leftCleanly = !stillBlocked;
+            if (leftCleanly || waited >= maxWait) {
+                clearInterval(pollInterval);
+                const topicInput = document.getElementById('topic-input');
+                if (topicInput) topicInput.value = savedTopic;
+                nicknameConfirmed = true;
+                speechStyleConfirmed = true;
+                document.getElementById('join-btn').click();
+                ppAutoSwitchInProgress = false;
+                if (btn) { btn.disabled = false; btn.textContent = currentLang === 'ko' ? '🏓 이 방을 핑퐁 모드로 전환하기' : '🏓 Switch this room to Ping Pong'; }
             }
         }, 150);
     }
