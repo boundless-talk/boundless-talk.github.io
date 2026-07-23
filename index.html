@@ -31,7 +31,7 @@
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#041025">
+    <meta name="theme-color" content="#0b0b0c">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -44,7 +44,7 @@
 
     <style>
         :root {
-            --bg-gradient: #041025;
+            --bg-gradient: #0b0b0c;
             --accent-color: #99E1D9;
             --accent-rgb: 153,225,217;
             --accent-hover: #7DD4C9;
@@ -62,7 +62,7 @@
 
         body {
             font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, sans-serif;
-            background: #041025;
+            background: #0b0b0c;
             color: #f5f4f2;
             display: flex;
             flex-direction: column;
@@ -83,7 +83,7 @@
         #splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #041025;
+            background: #0b0b0c;
             z-index: 6000;
             display: flex;
             flex-direction: column;
@@ -107,16 +107,14 @@
 #intro-screen {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background:
-        linear-gradient(180deg, rgba(10,10,15,0.4) 0%, rgba(10,10,15,0.45) 50%, rgba(10,10,15,0.7) 100%),
-        url('intro-bg.png') center center / cover no-repeat;
+    background: #0b0b0c;
     z-index: 5000;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: safe center;
     text-align: center;
-    padding: max(30px, calc(env(safe-area-inset-top) + 20px)) 30px max(30px, env(safe-area-inset-bottom)) 30px;
+    padding: max(96px, calc(env(safe-area-inset-top) + 86px)) 30px max(30px, env(safe-area-inset-bottom)) 30px;
     opacity: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -144,19 +142,13 @@
             margin-bottom: 56px;
         }
         .intro-desc {
-            font-size: 16px;
-            color: rgba(255,255,255,0.88);
-            line-height: 1.7;
+            font-size: 15px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
             max-width: 360px;
             margin-top: 24px;
             margin-bottom: 32px;
-            letter-spacing: 0.3px;
-            text-shadow: 0 1px 8px rgba(0,0,0,0.65), 0 0 20px rgba(255,255,255,0.14);
-        }
-        .intro-desc strong {
-            color: var(--accent-color);
-            font-weight: 600;
-            text-shadow: 0 0 16px rgba(var(--accent-rgb),0.5), 0 1px 6px rgba(0,0,0,0.5);
+            letter-spacing: 0.2px;
         }
         .intro-start-btn {
             width: auto !important;
@@ -177,6 +169,26 @@
             transform: translateY(-2px) !important;
             box-shadow: 0 8px 28px rgba(var(--accent-rgb),0.45) !important;
         }
+        .intro-glow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            width: min(560px, 150vw); height: min(560px, 150vw);
+            background: radial-gradient(circle, rgba(var(--accent-rgb),0.18), transparent 70%);
+            pointer-events: none;
+        }
+        .intro-wordmark {
+            position: relative;
+            font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
+            color: #fff;
+        }
+        html[data-cute-mode="cute"] .intro-wordmark { color: #2b1f24; }
+        .intro-how-btn {
+            width: auto; padding: 16px 28px; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.7);
+            font-size: 16px; font-weight: 600; border-radius: 50px; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .intro-how-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+        html[data-cute-mode="cute"] .intro-how-btn { background: #fff; border-color: rgba(0,0,0,.08); color: rgba(43,31,36,.65); }
         .intro-pulse {
             width: 6px; height: 6px;
             background: var(--accent-color);
@@ -321,7 +333,7 @@
         #settings-modal {
             position: absolute; top: 64px; right: 20px;
             width: 280px;
-            background: #0A1E3F;
+            background: #141416;
             border: 1px solid rgba(255,255,255,0.09);
             border-radius: 10px; padding: 16px 16px 20px;
             animation: fadeDown 0.2s ease;
@@ -355,47 +367,6 @@
         }
         .lang-btn:hover { border-color: var(--accent-color); color: var(--accent-color); background: rgba(var(--accent-rgb),0.05); }
 
-        .reputation-board {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(var(--accent-rgb),0.25);
-            padding: 16px; border-radius: 20px; margin-bottom: 25px;
-            box-shadow: 0 0 24px rgba(var(--accent-rgb),0.08), 0 4px 20px rgba(0,0,0,0.3);
-            width: 100%; max-width: 400px;
-            position: relative; overflow: hidden;
-        }
-        .stats-rank-row { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: rgba(255,255,255,0.45); text-align: center; margin-bottom: 12px; }
-        .stats-rank-row span { color: #ffd166; font-weight: 800; }
-        .stats-grid { display: flex; gap: 10px; align-items: stretch; }
-        .stats-main-badge {
-            flex: 0 0 auto; width: 110px;
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px; padding: 12px 8px; text-align: center;
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-        }
-        .stats-main-emoji { font-size: 32px; line-height: 1; }
-        .stats-main-label { font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,0.45); font-weight: 700; }
-        .stats-main-value { font-size: 26px; font-weight: 800; color: #fff; line-height: 1; }
-        .stats-main-badge .stats-bar { width: 100%; margin-top: 6px; }
-        .stats-sub-grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stats-sub-badge {
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px; padding: 8px 10px;
-            display: flex; flex-direction: column; gap: 5px;
-        }
-        .stats-sub-top { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 600; }
-        .stats-sub-top strong { color: #fff; }
-        .stats-bar { height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; margin-top: 2px; }
-        .stats-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent-color), var(--accent-light)); transition: width 0.5s ease; }
-        #rank-info-popup { display: none; }
-        #rank-info-popup.active { display: block; }
-        .rank-badge-item { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
-        .rank-badge-icon { width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; border:1px solid rgba(255,255,255,0.08); }
-        .rank-badge-name { font-size:9px; font-weight:800; letter-spacing:0.5px; color:rgba(255,255,255,0.75); text-align:center; }
-        .rank-badge-range { font-size:9px; color:rgba(255,255,255,0.35); }
-        .rank-badge-desc { font-size:10px; color:rgba(255,255,255,0.4); margin-top:2px; line-height:1.4; }
-        .rank-badge-item { cursor:pointer; }
-        .rank-badge-item:hover .rank-badge-icon { border-color: rgba(255,255,255,0.3); }
-        .rank-desc-box { margin-top:8px; padding:8px 12px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:11px; color:rgba(255,255,255,0.6); text-align:center; line-height:1.5; }
 
         #main-container {
             width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
@@ -408,6 +379,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin-top: 64px;
             margin-bottom: 32px;
         }
 
@@ -455,12 +427,29 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── 인증 섹션 ── */
         #auth-section {
             width: 100%;
+            max-width: 360px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 0;
             margin-bottom: 25px;
+            background: #141416;
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 14px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+            padding: 28px 24px;
+            box-sizing: border-box;
         }
+        html[data-cute-mode="cute"] #auth-section {
+            background: #fff; border-color: rgba(0,0,0,0.06); box-shadow: 0 30px 80px rgba(255,111,156,0.2);
+            border-radius: 24px;
+        }
+        html[data-cute-mode="cute"] #auth-section input { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #2b1f24; }
+        html[data-cute-mode="cute"] #guest-login-btn { color: rgba(43,31,36,0.5) !important; border-color: rgba(0,0,0,0.15) !important; }
+        html[data-cute-mode="cute"] .auth-form-inner { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
+        html[data-cute-mode="cute"] .auth-form-inner .form-title { color: rgba(43,31,36,0.5); }
+        html[data-cute-mode="cute"] .form-hint { color: rgba(43,31,36,0.4); }
+        html[data-cute-mode="cute"] #find-pw-btn { color: rgba(43,31,36,0.4) !important; }
 
         /* 버튼 3개 그룹 */
         .auth-btn-group {
@@ -680,26 +669,33 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .tip-card {
-            background: #0D2547;
+            background: #141416;
             border: 1px solid rgba(255,255,255,0.09);
         }
         .glass-card {
-            background: #0A1E3F;
+            background: #141416;
             border: 1px solid rgba(255,255,255,0.09);
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .modal-content {
-            background: #0A1E3F;
+            background: #141416;
             border: 1px solid rgba(255,255,255,0.09);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
             padding: 30px;
-            border-radius: 10px; text-align: center; width: 100%; max-width: 440px;
+            border-radius: 14px; text-align: center; width: 100%; max-width: 440px;
             transform: scale(0.95); transition: all 0.3s ease;
             max-height: calc(100vh - 40px); overflow-y: auto;
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
         .modal-content h3 { margin-top: 0; font-weight: 400; letter-spacing: 1px; font-size: 20px; }
         .modal-content p { color: rgba(255,255,255,0.5); font-size: 13.5px; margin-bottom: 20px; line-height: 1.5; }
+        html[data-cute-mode="cute"] .modal-overlay { background: rgba(43,31,36,0.25); }
+        html[data-cute-mode="cute"] .modal-content {
+            background: #fff; border-color: rgba(0,0,0,0.06); box-shadow: 0 30px 80px rgba(255,111,156,0.2);
+            border-radius: 24px; color: #2b1f24;
+        }
+        html[data-cute-mode="cute"] .modal-content h3 { color: #2b1f24; }
+        html[data-cute-mode="cute"] .modal-content p { color: rgba(43,31,36,0.55); }
 
         .ai-summary-box {
             background: rgba(var(--accent-rgb),0.03); border: 1px dashed rgba(var(--accent-rgb),0.2);
@@ -725,6 +721,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             touch-action: manipulation; -webkit-tap-highlight-color: transparent;
         }
         .badge-vote-btn:hover:not(:disabled) { background: rgba(var(--accent-rgb),0.08); border-color: var(--accent-color); color: var(--accent-color); }
+        html[data-cute-mode="cute"] .target-btn,
+        html[data-cute-mode="cute"] .badge-vote-btn {
+            background: rgba(43,31,36,0.03); border-color: rgba(0,0,0,0.08); color: #2b1f24;
+        }
+        html[data-cute-mode="cute"] .ai-summary-box { background: rgba(255,111,156,0.05); border-color: rgba(255,111,156,0.3); color: #2b1f24; }
+        html[data-cute-mode="cute"] #summary-content { color: rgba(43,31,36,0.65) !important; }
+        html[data-cute-mode="cute"] #vote-skip { color: rgba(43,31,36,0.35) !important; }
         .badge-vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .badge-vote-btn.btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
@@ -734,23 +737,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
         }
 
-        #toggle-rep-btn {
-            width: auto;
-            display: none;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: rgba(255, 255, 255, 0.6);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 12.5px;
-            transition: all 0.2s;
-        }
-        #toggle-rep-btn:hover {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-            background: rgba(var(--accent-rgb), 0.05);
-        }
         /* 조그만 '또 대화하기' 버튼 스타일 */
 #btn-talk-again {
     width: auto;
@@ -778,7 +764,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 }
 
 #btn-talk-again,
-#toggle-rep-btn,
 #logout-btn {
     width: auto;
     height: 38px;
@@ -842,7 +827,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 }
 .nickname-modal-overlay.active { opacity: 1; visibility: visible; }
 .nickname-modal-box {
-    background: #0A1E3F;
+    background: #141416;
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 10px; padding: 28px 24px; width: 100%; max-width: 380px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
@@ -961,7 +946,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .room-header {
             width: 100%;
-            background: #0D2547;
+            background: #141416;
             border-bottom: 1px solid rgba(255,255,255,0.08);
             padding: 28px 24px 22px;
             display: flex;
@@ -1255,7 +1240,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         /* ── Discover 화면 (시안 1a 충실 재현: 레드 액센트 + 다크 카드) ── */
         #discover-screen {
-            --dr: var(--accent-color); --dr-glow: rgba(var(--accent-rgb),.35); --dsurf: #0D2547; --dbord: rgba(255,255,255,.08);
+            --dr: var(--accent-color); --dr-glow: rgba(var(--accent-rgb),.35); --dsurf: #141416; --dbord: rgba(255,255,255,.08);
             width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
         }
         @keyframes discoWave1 { 0%,100%{height:5px} 50%{height:18px} }
@@ -1275,7 +1260,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-navbar-links a { cursor: default; }
         .disco-navbar-links a.active { color: #f5f4f2; font-weight: 700; }
         .disco-navbar-cta {
-            flex: none; background: var(--dr); color: #041025; font-size: 12.5px; font-weight: 700;
+            width: auto; flex: none; margin: 0; background: var(--dr); color: #041025; font-size: 12.5px; font-weight: 700;
             border: none; border-radius: 4px; padding: 9px 16px; cursor: pointer; white-space: nowrap;
         }
         .disco-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--dr); margin-bottom: -6px; }
@@ -1300,7 +1285,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-trending-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
         .disco-trending-row::-webkit-scrollbar { display: none; }
         .disco-trending-label { font-size: 12px; color: rgba(255,255,255,0.35); flex: none; }
-        .disco-trending-tag { flex: none; font-size: 12px; color: var(--dr); padding: 5px 12px; border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 14px; cursor: pointer; background: none; }
+        .disco-trending-tag { width: auto; flex: none; font-size: 12px; color: var(--dr); padding: 5px 12px; margin: 0; border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 14px; cursor: pointer; background: none; }
         .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
         .disco-card {
             background: var(--dsurf); border: 1px solid var(--dbord); border-radius: 8px;
@@ -1332,7 +1317,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-divider span { font-size: 11px; color: rgba(255,255,255,0.3); white-space: nowrap; }
 
         /* ── 방 만들기 모달 (같은 레드 액센트) ── */
-        .disco-modal-box { --dr: var(--accent-color); width: 100%; max-width: 340px; background: #0A1E3F; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 20px 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+        .disco-modal-box { --dr: var(--accent-color); width: 100%; max-width: 340px; background: #141416; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 20px 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
         .disco-modal-title { font-size: 15px; font-weight: 700; color: #f5f4f2; margin-bottom: 14px; }
         .disco-modal-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin: 14px 0 7px; }
         .disco-modal-label:first-of-type { margin-top: 0; }
@@ -1404,17 +1389,142 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
             .modal-content { padding: 20px 16px; }
         }
+
+        /* ══════════════════ PC(넓은 화면) 레이아웃 — Discover만 데스크탑 그리드로 확장, 로그인 폼은 그대로 좁게 ══════════════════ */
+        @media (min-width: 900px) {
+            #main-container { max-width: 1100px; }
+            #auth-section { max-width: 420px; }
+            .disco-grid { gap: 20px; }
+            .disco-navbar { padding-bottom: 20px; }
+        }
+
+        /* ══════════════════ 배터리(⚡ 번개) 표시 — 진짜 폰/노트북 배터리 아이콘처럼 (로그인 후에만) ══════════════════ */
+        .main-battery { display: none; align-items: center; gap: 4px; flex: none; }
+        .main-battery-body {
+            width: 24px; height: 12px; border: 1.5px solid rgba(255,255,255,0.55); border-radius: 3px;
+            padding: 2px; box-sizing: border-box;
+        }
+        .main-battery-fill { height: 100%; border-radius: 1px; background: #34c759; transition: width .3s ease, background .3s ease; }
+        .main-battery-nub { width: 2px; height: 6px; background: rgba(255,255,255,0.55); border-radius: 0 2px 2px 0; margin-left: -3px; }
+        .main-battery-pct { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.65); }
+        html[data-cute-mode="cute"] .main-battery-body { border-color: rgba(43,31,36,0.4); }
+        html[data-cute-mode="cute"] .main-battery-nub { background: rgba(43,31,36,0.4); }
+        html[data-cute-mode="cute"] .main-battery-pct { color: rgba(43,31,36,0.6); }
+
+        /* ══════════════════ Dark / Cute 테마 전환 (인트로 + Discover 화면 한정) ══════════════════ */
+        .cute-mode-toggle {
+            display: flex; align-items: center; gap: 2px;
+            background: rgba(255,255,255,0.08); border-radius: 20px; padding: 3px; cursor: pointer;
+            flex: none;
+        }
+        .cute-mode-seg { padding: 6px 11px; border-radius: 16px; font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,0.45); transition: all .15s ease; }
+        .cute-mode-seg.on[data-mode="dark"] { background: var(--accent-color); color: #041025; }
+        .cute-mode-seg.on[data-mode="cute"] { background: #ff6f9c; color: #fff; }
+        html[data-cute-mode="cute"] .cute-mode-toggle { background: rgba(43,31,36,0.06); }
+        html[data-cute-mode="cute"] .cute-mode-seg { color: rgba(43,31,36,0.4); }
+
+        /* Dark/Cute 모드일 땐 '테마 색상'(민트/핑크) 스와치와 무관하게 포인트 컬러를 통일 (Dark=레드, Cute=핑크) */
+        html[data-cute-mode="dark"] {
+            --accent-color: #e4362a !important;
+            --accent-hover: #c92e23 !important;
+            --accent-light: #ff6b5c !important;
+            --accent-rgb: 228,54,42 !important;
+            --accent-glow: rgba(228,54,42,0.25) !important;
+        }
+        html[data-cute-mode="cute"] {
+            --accent-color: #ff6f9c !important;
+            --accent-hover: #ff5c8d !important;
+            --accent-light: #ffb8cf !important;
+            --accent-rgb: 255,111,156 !important;
+            --accent-glow: rgba(255,111,156,0.25) !important;
+        }
+
+        /* ── 페이지 배경 + 메인/로그인 타이틀 영역: 큐트 모드 (Discover 카드 밖, body 배경 위에 바로 얹혀 있음) ── */
+        html[data-cute-mode="cute"] body { background: #fff8f4; }
+        html[data-cute-mode="cute"] #app-title { color: #2b1f24; text-shadow: none; }
+        html[data-cute-mode="cute"] .sub-title { color: rgba(43,31,36,.55); }
+        html[data-cute-mode="cute"] .settings-gear-btn { color: rgba(43,31,36,.45); }
+
+        /* ── 인트로 화면: 큐트 모드 ── */
+        html[data-cute-mode="cute"] #intro-screen { background: #fff8f4; }
+        html[data-cute-mode="cute"] .intro-title { color: #2b1f24; text-shadow: none; }
+        html[data-cute-mode="cute"] .intro-desc { color: rgba(43,31,36,.55); }
+        html[data-cute-mode="cute"] #inquiry-btn-hero,
+        html[data-cute-mode="cute"] #about-nav-btn-hero { color: rgba(43,31,36,.3) !important; }
+
+        /* ── How it works 팝업: 큐트 모드 ── */
+        html[data-cute-mode="cute"] #intro-screen-2 .modal-content {
+            background: #fff8f4; border-color: rgba(0,0,0,.08); box-shadow: 0 20px 60px rgba(0,0,0,.15);
+        }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-subheader { color: rgba(255,111,156,.7); }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-step p { color: rgba(43,31,36,.6); }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-step p strong { color: #2b1f24; }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-step p span { color: rgba(43,31,36,.55) !important; }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-num {
+            color: #ff6f9c; background: rgba(255,111,156,.1); border-color: rgba(255,111,156,.35); box-shadow: none;
+        }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-warn-arrow { color: rgba(43,31,36,.25); }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-start-btn {
+            background: rgba(255,111,156,.08); border-color: rgba(255,111,156,.4); color: #ff6f9c; box-shadow: none;
+        }
+        html[data-cute-mode="cute"] #intro-screen-2 .intro2-start-btn:hover {
+            background: rgba(255,111,156,.14); border-color: #ff6f9c; color: #ff6f9c;
+        }
+
+        /* ── Discover 화면: 큐트 모드 ── */
+        html[data-cute-mode="cute"] #discover-screen {
+            --dr: #ff6f9c; --dr-glow: rgba(255,111,156,.3); --dsurf: #ffffff; --dbord: rgba(0,0,0,.08);
+            background: #fff8f4; border-radius: 16px; padding: 12px 12px 16px; margin: 0 -12px 24px;
+        }
+        html[data-cute-mode="cute"] .disco-navbar { border-color: rgba(0,0,0,.08); }
+        html[data-cute-mode="cute"] .disco-navbar-word,
+        html[data-cute-mode="cute"] .disco-title,
+        html[data-cute-mode="cute"] .disco-card-title,
+        html[data-cute-mode="cute"] .disco-modal-title { color: #2b1f24; }
+        html[data-cute-mode="cute"] .disco-navbar-links { color: rgba(43,31,36,.5); }
+        html[data-cute-mode="cute"] .disco-navbar-links a.active { color: #2b1f24; }
+        html[data-cute-mode="cute"] .disco-live-count,
+        html[data-cute-mode="cute"] .disco-card-cat,
+        html[data-cute-mode="cute"] .disco-occupancy,
+        html[data-cute-mode="cute"] .disco-empty,
+        html[data-cute-mode="cute"] .disco-trending-label,
+        html[data-cute-mode="cute"] .disco-modal-label,
+        html[data-cute-mode="cute"] .disco-pp-row-label { color: rgba(43,31,36,.55); }
+        html[data-cute-mode="cute"] .disco-chip { background: #fff; color: rgba(43,31,36,.65); border-color: rgba(0,0,0,.08); }
+        html[data-cute-mode="cute"] .disco-chip.active { background: #ff6f9c; border-color: #ff6f9c; color: #fff; }
+        html[data-cute-mode="cute"] .disco-card { border-radius: 16px; box-shadow: 0 6px 18px rgba(255,111,156,.1); }
+        html[data-cute-mode="cute"] .disco-card-bottom { border-color: rgba(0,0,0,.06); }
+        html[data-cute-mode="cute"] .disco-ring .ring-o { border-color: rgba(0,0,0,.12); }
+        html[data-cute-mode="cute"] .disco-ring .ring-n.empty { border-color: rgba(0,0,0,.2); }
+        html[data-cute-mode="cute"] .disco-search-input::placeholder { color: rgba(43,31,36,.35); }
+        html[data-cute-mode="cute"] .disco-trending-tag { border: none; color: #ff6f9c; background: #ffe6ee; }
+        html[data-cute-mode="cute"] .disco-trending-tag.disco-trending-tag-alt { color: #8b7bff; background: #ece7ff; }
+        html[data-cute-mode="cute"] .disco-modal-box {
+            background: #fff8f4; border-color: rgba(0,0,0,.08); box-shadow: 0 20px 60px rgba(0,0,0,.15); border-radius: 16px;
+        }
+        html[data-cute-mode="cute"] .disco-modal-box input[type="text"] {
+            background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.1); color: #2b1f24;
+        }
+        html[data-cute-mode="cute"] .disco-pp-row { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
+        html[data-cute-mode="cute"] .disco-modal-cancel { color: rgba(43,31,36,.45); }
+        html[data-cute-mode="cute"] #btn-talk-again {
+            background: #ffe6ee; border-color: rgba(255,111,156,.3); color: #ff6f9c;
+        }
+        html[data-cute-mode="cute"] #btn-talk-again:hover { background: #ffd6e5; border-color: #ff6f9c; }
+        html[data-cute-mode="cute"] #disco-create-pp-toggle { background: rgba(0,0,0,.05) !important; }
+        html[data-cute-mode="cute"] #disco-create-pp-off { background: rgba(0,0,0,.08) !important; color: #2b1f24 !important; }
     </style>
 </head>
 <body class="intro-open">
+    <script>document.documentElement.setAttribute('data-cute-mode', localStorage.getItem('btalk_cute_mode') === 'cute' ? 'cute' : 'dark');</script>
 
     <!-- 스플래시 화면 — body 최상단에서 즉시 렌더링 -->
-    <div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#041025;z-index:6000;display:flex;align-items:center;justify-content:center;">
+    <div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#0b0b0c;z-index:6000;display:flex;align-items:center;justify-content:center;">
         <div style="position:relative; width:min(480px, 80vw);">
             <video id="splash-video" muted playsinline style="width:100%; height:auto; display:block;">
                 <source src="splash.mp4" type="video/mp4">
             </video>
-            <div style="position:absolute; inset:0; pointer-events:none; background: linear-gradient(to right, #041025 0%, transparent 20%, transparent 80%, #041025 100%), linear-gradient(to bottom, #041025 0%, transparent 12%, transparent 93%, #041025 100%);"></div>
+            <div style="position:absolute; inset:0; pointer-events:none; background: linear-gradient(to right, #0b0b0c 0%, transparent 20%, transparent 80%, #0b0b0c 100%), linear-gradient(to bottom, #0b0b0c 0%, transparent 12%, transparent 93%, #0b0b0c 100%);"></div>
         </div>
     </div>
 
@@ -1474,20 +1584,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <!-- 인트로 화면 -->
     <div id="intro-screen" style="display:none;">
-        <div style="position:relative; display:flex; align-items:center; justify-content:center;">
-            <img src="logo-transparent.png" alt="" style="position:absolute; width:190px; height:190px; opacity:0.45; clip-path:inset(0 0 30% 0); pointer-events:none; transform:translateY(-24px);">
-            <div class="intro-title" style="position:relative; z-index:1; white-space:nowrap; font-size:clamp(19px, 5.8vw, 34px); letter-spacing:clamp(3px, 1.4vw, 7px);">BOUNDLESS TALK</div>
-        </div>
-        <p class="intro-desc" id="intro-desc" style="margin-top:22px; margin-bottom:14px;">Some conversations <strong style="color:var(--accent-color);">change you.</strong><br><br>Discover <strong style="color:var(--accent-color);">diverse perspectives.</strong><br><br>Driven by nothing but <strong style="color:#c9a84c;">shared topics.</strong><br>No boundaries of routine or background.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">A topic-driven live group voice discussion platform.</span><br><br>Ready for a conversation<br><strong style="color:var(--accent-color);">unlike any</strong> you've had before?</p>
+        <div class="intro-glow" aria-hidden="true"></div>
+        <img src="logo-boundless-talk.png" alt="" style="width:150px; height:150px; object-fit:contain; position:relative; filter:drop-shadow(0 0 40px rgba(var(--accent-rgb),0.25));">
+        <div class="intro-wordmark" id="intro-wordmark">boundless talk</div>
+        <p class="intro-desc" id="intro-desc" style="margin-top:12px; margin-bottom:14px;">Some conversations change you.<br>Discover diverse perspectives.</p>
         <div style="margin-bottom: 8px;">
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
         </div>
-        <button class="intro-start-btn" id="intro-start-btn" onclick="showIntro2()">Get Started</button>
-        <div style="margin-top:12px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
-            <button id="inquiry-btn-hero" onclick="openInquiryModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">문의하기</button>
-            <button id="about-nav-btn-hero" onclick="openAboutModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">About</button>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
+            <button class="intro-start-btn" id="intro-start-btn" onclick="showIntro2()">Start listening</button>
+            <button class="intro-how-btn" id="intro-how-btn" onclick="showIntro2()">How it works</button>
+        </div>
+        <div style="margin-top:64px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+            <button id="inquiry-btn-hero" onclick="openInquiryModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.22)'">문의하기</button>
+            <button id="about-nav-btn-hero" onclick="openAboutModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.22)'">About</button>
         </div>
     </div>
 
@@ -1499,7 +1611,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div id="intro2-steps" style="text-align:left; margin-bottom:12px; display:flex; flex-direction:column; gap:14px;">
                 <div class="intro2-step"><span class="intro2-num">01</span><p id="intro2-s1"><strong>Pick a Topic</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">02</span><p id="intro2-s2"><strong>Fuel the Chat</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span></p></div>
-                <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3"><strong>Tag &amp; Collect</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and unlock unique Talk Badges!</span></p></div>
+                <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3"><strong>Tag &amp; Charge</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and send them a ⚡ to charge their battery!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">04</span><p id="intro2-s4"><strong>Keep it Chill</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">Warning</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24h Ban</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">Permanent Ban</span></span></p></div>
             </div>
             <button id="intro2-start-btn" class="intro2-start-btn" onclick="startFromIntro()">Let's Start Talking</button>
@@ -1507,6 +1619,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
 
     <div class="lang-container" id="lang-container">
+        <div class="main-battery" id="main-battery" title="Battery">
+            <div class="main-battery-body"><div class="main-battery-fill" id="main-battery-fill" style="width:0%"></div></div>
+            <div class="main-battery-nub"></div>
+            <span class="main-battery-pct" id="main-battery-pct">0%</span>
+        </div>
+        <div class="cute-mode-toggle" id="cute-mode-toggle" onclick="toggleCuteMode()" aria-label="Dark / Cute 테마 전환">
+            <span class="cute-mode-seg" data-mode="dark" id="cute-mode-seg-dark">Dark</span>
+            <span class="cute-mode-seg" data-mode="cute" id="cute-mode-seg-cute">Cute</span>
+        </div>
         <button id="lang-toggle-btn" style="display:none;">KO</button>
         <button class="settings-gear-btn" id="settings-gear-btn" onclick="openSettingsModal()">⋮</button>
     </div>
@@ -1730,7 +1851,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 </div>
 
 <div id="more-topics-modal" class="modal-overlay" onclick="if(event.target===this) closeMoreTopicsModal()">
-    <div style="width:100%; max-width:320px; background:#0A1E3F; border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:16px; box-shadow:0 20px 60px rgba(0,0,0,0.5); position:relative;">
+    <div style="width:100%; max-width:320px; background:#141416; border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:16px; box-shadow:0 20px 60px rgba(0,0,0,0.5); position:relative;">
         <span onclick="closeMoreTopicsModal()" style="position:absolute; top:14px; right:16px; color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer;">✕</span>
         <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:2px;" id="more-topics-title">지금 대화 중인 주제</div>
         <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:16px;" id="more-topics-sub">눌러서 바로 참여해보세요</div>
@@ -1753,7 +1874,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <!-- 주제 추천 안내 팝업 (설정 모달과 동일한 톤: 그라데이션 테두리 + 카드형 섹션) -->
         <div class="modal-overlay" id="topic-info-modal" onclick="if(event.target===this) closeTopicInfoModal()">
             <div style="position:relative; width:400px; max-width:92vw; max-height:80vh; overflow-y:auto; text-align:left;
-                background:#0A1E3F;
+                background:#141416;
                 border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:20px 22px 22px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <div id="topic-info-title" style="font-size:15px; font-weight:700; color:#fff;">대화 주제가 고민되신다면</div>
@@ -1814,88 +1935,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="user-action-buttons">
     <button id="btn-talk-again" style="margin: 0; display: none;">또 대화하기</button>
-    <button id="toggle-rep-btn" style="display: none;">대화스탯</button>
     <button id="logout-btn" style="display: none;">LOGOUT</button>
-    </div>
-   <div class="reputation-board" id="reputation-section" style="display: none;">
-        <div id="guest-stats-overlay" style="display:none; position:absolute; inset:0; z-index:5; border-radius:10px; background:rgba(13,14,18,0.55); backdrop-filter:blur(2px); align-items:center; justify-content:center; flex-direction:column; gap:6px; text-align:center; padding:20px;">
-            <div id="gso-title" style="font-size:14px; font-weight:700; color:#fff;">회원에게만 공개됩니다</div>
-            <div id="gso-desc" style="font-size:12px; color:rgba(255,255,255,0.45); line-height:1.6;">대화를 거듭할수록 쌓이는 나만의 토크 스탯,<br>가입하면 바로 확인할 수 있어요.</div>
-        </div>
-        <div id="rep-content-inner">
-        <div class="stats-rank-row" id="stats-rank-row">RANK: <span id="rank-label">—</span> <button onclick="const p=document.getElementById('rank-info-popup');p.style.display=p.style.display==='none'?'block':'none';" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;padding:0;margin-left:4px;vertical-align:middle;line-height:1;">?</button></div>
-        <div id="rank-info-popup" class="tip-card" style="display:none;border-radius:14px;padding:14px 10px 10px;margin:6px 0 4px;">
-            <div id="rank-info-title" style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.4);text-align:center;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase;">Total badges earned</div>
-            <div style="display:flex;justify-content:space-around;gap:4px;">
-                <div class="rank-badge-item" onclick="toggleRankDesc('rd-newcomer')">
-                    <div class="rank-badge-name" id="ri-newcomer">Newcomer</div>
-                    <div class="rank-badge-range">0–9</div>
-                </div>
-                <div class="rank-badge-item" onclick="toggleRankDesc('rd-rising')">
-                    <div class="rank-badge-name" id="ri-name">Rising Talker</div>
-                    <div class="rank-badge-range">10–49</div>
-                </div>
-                <div class="rank-badge-item" onclick="toggleRankDesc('rd-silver')">
-                    <div class="rank-badge-name" id="ri-silver">Storyteller</div>
-                    <div class="rank-badge-range">50–99</div>
-                </div>
-                <div class="rank-badge-item" onclick="toggleRankDesc('rd-gold')">
-                    <div class="rank-badge-name" id="ri-gold">Lingering Voice</div>
-                    <div class="rank-badge-range">100–199</div>
-                </div>
-                <div class="rank-badge-item" onclick="toggleRankDesc('rd-legend')">
-                    <div class="rank-badge-name" id="ri-legend">Soulmate</div>
-                    <div class="rank-badge-range">200+</div>
-                </div>
-            </div>
-            <div class="rank-desc-box" id="rd-newcomer" style="display:none;"><span id="ri-newcomer-desc">이제 막 첫 대화를 시작한 낯선 인연</span></div>
-            <div class="rank-desc-box" id="rd-rising"   style="display:none;"><span id="ri-rising-desc">점점 대화의 재미를 알아가는 중</span></div>
-            <div class="rank-desc-box" id="rd-silver"   style="display:none;"><span id="ri-silver-desc">대화를 지루하지 않고 맛있게 이끌어가는 사람</span></div>
-            <div class="rank-desc-box" id="rd-gold"     style="display:none;"><span id="ri-gold-desc">대화가 끝난 후에도 자꾸만 생각나게 하는 매력적인 사람</span></div>
-            <div class="rank-desc-box" id="rd-legend"   style="display:none;"><span id="ri-legend-desc">한 번의 대화만으로도 영혼이 통하는, 다시없을 최고의 인연</span></div>
-        </div>
-        <div class="stats-grid">
-            <div class="stats-main-badge">
-                <div class="stats-main-emoji" id="main-badge-emoji">👍</div>
-                <div class="stats-main-label" id="main-badge-label">NICE</div>
-                <div class="stats-main-value" id="main-badge-value">0</div>
-                <div class="stats-bar"><div class="stats-bar-fill" id="main-badge-bar" style="width:100%"></div></div>
-            </div>
-            <div class="stats-sub-grid" id="stats-sub-grid">
-                <div class="stats-sub-badge">
-                    <div class="stats-sub-top"><span id="label-manner">NICE</span>: <strong id="score-manner">0</strong></div>
-                    <div class="stats-bar"><div class="stats-bar-fill" id="bar-manner" style="width:0%"></div></div>
-                </div>
-                <div class="stats-sub-badge">
-                    <div class="stats-sub-top"><span id="label-logic">LOGIC</span>: <strong id="score-logic">0</strong></div>
-                    <div class="stats-bar"><div class="stats-bar-fill" id="bar-logic" style="width:0%"></div></div>
-                </div>
-                <div class="stats-sub-badge">
-                    <div class="stats-sub-top"><span id="label-humor">FUN</span>: <strong id="score-humor">0</strong></div>
-                    <div class="stats-bar"><div class="stats-bar-fill" id="bar-humor" style="width:0%"></div></div>
-                </div>
-                <div class="stats-sub-badge">
-                    <div class="stats-sub-top"><span id="label-empathy">WARM</span>: <strong id="score-empathy">0</strong></div>
-                    <div class="stats-bar"><div class="stats-bar-fill" id="bar-empathy" style="width:0%"></div></div>
-                </div>
-                <div class="stats-sub-badge">
-                    <div class="stats-sub-top"><span id="label-passion">BOLD</span>: <strong id="score-passion">0</strong></div>
-                    <div class="stats-bar"><div class="stats-bar-fill" id="bar-passion" style="width:0%"></div></div>
-                </div>
-            </div>
-        </div>
-        <div class="stats-heatmap" style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08);">
-            <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                <span id="heatmap-title">지금 대화 흐름 (시간대별)</span>
-            </div>
-            <div id="heatmap-bars" style="display:none; align-items:flex-end; gap:2px; height:44px;"></div>
-            <div id="heatmap-ticks" style="display:none; justify-content:space-between; font-size:9px; color:rgba(255,255,255,0.25); margin-top:3px;">
-                <span>0</span><span>6</span><span>12</span><span>18</span><span>23</span>
-            </div>
-            <div id="heatmap-empty" style="font-size:11px; color:rgba(255,255,255,0.35); text-align:center; padding:14px 0;">—</div>
-            <div id="heatmap-peak-text" style="font-size:11px; color:rgba(var(--accent-rgb),0.7); text-align:center; margin-top:6px;"></div>
-        </div>
-        </div><!-- /rep-content-inner -->
     </div>
     <div style="text-align:center; margin-top:10px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
         <button id="inquiry-btn" onclick="openInquiryModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">문의하기</button>
@@ -1957,11 +1997,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div class="target-select-list" id="vote-target-container"></div>
 
             <div class="badge-select-grid">
-                <button class="badge-vote-btn btn-disabled" id="btn-vote-manner" onclick="executeVote('manner')"><span id="vote-manner">NICE</span></button>
-                <button class="badge-vote-btn btn-disabled" id="btn-vote-logic" onclick="executeVote('logic')"><span id="vote-logic">LOGIC</span></button>
-                <button class="badge-vote-btn btn-disabled" id="btn-vote-humor" onclick="executeVote('humor')"><span id="vote-humor">FUN</span></button>
-                <button class="badge-vote-btn btn-disabled" id="btn-vote-empathy" onclick="executeVote('empathy')"><span id="vote-empathy">WARM</span></button>
-                <button class="badge-vote-btn btn-disabled" id="btn-vote-passion" onclick="executeVote('passion')"><span id="vote-passion">BOLD</span></button>
+                <button class="badge-vote-btn btn-disabled" id="btn-send-bolt" onclick="executeSendBolt()">⚡ <span id="label-send-bolt">Send Lightning</span></button>
                 <button class="badge-vote-btn btn-disabled" id="btn-add-friend" onclick="executeAddFriend()" style="background: rgba(var(--accent-rgb), 0.05); border-color: rgba(var(--accent-rgb), 0.4);">
         <span id="label-add-friend">Add Friend</span>
     </button>
@@ -2533,6 +2569,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     })();
     applyThemeColor(currentThemeColor);
 
+    // ── Dark / Cute 화면 모드 (인트로 + Discover 화면 전용, '테마 색상' 스와치와는 별개) ──
+    function applyCuteMode(mode) {
+        document.documentElement.setAttribute('data-cute-mode', mode);
+        const d = document.getElementById('cute-mode-seg-dark');
+        const c = document.getElementById('cute-mode-seg-cute');
+        if (d) d.classList.toggle('on', mode === 'dark');
+        if (c) c.classList.toggle('on', mode === 'cute');
+    }
+    function toggleCuteMode() {
+        const next = localStorage.getItem('btalk_cute_mode') === 'cute' ? 'dark' : 'cute';
+        localStorage.setItem('btalk_cute_mode', next);
+        applyCuteMode(next);
+    }
+    applyCuteMode(localStorage.getItem('btalk_cute_mode') === 'cute' ? 'cute' : 'dark');
+
     const AGORA_APP_ID = "71b6f8c1cb424be1b2b5480d447e69e2";
     const TOKEN_SERVER_URL = "https://b-talk-0gi0.onrender.com";
     const SIGNAL_SERVER_URL = "https://kvdb.io/YAPuhyeXZWiNidFcsstzqK/";
@@ -2559,9 +2610,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let roomParticipants = []; // 현재 방에 있는 참여자 (나간 사람은 제거됨)
     let sessionParticipants = []; // 세션 중 한번이라도 참여한 모든 사람 (평가용, 먼저 나간 사람 포함)
     let agoraToFirebaseUid = {}; // Agora UID → Firebase UID 매핑 테이블
-    let uidToRankEmoji = {}; // Firebase UID → rank emoji
-    let myRankEmoji = '👤';
-    let myBadgeTotal = 0; // 랭크 라벨 재렌더링용 (언어 토글 시 배지 DB 재조회 없이 사용)
+    let uidToBatteryEmoji = {}; // Firebase UID → battery emoji
+    let myBatteryEmoji = '🔋';
+    let myEnergyPct = 0; // 배터리 라벨 재렌더링용 (언어 토글 시 DB 재조회 없이 사용)
     let isSubscribed = false; // 구독 여부 캐시
 
     // ── 핑퐁 모드 상태 ──
@@ -2708,21 +2759,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         return card;
     }
 
+    const DISCO_TRENDING_FALLBACK = ['#f1', '#existential', '#buildinpublic', '#latenight', '#aiethics'];
     function renderDiscoTrendingRow() {
         const row = document.getElementById('disco-trending-row');
         if (!row) return;
         row.innerHTML = '';
-        const tags = (typeof allLiveTopics !== 'undefined' ? allLiveTopics : []).slice(0, 6);
-        if (tags.length === 0) { row.style.display = 'none'; return; }
+        const liveTags = (typeof allLiveTopics !== 'undefined' ? allLiveTopics : []).slice(0, 6);
+        const tags = liveTags.length > 0 ? liveTags : DISCO_TRENDING_FALLBACK;
         row.style.display = 'flex';
         const label = document.createElement('span');
         label.className = 'disco-trending-label';
         label.textContent = currentLang === 'ko' ? '트렌딩' : 'Trending';
         row.appendChild(label);
-        tags.forEach(t => {
+        tags.forEach((t, i) => {
             const tag = document.createElement('button');
             tag.type = 'button';
-            tag.className = 'disco-trending-tag';
+            tag.className = 'disco-trending-tag' + (i % 2 === 1 ? ' disco-trending-tag-alt' : '');
             tag.textContent = t;
             tag.onclick = () => {
                 discoSearchQuery = t;
@@ -2875,91 +2927,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     (function relocateMyCirclesUI() {
         const body = document.getElementById('my-circles-modal-body');
         if (!body) return;
-        ['btn-talk-again', 'toggle-rep-btn', 'reputation-section'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) body.appendChild(el);
-        });
+        const el = document.getElementById('btn-talk-again');
+        if (el) body.appendChild(el);
     })();
 
     // ══════════════════ /Discover 화면 ══════════════════
 
-    function getRankEmoji(total) {
-        if (total >= 200) return '🔮';
-        if (total >= 100) return '☕';
-        if (total >= 50)  return '💬';
-        if (total >= 10)  return '🌱';
-        return '👋';
+    function getBatteryEmoji(pct) {
+        return pct > 20 ? '🔋' : '🪫';
     }
 
-    // 현재 currentLang 기준으로 랭크 라벨을 다시 그림 (언어 토글 시에도 호출됨)
-    function renderRankLabel(total) {
-        const rankNames = currentLang === 'ko'
-            ? ['👋 뉴비', '🌱 떠오르는 토커', '💬 이야기꾼', '☕ 여운이 남는', '🔮 영혼의 단짝']
-            : ['👋 Newcomer', '🌱 Rising Talker', '💬 Storyteller', '☕ Lingering Voice', '🔮 Soulmate'];
-        const rank = total >= 200 ? rankNames[4] : total >= 100 ? rankNames[3] : total >= 50 ? rankNames[2] : total >= 10 ? rankNames[1] : rankNames[0];
-        const rankLabelEl = document.getElementById('rank-label');
-        if (rankLabelEl) rankLabelEl.innerText = rank;
-        const rankRow = document.getElementById('stats-rank-row');
-        if (rankRow) rankRow.childNodes[0].textContent = currentLang === 'ko' ? '랭크: ' : 'RANK: ';
+    // 실제 폰/노트북 배터리 아이콘처럼 그리는 UI (Dark/Cute 토글 옆)
+    function renderMainBatteryUI(pct) {
+        const fill = document.getElementById('main-battery-fill');
+        const pctText = document.getElementById('main-battery-pct');
+        if (!fill || !pctText) return;
+        const clamped = Math.max(0, Math.min(100, pct));
+        fill.style.width = clamped + '%';
+        fill.style.background = clamped <= 20 ? '#ff453a' : (clamped <= 50 ? '#ffd60a' : '#34c759');
+        pctText.textContent = clamped + '%';
     }
-
-    // 시간대별 접속 히트맵 — 실제로 쌓인 데이터가 충분할 때만 표시 (가짜 통계 금지)
-    const HEATMAP_MIN_TOTAL = 30;
-    let lastHourlyData = null;
-
-    function heatmapBarColor(ratio) {
-        if (ratio < 0.34) return 'rgba(var(--accent-rgb),0.28)';
-        if (ratio < 0.67) return 'rgba(255,180,60,0.6)';
-        return 'rgba(255,90,60,0.9)';
-    }
-
-    function renderHourlyHeatmap(data) {
-        lastHourlyData = data;
-        const barsEl = document.getElementById('heatmap-bars');
-        const ticksEl = document.getElementById('heatmap-ticks');
-        const emptyEl = document.getElementById('heatmap-empty');
-        const peakEl = document.getElementById('heatmap-peak-text');
-        if (!barsEl || !emptyEl) return;
-
-        const counts = Array.from({ length: 24 }, (_, h) => (data && data[h]) || 0);
-        const total = counts.reduce((a, b) => a + b, 0);
-
-        if (total < HEATMAP_MIN_TOTAL) {
-            barsEl.style.display = 'none';
-            if (ticksEl) ticksEl.style.display = 'none';
-            if (peakEl) peakEl.textContent = '';
-            emptyEl.style.display = 'block';
-            emptyEl.textContent = currentLang === 'ko'
-                ? `📊 아직 데이터를 모으고 있어요 (${total}건)`
-                : `📊 Still gathering data (${total} joins)`;
-            return;
-        }
-
-        emptyEl.style.display = 'none';
-        barsEl.style.display = 'flex';
-        if (ticksEl) ticksEl.style.display = 'flex';
-
-        const max = Math.max(...counts, 1);
-        barsEl.innerHTML = '';
-        counts.forEach((c, h) => {
-            const ratio = c / max;
-            const bar = document.createElement('div');
-            bar.style.cssText = 'flex:1; min-width:2px; border-radius:2px 2px 0 0;';
-            bar.style.height = Math.max(3, Math.round(ratio * 40)) + 'px';
-            bar.style.background = heatmapBarColor(ratio);
-            bar.title = h + ':00 — ' + c;
-            barsEl.appendChild(bar);
-        });
-
-        const peakHour = counts.indexOf(max);
-        if (peakEl) {
-            peakEl.textContent = currentLang === 'ko'
-                ? `가장 활발한 시간대는 ${peakHour}시예요`
-                : `Most active around ${peakHour}:00`;
-        }
-    }
-
-    database.ref('stats/hourlyJoins').on('value', snap => renderHourlyHeatmap(snap.val() || {}));
 
     let selectedVoteTarget = null;
     let selectedReportTarget = null;
@@ -3034,8 +3021,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             repTitle: "TALK STATS",
             badgeManner: "NICE", badgeLogic: "LOGIC", badgeHumor: "FUN", badgeEmpathy: "WARM", badgePassion: "BOLD",
             mTitle: "Conversation Report",
-            mDesc: "Check out what AI noted, and gift a peer badge!",
-            vManner: "NICE", vLogic: "LOGIC", vHumor: "FUN", vEmpathy: "WARM", vPassion: "BOLD", vSkip: "Skip & Close",
+            mDesc: "Check out what AI noted, and send a peer a lightning bolt (+1% battery)!",
+            sendBoltBtn: "Send Lightning", vSkip: "Skip & Close",
             aiLoading: "AI Chat Summary Loading...",
             aiHeadline: "Today's Dialogue Highlights",
             aiSample: "• No conversation data detected.<br>• Try having a longer conversation next time!",
@@ -3049,7 +3036,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             reportTitle: "🚨 Report Toxic User",
             reportDesc: "Select the user you wish to report. The past 1 minute of voice dialogue will be uploaded and audited by AI Safeguard.",
             reportSuccess: "Report Submitted. The target is being evaluated under AI surveillance.",
-            badgeSuccess: "INDEX successfully transferred!",
+            badgeSuccess: "⚡ Lightning sent!",
             emailPlaceholder: "Email address (e.g., test@gmail.com)",
             passwordPlaceholder: "Password",
             emailLogin: "Login",
@@ -3074,8 +3061,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMin: "8+ chars with letter, number & special character (!@#$ etc.)",
             pwHintMismatch: "Passwords do not match.",
             pwHintMatch: "✓ Passwords match.",
-        introDesc: `Some conversations <strong style="color:var(--accent-color);">change you.</strong><br><br>Discover <strong style="color:var(--accent-color);">diverse perspectives.</strong><br><br>Driven by nothing but <strong style="color:#c9a84c;">shared topics.</strong><br>No boundaries of routine or background.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">A topic-driven live group voice discussion platform.</span><br><br>Ready for a conversation<br><strong style="color:var(--accent-color);">unlike any</strong> you've had before?`,
-        introBtn: "Get Started",
+        introDesc: `Some conversations change you.<br>Discover diverse perspectives.`,
+        introBtn: "Start listening",
+        introHowBtn: "How it works",
         intro2Btn: "Shall We Pick a Topic?",
         intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "A TOPIC-DRIVEN GLOBAL VOICE DISCUSSION PLATFORM",
@@ -3093,7 +3081,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCountdown: "Call ends in",
         intro2S1: `<strong>Pick a Topic</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span>`,
         intro2S2: `<strong>Fuel the Chat</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span>`,
-        intro2S3: `<strong>Tag &amp; Collect</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and unlock unique Talk Badges!</span>`,
+        intro2S3: `<strong>Tag &amp; Charge</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and send them a ⚡ to charge their battery!</span>`,
         intro2S4: `<strong>Keep it Chill</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">Warning</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24h Ban</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">Permanent Ban</span></span>`,
         intro2S5: ``,
         intro2S6: ``,
@@ -3158,8 +3146,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             repTitle: "대화스탯",
             badgeManner: "친절", badgeLogic: "논리", badgeHumor: "유머", badgeEmpathy: "공감", badgePassion: "열정",
             mTitle: "대화 분석 리포트",
-            mDesc: "AI가 요약한 대화 내용을 파악하고 함께 대화한 상대방에게 배지를 선물해 보세요.",
-            vManner: "친절했어요", vLogic: "논리적이었어요", vHumor: "유머러스했어요", vEmpathy: "공감을 잘해줬어요", vPassion: "열정적이었어요", vSkip: "닫기 및 건너뛰기",
+            mDesc: "AI가 요약한 대화 내용을 확인하고, 함께 대화한 상대방에게 번개(⚡)를 보내보세요! (+1% 배터리)",
+            sendBoltBtn: "번개 보내기", vSkip: "닫기 및 건너뛰기",
             aiLoading: "AI가 대화 요약본을 추출하는 중...",
             aiHeadline: "오늘의 대화 핵심 쟁점 분석 결과",
             aiSample: "• 분석할 대화 내용이 없습니다.<br>• 다음엔 더 긴 대화를 나눠보세요!",
@@ -3173,7 +3161,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             reportTitle: "🚨 불량 유저 신고하기",
             reportDesc: "신고 대상을 선택해 주세요. 신고 시점 기준 '최근 1분간'의 실시간 음성 스트림 결합 데이터가 AI 유해성 감별 백엔드로 전송됩니다.",
             reportSuccess: "신고 완료. 유해 발언이 확인되면 즉시 강력 영구 처분이 단행됩니다.",
-            badgeSuccess: "상대방에게 대화스탯를 성공적으로 전달했습니다!",
+            badgeSuccess: "⚡ 번개를 보냈어요!",
             emailPlaceholder: "이메일 주소 (예: test@naver.com)",
             passwordPlaceholder: "비밀번호 (8자리 이상)",
             emailLogin: "로그인",
@@ -3198,8 +3186,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMin: "영문+숫자+특수문자(!@#$ 등) 조합 8자 이상이어야 합니다.",
             pwHintMismatch: "비밀번호가 일치하지 않습니다.",
             pwHintMatch: "✓ 비밀번호가 일치합니다.",
-        introDesc: `어떤 대화는 당신을 <strong style="color:var(--accent-color);">변화시킵니다</strong>.<br><br>평소라면 <strong style="color:var(--accent-color);">마주치지 않았을</strong> 새로운 관점과의 만남.<br><br>일상의 배경도, 조건의 장벽도 없이<br>오직 하나의 <strong style="color:#c9a84c;">공통된 주제</strong>로 연결됩니다.<br><span style="font-size:13px; opacity:0.5; letter-spacing:0.5px;">관심 주제 기반의 라이브 그룹 음성 토론 플랫폼</span><br><br>지금까지 <strong style="color:var(--accent-color);">겪어본 적 없는 대화</strong>를<br>시작할 준비가 되셨나요?`,
-        introBtn: "시작하기",
+        introDesc: `어떤 대화는 당신을 변화시킵니다.<br>다채로운 관점을 발견해보세요.`,
+        introBtn: "지금 들어보기",
+        introHowBtn: "이용 방법",
         intro2Btn: "입장하기",
         intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "전 세계와 연결되는 주제 기반 라이브 음성 토론 플랫폼",
@@ -3217,7 +3206,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCountdown: "통화 종료까지",
         intro2S1: `<strong>주제 던지기</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">지금 하고 싶은 이야기를 입력하거나, 이미 활기찬 대화방에 바로 조인하세요!</span>`,
         intro2S2: `<strong>10분의 몰입</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">매 세션 10분은 완전히 무료! 대화 흐름을 끊고 싶지 않다면 언제든 구독해보세요.</span>`,
-        intro2S3: `<strong>크루 저장 &amp; 배지 겟</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">또 얘기하고 싶은 대화 상대를 저장하고, 나만의 유니크한 배지를 모아보세요!</span>`,
+        intro2S3: `<strong>크루 저장 &amp; 번개 충전</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">또 얘기하고 싶은 대화 상대를 저장하고, 번개(⚡)를 보내 배터리를 채워주세요!</span>`,
         intro2S4: `<strong>매너가 필수</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">서로를 존중해주세요. 대화 흐름을 깨거나 불쾌감을 주면 바로 아웃입니다.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">경고</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24시간 정지</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">영구 정지</span></span>`,
         intro2S5: ``,
         intro2S6: ``,
@@ -3272,7 +3261,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     auth.onAuthStateChanged((user) => {
         const googleBtn = document.getElementById("google-login-btn");
         const logoutBtn = document.getElementById("logout-btn");
-        const reputationSection = document.getElementById("reputation-section");
         const startBtn = document.getElementById("join-btn");
         const loginSection = document.getElementById("auth-section");
         const talkControls = document.getElementById("talk-controls");
@@ -3289,9 +3277,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 document.getElementById("auth-section").style.display = "none";
                 if (logoutBtn) logoutBtn.style.display = "inline-block";
                 if (talkControls) talkControls.style.display = "block";
+                const mainBattery = document.getElementById("main-battery");
+                if (mainBattery) mainBattery.style.display = "flex";
                 if (startBtn && !isJoined) startBtn.disabled = false;
-                document.getElementById("toggle-rep-btn").style.display = "inline-block";
-                if (reputationSection) reputationSection.style.display = "none";
                 document.getElementById("btn-talk-again").style.display = "inline-block";
                 // 로그인 시 이전 세션의 잔류 상태 메시지 초기화
                 document.getElementById("matching-status").innerText = "";
@@ -3516,54 +3504,21 @@ window.closeTopicInfoModal = closeTopicInfoModal;
             }
 
 
-            // 평판 데이터 연동 (배지 수 누적 리스닝)
-            database.ref('users/' + user.uid + '/badges').on('value', (snapshot) => {
-                const badges = snapshot.val() || {};
-                const manner  = badges.manner  || 0;
-                const logic   = badges.logic   || 0;
-                const humor   = badges.humor   || 0;
-                const empathy = badges.empathy || 0;
-                const passion = badges.passion || 0;
-                document.getElementById('score-manner').innerText  = manner;
-                document.getElementById('score-logic').innerText   = logic;
-                document.getElementById('score-humor').innerText   = humor;
-                document.getElementById('score-empathy').innerText = empathy;
-                document.getElementById('score-passion').innerText = passion;
-
-                // 프로그레스 바 업데이트
-                const maxVal = Math.max(manner, logic, humor, empathy, passion, 1);
-                document.getElementById('bar-manner').style.width  = (manner  / maxVal * 100) + '%';
-                document.getElementById('bar-logic').style.width   = (logic   / maxVal * 100) + '%';
-                document.getElementById('bar-humor').style.width   = (humor   / maxVal * 100) + '%';
-                document.getElementById('bar-empathy').style.width = (empathy / maxVal * 100) + '%';
-                document.getElementById('bar-passion').style.width = (passion / maxVal * 100) + '%';
-
-                // 최고값 배지를 메인 카드에 표시, 서브 그리드에서 해당 배지 숨김
-                const allBadges = [
-                    { key: 'manner',  val: manner,  emoji: '👍', labelId: 'label-manner',  scoreId: 'score-manner',  barId: 'bar-manner',  textKey: 'badgeManner'  },
-                    { key: 'logic',   val: logic,   emoji: '🧠', labelId: 'label-logic',   scoreId: 'score-logic',   barId: 'bar-logic',   textKey: 'badgeLogic'   },
-                    { key: 'humor',   val: humor,   emoji: '🤣', labelId: 'label-humor',   scoreId: 'score-humor',   barId: 'bar-humor',   textKey: 'badgeHumor'   },
-                    { key: 'empathy', val: empathy, emoji: '🤗', labelId: 'label-empathy', scoreId: 'score-empathy', barId: 'bar-empathy', textKey: 'badgeEmpathy' },
-                    { key: 'passion', val: passion, emoji: '🔥', labelId: 'label-passion', scoreId: 'score-passion', barId: 'bar-passion', textKey: 'badgePassion' },
-                ];
-                const top = allBadges.reduce((a, b) => b.val > a.val ? b : a);
-                document.getElementById('main-badge-emoji').textContent = top.emoji;
-                document.getElementById('main-badge-label').textContent = textData[currentLang][top.textKey];
-                document.getElementById('main-badge-value').textContent = top.val;
-                document.getElementById('main-badge-bar').style.width = '100%';
-                // 서브 배지: 최고값 제외하고 나머지만 표시
-                allBadges.forEach(b => {
-                    const el = document.getElementById(b.scoreId).closest('.stats-sub-badge');
-                    if (el) el.style.display = b.key === top.key ? 'none' : '';
-                    const labelEl = document.getElementById(b.labelId);
-                    if (labelEl) labelEl.innerText = textData[currentLang][b.textKey];
-                });
-
-                // 랭크 계산
-                const total = manner + logic + humor + empathy + passion;
-                myBadgeTotal = total;
-                myRankEmoji = getRankEmoji(total);
-                renderRankLabel(total);
+            // 배터리(⚡ 번개) 데이터 연동 — 매일 1%씩 자동 방전
+            database.ref('users/' + user.uid + '/energy').on('value', (snapshot) => {
+                const e = snapshot.val() || {};
+                const now = Date.now();
+                const updatedAt = e.updatedAt || now;
+                const daysElapsed = Math.floor((now - updatedAt) / 86400000);
+                let pct = e.pct || 0;
+                if (daysElapsed > 0) {
+                    pct = Math.max(0, pct - daysElapsed);
+                    database.ref('users/' + user.uid + '/energy').update({ pct, updatedAt: updatedAt + daysElapsed * 86400000 });
+                    return; // update()가 이 리스너를 다시 트리거하므로 여기서는 렌더링만 건너뜀
+                }
+                myEnergyPct = pct;
+                myBatteryEmoji = getBatteryEmoji(pct);
+                renderMainBatteryUI(pct);
             });
 
             // 구독 상태 캐시
@@ -3610,9 +3565,8 @@ window.closeTopicInfoModal = closeTopicInfoModal;
             if (logoutBtn) logoutBtn.style.display = "none";
             if (talkControls) talkControls.style.display = "none";
             document.getElementById("btn-talk-again").style.display = "none";
-
-            document.getElementById("toggle-rep-btn").style.display = "none";
-            if (reputationSection) reputationSection.style.display = "none";
+            const mainBattery = document.getElementById("main-battery");
+            if (mainBattery) mainBattery.style.display = "none";
 
             if (startBtn) startBtn.disabled = true;
             document.getElementById("ban-overlay").style.display = "none";
@@ -3657,7 +3611,6 @@ function updateUI() {
         const lang = textData[currentLang];
         const appTitle = document.getElementById('app-title');
         const appSubtitle = document.getElementById('app-subtitle');
-        const isRepOpen = document.getElementById('reputation-section').style.display === "block";
 
         document.getElementById('btn-talk-again').innerText = lang.talkAgainBtn;
         const guestLoginText = document.getElementById('guest-login-text');
@@ -3665,8 +3618,10 @@ function updateUI() {
         // 인트로 화면 다국어
         const introDescEl = document.getElementById('intro-desc');
         const introBtnEl = document.getElementById('intro-start-btn');
+        const introHowBtnEl = document.getElementById('intro-how-btn');
         if (introDescEl) introDescEl.innerHTML = lang.introDesc;
         if (introBtnEl) introBtnEl.textContent = lang.introBtn;
+        if (introHowBtnEl) introHowBtnEl.textContent = lang.introHowBtn;
         const intro2TitleEl = document.getElementById('intro-screen-2') && document.querySelector('#intro-screen-2 .intro-title');
         if (intro2TitleEl) intro2TitleEl.innerHTML = lang.intro2Title;
         const intro2SubEl = document.getElementById('intro2-subheader');
@@ -3707,29 +3662,6 @@ function updateUI() {
         const frbInput = document.getElementById('frb-nickname-input'); if (frbInput) frbInput.placeholder = lang.frbPlaceholder;
         const frbAcceptBtn = document.getElementById('frb-accept-btn'); if (frbAcceptBtn) frbAcceptBtn.textContent = lang.frbAccept;
         const frbRejectBtn = document.getElementById('frb-reject-btn'); if (frbRejectBtn) frbRejectBtn.textContent = lang.frbReject;
-
-        // 토글 버튼 텍스트 고정
-        document.getElementById('toggle-rep-btn').innerText = currentLang === 'ko' ? "대화스탯" : "TALK STATS";
-
-        // 시간대별 히트맵 다국어
-        const heatmapTitleEl = document.getElementById('heatmap-title');
-        if (heatmapTitleEl) heatmapTitleEl.textContent = currentLang === 'ko' ? '지금 대화 흐름 (시간대별)' : 'Conversation Activity by Hour';
-        if (typeof renderHourlyHeatmap === 'function' && lastHourlyData !== null) renderHourlyHeatmap(lastHourlyData);
-
-        // 랭크 팝업 다국어
-        const rankInfoTitle = document.getElementById('rank-info-title');
-        if (rankInfoTitle) rankInfoTitle.textContent = currentLang === 'ko' ? '총 배지 수 기준으로 랭크가 결정됩니다' : 'Total badges earned';
-        const riNewcomer = document.getElementById('ri-newcomer'); if (riNewcomer) riNewcomer.textContent = currentLang === 'ko' ? '뉴비' : 'Newcomer';
-        const riName = document.getElementById('ri-name'); if (riName) riName.textContent = currentLang === 'ko' ? '떠오르는 토커' : 'Rising Talker';
-        const riSilver = document.getElementById('ri-silver'); if (riSilver) riSilver.textContent = currentLang === 'ko' ? '이야기꾼' : 'Storyteller';
-        const riGold = document.getElementById('ri-gold'); if (riGold) riGold.textContent = currentLang === 'ko' ? '여운이 남는' : 'Lingering Voice';
-        const riLegend = document.getElementById('ri-legend'); if (riLegend) riLegend.textContent = currentLang === 'ko' ? '영혼의 단짝' : 'Soulmate';
-        const riNewcomerDesc = document.getElementById('ri-newcomer-desc'); if (riNewcomerDesc) riNewcomerDesc.textContent = currentLang === 'ko' ? '이제 막 첫 대화를 시작한 낯선 인연' : 'Just beginning your first conversations';
-        const riRisingDesc = document.getElementById('ri-rising-desc'); if (riRisingDesc) riRisingDesc.textContent = currentLang === 'ko' ? '점점 대화의 재미를 알아가는 중' : 'Discovering the joy of real conversation';
-        const riSilverDesc = document.getElementById('ri-silver-desc'); if (riSilverDesc) riSilverDesc.textContent = currentLang === 'ko' ? '대화를 지루하지 않고 맛있게 이끌어가는 사람' : 'Someone who keeps every conversation alive';
-        const riGoldDesc = document.getElementById('ri-gold-desc'); if (riGoldDesc) riGoldDesc.textContent = currentLang === 'ko' ? '대화가 끝난 후에도 자꾸만 생각나게 하는 매력적인 사람' : 'The kind of person you keep thinking about after';
-        const riLegendDesc = document.getElementById('ri-legend-desc'); if (riLegendDesc) riLegendDesc.textContent = currentLang === 'ko' ? '한 번의 대화만으로도 영혼이 통하는, 다시없을 최고의 인연' : 'One conversation. A connection that lasts forever.';
-        renderRankLabel(myBadgeTotal);
 
         if (appTitle) appTitle.innerText = lang.title;
         if (appSubtitle) appSubtitle.innerText = lang.subtitle;
@@ -3815,18 +3747,9 @@ function updateUI() {
         
         
         const repTitleEl = document.getElementById('rep-title'); if (repTitleEl) repTitleEl.innerText = lang.repTitle;
-        document.getElementById('label-manner').innerText = lang.badgeManner;
-        document.getElementById('label-logic').innerText = lang.badgeLogic;
-        document.getElementById('label-humor').innerText = lang.badgeHumor;
-        document.getElementById('label-empathy').innerText = lang.badgeEmpathy;
-        document.getElementById('label-passion').innerText = lang.badgePassion;
         document.getElementById('modal-title').innerText = lang.mTitle;
         document.getElementById('modal-desc').innerText = lang.mDesc;
-        document.getElementById('vote-manner').innerText = lang.vManner;
-        document.getElementById('vote-logic').innerText = lang.vLogic;
-        document.getElementById('vote-humor').innerText = lang.vHumor;
-        document.getElementById('vote-empathy').innerText = lang.vEmpathy;
-        document.getElementById('vote-passion').innerText = lang.vPassion;
+        document.getElementById('label-send-bolt').innerText = lang.sendBoltBtn;
         document.getElementById('vote-skip').innerText = lang.vSkip;
 document.getElementById('part-title-label').innerText = lang.partLabel;
         document.getElementById('ban-title').innerText = lang.banTitle;
@@ -4125,37 +4048,6 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         }
     });
 
-    // 💡 새롭게 추가하는 토글 클릭 이벤트 리스너
-    document.getElementById('toggle-rep-btn').addEventListener('click', () => {
-        const repSection = document.getElementById('reputation-section');
-        const overlay = document.getElementById('guest-stats-overlay');
-        const isOpen = repSection.style.display === 'block';
-
-        if (isOpen) {
-            repSection.style.display = 'none';
-            return;
-        }
-
-        repSection.style.display = 'block';
-
-        if (isGuest) {
-            // 콘텐츠 inner에만 blur, overlay는 선명하게
-            const inner = document.getElementById('rep-content-inner');
-            if (inner) { inner.style.filter = 'blur(4px)'; inner.style.pointerEvents = 'none'; }
-            if (overlay) {
-                overlay.style.display = 'flex';
-                const isKo = currentLang === 'ko';
-                document.getElementById('gso-title').textContent = isKo ? '회원에게만 공개됩니다' : 'Available to members only';
-                document.getElementById('gso-desc').innerHTML = isKo
-                    ? '대화를 거듭할수록 쌓이는 나만의 토크 스탯,<br>가입하면 바로 확인할 수 있어요.'
-                    : 'Your personal talk stats grow with every conversation.<br>Sign up to unlock them.';
-            }
-        } else {
-            const inner = document.getElementById('rep-content-inner');
-            if (inner) { inner.style.filter = ''; inner.style.pointerEvents = ''; }
-            if (overlay) overlay.style.display = 'none';
-        }
-    });
     // ── 이메일 로그인 토글 ──
     let loginFormOpen = false;
     let signupFormOpen = false;
@@ -4430,8 +4322,10 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         // 인트로 화면 언어 업데이트
         const introDescEl = document.getElementById('intro-desc');
         const introBtnEl = document.getElementById('intro-start-btn');
+        const introHowBtnEl = document.getElementById('intro-how-btn');
         if (introDescEl) introDescEl.innerHTML = textData[currentLang].introDesc;
         if (introBtnEl) introBtnEl.textContent = textData[currentLang].introBtn;
+        if (introHowBtnEl) introHowBtnEl.textContent = textData[currentLang].introHowBtn;
         updateUI();
         if (isJoined) {
             renderParticipantsUI();
@@ -4729,7 +4623,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             roomParticipants = [];
             sessionParticipants = [];
             agoraToFirebaseUid = {};
-            uidToRankEmoji = {};
+            uidToBatteryEmoji = {};
             uidToAnimal = {};
             uidToNickname = {};
             uidToIsGuest = {};
@@ -4757,7 +4651,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, rankEmoji: myRankEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP, category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople });
+    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP, category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople });
     pendingRoomCategory = null;
     myTopicRef.onDisconnect().remove();
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
@@ -4777,7 +4671,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (val && val.style) speechStyleMap[uid] = val.style;
         if (val && val.nickname) uidToNickname[uid] = val.nickname;
         if (val && val.guest) uidToIsGuest[uid] = true;
-        if (val && val.rankEmoji) uidToRankEmoji[uid] = val.rankEmoji;
+        if (val && val.energyEmoji) uidToBatteryEmoji[uid] = val.energyEmoji;
         // agoraUid 필드로 역방향 매핑 보강
         if (val && val.agoraUid) agoraToFirebaseUid[val.agoraUid] = uid;
         // user-published보다 activeTopics 쓰기가 늦을 수 있으므로 여기서도 보충
@@ -4931,17 +4825,15 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                         fbUid = Object.keys(atData).find(uid => uid !== myFbUid) || null;
                         if (fbUid && atData[fbUid]) {
                             if (atData[fbUid].guest) uidToIsGuest[fbUid] = true;
-                            if (atData[fbUid].rankEmoji) uidToRankEmoji[fbUid] = atData[fbUid].rankEmoji;
+                            if (atData[fbUid].energyEmoji) uidToBatteryEmoji[fbUid] = atData[fbUid].energyEmoji;
                         }
                     }
                     if (fbUid) {
                         database.ref(`channels/${safeAgoraChannelId}/guestFlags/${fbUid}`).once('value').then(gs => { if (gs.val()) uidToIsGuest[fbUid] = true; });
                         agoraToFirebaseUid[user.uid] = fbUid;
-                        // 랭크 이모지 로드
-                        database.ref('users/' + fbUid + '/badges').once('value').then(bs => {
-                            const b = bs.val() || {};
-                            const t = (b.manner||0)+(b.logic||0)+(b.humor||0)+(b.empathy||0)+(b.passion||0);
-                            uidToRankEmoji[fbUid] = getRankEmoji(t);
+                        // 배터리 이모지 로드
+                        database.ref('users/' + fbUid + '/energy').once('value').then(es => {
+                            uidToBatteryEmoji[fbUid] = getBatteryEmoji((es.val() || {}).pct || 0);
                             renderParticipantsUI();
                         }).catch(() => {});
                         // 핑퐁 큐에 신규 유저 추가
@@ -5023,7 +4915,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             el.id = `part-${uid}`;
             const avatarSpan = document.createElement('span');
             avatarSpan.className = 'animal-avatar';
-            avatarSpan.textContent = uidToRankEmoji[fbUid] || '👋';
+            avatarSpan.textContent = uidToBatteryEmoji[fbUid] || '👋';
 
             const nameSpan = document.createElement('span');
             nameSpan.className = 'animal-name';
@@ -5221,7 +5113,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             item.id = 'pp-relay-' + uid;
 
             const isSpeaking = i === ppCurrentTurnIdx;
-            const emoji = (uid === myFbUid) ? myRankEmoji : (uidToRankEmoji[uid] || '👋');
+            const emoji = (uid === myFbUid) ? myBatteryEmoji : (uidToBatteryEmoji[uid] || '👋');
             const isMe = uid === myFbUid;
             const baseName = isMe
                 ? (currentLang === 'ko' ? '나' : 'Me')
@@ -5803,19 +5695,19 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
         if (isSelf) {
             item.innerHTML =
-                '<div class="subtitle-speaker">' + myRankEmoji + ' ' + nickname
+                '<div class="subtitle-speaker">' + myBatteryEmoji + ' ' + nickname
                 + (currentLang === 'ko' ? ' (나)' : ' (me)') + '</div>'
                 + '<div class="subtitle-self-text">' + original + '</div>';
         } else if (!isSubscribed) {
             const lockedLabel = currentLang === 'ko' ? '🔒 번역 보기 (Premium)' : '🔒 View translation (Premium)';
             item.innerHTML =
-                '<div class="subtitle-speaker">' + (uidToRankEmoji[uid] || '👋') + ' ' + nickname + '</div>'
+                '<div class="subtitle-speaker">' + (uidToBatteryEmoji[uid] || '👋') + ' ' + nickname + '</div>'
                 + '<div class="subtitle-original">' + original + '</div>'
                 + '<div class="subtitle-translated subtitle-locked" onclick="openMainPayModal()">' + lockedLabel + '</div>';
         } else {
             const showOriginal = translated && original !== translated;
             item.innerHTML =
-                '<div class="subtitle-speaker">' + (uidToRankEmoji[uid] || '👋') + ' ' + nickname + '</div>'
+                '<div class="subtitle-speaker">' + (uidToBatteryEmoji[uid] || '👋') + ' ' + nickname + '</div>'
                 + (showOriginal ? '<div class="subtitle-original">' + original + '</div>' : '')
                 + '<div class="subtitle-translated">' + (translated || '<span class="subtitle-loading">...</span>') + '</div>';
         }
@@ -5860,7 +5752,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const meLabel = currentLang === 'ko' ? '(나)' : '(You)';
             const myStyleBadge = selectedSpeechStyle ? `<span class="speech-style-badge">${textData[currentLang]['speechStyleBadge' + (selectedSpeechStyle === 'casual' ? 'Casual' : 'Polite')]}</span>` : '';
             const displayName = myNickname || 'Me';
-            meEl.innerHTML = `<span class="animal-avatar">${myRankEmoji}</span><span class="animal-name">${displayName} ${meLabel}${myStyleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+            meEl.innerHTML = `<span class="animal-avatar">${myBatteryEmoji}</span><span class="animal-name">${displayName} ${meLabel}${myStyleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
             list.appendChild(meEl);
         }
 
@@ -5880,8 +5772,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 const guestBadge = guestFlag ? `<span style="font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.4);border-radius:10px;padding:1px 7px;margin-left:6px;font-weight:500;">Guest</span>` : '';
                 const style = speechStyleMap[fbUid];
                 const styleBadge = style ? `<span class="speech-style-badge">${textData[currentLang]['speechStyleBadge' + (style === 'casual' ? 'Casual' : 'Polite')]}</span>` : '';
-                const rankEmoji = uidToRankEmoji[fbUid] || '👋';
-                el.innerHTML = `<span class="animal-avatar">${rankEmoji}</span><span class="animal-name">${nickname}${guestBadge}${styleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+                const energyEmoji = uidToBatteryEmoji[fbUid] || '👋';
+                el.innerHTML = `<span class="animal-avatar">${energyEmoji}</span><span class="animal-name">${nickname}${guestBadge}${styleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
                 list.appendChild(el);
             });
         }
@@ -5913,46 +5805,40 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         });
     }
 
-    // 8. 실시간 평판 시그널링 — Firebase Realtime Database 기반 (KVDB 대체)
+    // 8. 실시간 번개(⚡) 시그널링 — Firebase Realtime Database 기반 (KVDB 대체)
     let signalListenerRef = null;
 
     function startSignalPolling() {
         if (signalListenerRef) { signalListenerRef.off(); signalListenerRef = null; }
         if (!myUid) return;
 
-        signalListenerRef = database.ref(`channels/${safeAgoraChannelId}/badgeSignal`);
+        signalListenerRef = database.ref(`channels/${safeAgoraChannelId}/energySignal`);
         signalListenerRef.on('value', async (snap) => {
             const data = snap.val();
             if (!data) return;
             const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
             if (!myFbUid) return;
-            // 내가 보낸 신호면 무시 (수신자 체크 대신 발신자 체크 — UID 매핑 오류 우회)
+            // 내가 보낸 신호면 무시
             if (data.from === myFbUid || data.from === String(myUid)) return;
-
-            const badgeType = data.badgeType;
-            const badgeNames = {
-                manner:  currentLang === 'ko' ? "친절" : "NICE",
-                logic:   currentLang === 'ko' ? "논리" : "LOGIC",
-                empathy: currentLang === 'ko' ? "공감" : "WARM",
-                passion: currentLang === 'ko' ? "열정" : "BOLD",
-                humor:   currentLang === 'ko' ? "유머" : "FUN"
-            };
+            // 나에게 보낸 신호가 아니면 무시 (여러 명이 있는 방에서 다른 사람에게 간 신호까지 반응하지 않도록)
+            if (data.to !== myFbUid && data.to !== String(myUid)) return;
 
             // 수신 후 즉시 삭제 (중복 처리 방지)
-            await database.ref(`channels/${safeAgoraChannelId}/badgeSignal`).remove();
+            await database.ref(`channels/${safeAgoraChannelId}/energySignal`).remove();
 
-            // 내 Firebase UID로 직접 badges + dailyBadges 기록 (자기 데이터 쓰기 → 규칙 통과)
+            // 내 Firebase UID로 직접 energy + dailyEnergy 기록 (자기 데이터 쓰기 → 규칙 통과)
             try {
                 const _n = new Date();
                 const kstToday = new Date(_n.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-                await database.ref(`users/${myFbUid}/badges/${badgeType}`).set(firebase.database.ServerValue.increment(1));
-                await database.ref(`users/${myFbUid}/dailyBadges/${kstToday}/${badgeType}`).set(firebase.database.ServerValue.increment(1));
-            } catch(e) { console.warn('badge self-write failed:', e); }
+                const energyRef = database.ref(`users/${myFbUid}/energy`);
+                const curSnap = await energyRef.once('value');
+                const cur = curSnap.val() || {};
+                const newPct = Math.min(100, (cur.pct || 0) + 1);
+                await energyRef.set({ pct: newPct, updatedAt: Date.now() });
+                await database.ref(`users/${myFbUid}/dailyEnergy/${kstToday}`).set(firebase.database.ServerValue.increment(1));
+            } catch(e) { console.warn('energy self-write failed:', e); }
 
-            showBadgeToast(currentLang === 'ko'
-                ? `✨ [${badgeNames[badgeType]}] 배지를 받았어요!`
-                : `✨ You received a [${badgeNames[badgeType]}] badge!`
-            );
+            showBadgeToast(currentLang === 'ko' ? `⚡ 번개를 받았어요! (+1%)` : `⚡ You received a lightning bolt! (+1%)`);
         });
     }
 
@@ -5977,7 +5863,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const btn = document.createElement('button');
             btn.className = "target-btn";
             const nickname = uidToNickname[uid] || `User ${index + 1}`;
-            btn.innerText = `${uidToRankEmoji[uid] || '👋'} ${nickname}`;
+            btn.innerText = `${uidToBatteryEmoji[uid] || '👋'} ${nickname}`;
             btn.onclick = () => {
                 document.querySelectorAll('#report-target-container .target-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
@@ -6494,8 +6380,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const user = auth.currentUser;
         if (!user || user.isAnonymous) {
             alert(currentLang === 'ko'
-                ? '무료 통화가 종료되었습니다.\n회원가입하면 친구 추가, 배지 등 더 많은 기능을 이용할 수 있어요!'
-                : 'Your free call has ended.\nSign up to unlock friends, badges, and more!');
+                ? '무료 통화가 종료되었습니다.\n회원가입하면 친구 추가, 번개(⚡) 보내기 등 더 많은 기능을 이용할 수 있어요!'
+                : 'Your free call has ended.\nSign up to unlock friends, sending lightning, and more!');
             return;
         }
         const modal = document.getElementById('payment-modal');
@@ -6714,7 +6600,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (isGuest) {
             if (addFriendBtn) addFriendBtn.style.display = 'none';
             voteBtns.forEach(b => { b.style.display = 'none'; });
-            container.innerHTML = `<div style="font-size:13px; color:rgba(255,255,255,0.45); text-align:center; padding:14px; line-height:1.6;">${currentLang === 'ko' ? "🔒 배지 보내기와 친구 추가는<br>로그인 후 이용할 수 있어요." : "🔒 Badge & friend features<br>are available after sign-up."}</div>`;
+            container.innerHTML = `<div style="font-size:13px; color:rgba(255,255,255,0.45); text-align:center; padding:14px; line-height:1.6;">${currentLang === 'ko' ? "🔒 번개 보내기와 친구 추가는<br>로그인 후 이용할 수 있어요." : "🔒 Lightning & friend features<br>are available after sign-up."}</div>`;
             return;
         } else {
             if (addFriendBtn) addFriendBtn.style.display = '';
@@ -6724,7 +6610,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         toggleVoteBadgeButtons(false);
 
         if (sessionParticipants.length === 0) {
-            container.innerHTML = `<div style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; padding:10px; line-height:1.4;">${currentLang === 'ko' ? "• 대화 시간이 짧거나 피어 참여자 기록이 확보되지 않아 배지 대상이 없습니다." : "• Call session was too brief or no peer connection logged."}</div>`;
+            container.innerHTML = `<div style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; padding:10px; line-height:1.4;">${currentLang === 'ko' ? "• 대화 시간이 짧거나 피어 참여자 기록이 확보되지 않아 번개를 보낼 대상이 없습니다." : "• Call session was too brief or no peer connection logged."}</div>`;
             return;
         }
 
@@ -6733,7 +6619,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             btn.className = "target-btn";
             btn.dataset.uid = uid;
             const nickname = uidToNickname[uid] || `User ${index + 1}`;
-            btn.innerText = `${uidToRankEmoji[uid] || '👋'} ${nickname}`;
+            btn.innerText = `${uidToBatteryEmoji[uid] || '👋'} ${nickname}`;
             btn.addEventListener('pointerdown', () => {
                 document.querySelectorAll('#vote-target-container .target-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
@@ -6760,7 +6646,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function toggleVoteBadgeButtons(enable) {
-        ['btn-vote-manner','btn-vote-logic','btn-vote-humor','btn-vote-empathy','btn-vote-passion','btn-add-friend'].forEach(id => {
+        ['btn-send-bolt','btn-add-friend'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             if (enable) {
@@ -6772,18 +6658,18 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         });
     }
 
-    async function executeVote(badgeType) {
+    async function executeSendBolt() {
         if (!selectedVoteTarget) return;
         if (isGuest) {
-            alert(currentLang === 'ko' ? '게스트는 배지를 보낼 수 없습니다. 로그인 후 이용해 주세요.' : 'Guests cannot send badges. Please sign in.');
+            alert(currentLang === 'ko' ? '게스트는 번개를 보낼 수 없습니다. 로그인 후 이용해 주세요.' : 'Guests cannot send lightning. Please sign in.');
             return;
         }
         if (badgeSentThisSession) {
-            showBadgeToast(currentLang === 'ko' ? '너무 즐거워도 배지는 한번만 보낼 수 있어요 😊' : 'You can only send one badge per session 😊');
+            showBadgeToast(currentLang === 'ko' ? '너무 즐거워도 번개는 한번만 보낼 수 있어요 😊' : 'You can only send one lightning bolt per session 😊');
             return;
         }
         if (uidToIsGuest[selectedVoteTarget]) {
-            alert(currentLang === 'ko' ? '게스트 유저에게는 배지를 보낼 수 없습니다.' : 'You cannot send badges to guest users.');
+            alert(currentLang === 'ko' ? '게스트 유저에게는 번개를 보낼 수 없습니다.' : 'You cannot send lightning to guest users.');
             return;
         }
 
@@ -6794,10 +6680,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 try { await currentUser.getIdToken(true); } catch(e) { console.warn('token refresh failed', e); }
             }
 
-            // channels/{channelId}/badgeSignal에 배지 신호 전송 → 수신측에서 자기 데이터에 직접 씀
+            // channels/{channelId}/energySignal에 번개 신호 전송 → 수신측에서 자기 데이터에 직접 씀
             const _fromUid = auth.currentUser ? auth.currentUser.uid : String(myUid);
-            await database.ref(`channels/${safeAgoraChannelId}/badgeSignal`).set({
-                badgeType,
+            await database.ref(`channels/${safeAgoraChannelId}/energySignal`).set({
                 to: selectedVoteTarget,
                 from: _fromUid,
                 ts: Date.now()
@@ -6809,7 +6694,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
         } catch (err) {
             console.error("Firebase transaction processing failure:", err);
-            showBadgeToast(currentLang === 'ko' ? '배지 전송에 실패했습니다.' : 'Failed to send badge.');
+            showBadgeToast(currentLang === 'ko' ? '번개 전송에 실패했습니다.' : 'Failed to send lightning.');
             removeVoteTarget(selectedVoteTarget);
         }
     }
@@ -7074,12 +6959,10 @@ function loadFriendsList() {
 
             friendNameSpan.appendChild(statusDot);
             const rankNode = document.createElement('span');
-            rankNode.textContent = ' 👋 ';
+            rankNode.textContent = ' 🔋 ';
             friendNameSpan.appendChild(rankNode);
-            database.ref('users/' + friendUid + '/badges').once('value').then(bs => {
-                const b = bs.val() || {};
-                const t = (b.manner||0)+(b.logic||0)+(b.humor||0)+(b.empathy||0)+(b.passion||0);
-                rankNode.textContent = ' ' + getRankEmoji(t) + ' ';
+            database.ref('users/' + friendUid + '/energy').once('value').then(es => {
+                rankNode.textContent = ' ' + getBatteryEmoji((es.val() || {}).pct || 0) + ' ';
             }).catch(() => {});
             const nameNode = document.createElement('span');
             nameNode.textContent = displayName;
@@ -7140,19 +7023,11 @@ function loadFriendsList() {
     });
 }
 
-function toggleRankDesc(id) {
-    const all = ['rd-newcomer','rd-rising','rd-silver','rd-gold','rd-legend'];
-    all.forEach(d => {
-        const el = document.getElementById(d);
-        if (el) el.style.display = (d === id && el.style.display === 'none') ? 'block' : 'none';
-    });
-}
-
 // ── 설정 모달 ──
-let _settingsBadgeRef = null;
-let _settingsAllBadgeRef = null;
-let _settingsAllBadgeData = null; // 랭크 재렌더링용 캐시 (언어 토글 시 DB 재조회 없이 사용)
-let _settingsDailyBadgeData = null; // 오늘 받은 배지 재렌더링용 캐시
+let _settingsDailyEnergyRef = null;
+let _settingsEnergyRef = null;
+let _settingsEnergyData = null; // 배터리 재렌더링용 캐시 (언어 토글 시 DB 재조회 없이 사용)
+let _settingsDailyEnergyData = null; // 오늘 받은 번개 재렌더링용 캐시
 function openSettingsModal() {
     const overlay = document.getElementById('settings-modal-overlay');
     overlay.classList.add('open');
@@ -7161,8 +7036,8 @@ function openSettingsModal() {
 }
 function closeSettingsModal() {
     document.getElementById('settings-modal-overlay').classList.remove('open');
-    if (_settingsBadgeRef) { _settingsBadgeRef.off(); _settingsBadgeRef = null; }
-    if (_settingsAllBadgeRef) { _settingsAllBadgeRef.off(); _settingsAllBadgeRef = null; }
+    if (_settingsDailyEnergyRef) { _settingsDailyEnergyRef.off(); _settingsDailyEnergyRef = null; }
+    if (_settingsEnergyRef) { _settingsEnergyRef.off(); _settingsEnergyRef = null; }
 }
 function setLangFromSettings(lang) {
     if (currentLang === lang) return;
@@ -7181,11 +7056,11 @@ function updateSettingsModalLang() {
     document.getElementById('settings-mypage-label').textContent = isKo ? '마이페이지' : 'My page';
     document.getElementById('settings-time-label').textContent = isKo ? '오늘 남은 시간' : 'Today\'s remaining time';
     document.getElementById('settings-time-sub').textContent = isKo ? '구독 혜택' : 'Subscription benefit';
-    document.getElementById('settings-badge-label').textContent = isKo ? '오늘 받은 배지' : 'Badges received today';
-    document.getElementById('settings-rank-label').textContent = isKo ? '내 랭크' : 'My rank';
-    document.getElementById('settings-rank-sub').textContent = isKo ? '누적 배지' : 'Total badges';
-    renderSettingsRank();
-    renderSettingsDailyBadges();
+    document.getElementById('settings-badge-label').textContent = isKo ? '오늘 받은 번개' : 'Lightning received today';
+    document.getElementById('settings-rank-label').textContent = isKo ? '배터리' : 'Battery';
+    document.getElementById('settings-rank-sub').textContent = isKo ? '매일 1%씩 감소' : 'Drains 1% per day';
+    renderSettingsBattery();
+    renderSettingsDailyEnergy();
 }
 
 function updateTopicInfoModalLang() {
@@ -7212,33 +7087,20 @@ function updateTopicInfoModalLang() {
 }
 
 // currentLang을 매번 새로 읽어서 렌더링 — 언어 토글 시에도 정확히 반영됨
-function renderSettingsRank() {
-    if (!_settingsAllBadgeData) return;
-    const isKo = currentLang === 'ko';
-    const rankNames = { ko: ['뉴비','떠오르는 토커','이야기꾼','여운이 남는','영혼의 단짝'], en: ['Newcomer','Rising Talker','Storyteller','Lingering Voice','Soulmate'] };
-    const allB = _settingsAllBadgeData;
-    const rankTotal = (allB.manner||0)+(allB.logic||0)+(allB.humor||0)+(allB.empathy||0)+(allB.passion||0);
-    const rankIdx = rankTotal>=200?4: rankTotal>=100?3: rankTotal>=50?2: rankTotal>=10?1:0;
-    document.getElementById('settings-rank-emoji').textContent = getRankEmoji(rankTotal);
-    document.getElementById('settings-rank-name').textContent = rankNames[isKo?'ko':'en'][rankIdx];
-    document.getElementById('settings-rank-sub').textContent = (isKo ? '누적 배지 ' : 'Total badges ') + rankTotal;
+function renderSettingsBattery() {
+    if (!_settingsEnergyData) return;
+    const pct = _settingsEnergyData.pct || 0;
+    document.getElementById('settings-rank-emoji').textContent = getBatteryEmoji(pct);
+    document.getElementById('settings-rank-name').textContent = pct + '%';
 }
 
-function renderSettingsDailyBadges() {
-    if (!_settingsDailyBadgeData) return;
+function renderSettingsDailyEnergy() {
+    if (_settingsDailyEnergyData == null) return;
     const isKo = currentLang === 'ko';
-    const badgeKeys = ['manner', 'logic', 'humor', 'empathy', 'passion'];
-    const badgeName = { manner:{ko:'친절',en:'NICE'}, logic:{ko:'논리',en:'LOGIC'}, humor:{ko:'유머',en:'FUN'}, empathy:{ko:'공감',en:'WARM'}, passion:{ko:'열정',en:'BOLD'} };
-    const daily = _settingsDailyBadgeData;
-    let total = 0;
-    const chips = [];
-    badgeKeys.forEach(k => {
-        const cnt = daily[k] || 0;
-        if (cnt > 0) { total += cnt; chips.push(badgeName[k][isKo ? 'ko' : 'en'] + (cnt > 1 ? ' x' + cnt : '')); }
-    });
-    document.getElementById('settings-badge-count').textContent = total;
+    const count = _settingsDailyEnergyData || 0;
+    document.getElementById('settings-badge-count').textContent = count;
     const chipsEl = document.getElementById('settings-badge-chips');
-    chipsEl.innerHTML = chips.map(c => '<span class="settings-badge-chip">' + c + '</span>').join('');
+    chipsEl.innerHTML = count > 0 ? '<span class="settings-badge-chip">⚡ x' + count + '</span>' : '';
 }
 
 async function loadSettingsMyPage() {
@@ -7254,20 +7116,20 @@ async function loadSettingsMyPage() {
     const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
     const today = kst.toISOString().slice(0, 10);
 
-    // 내 랭크 — 실시간 (리스너 먼저 등록)
-    if (_settingsAllBadgeRef) { _settingsAllBadgeRef.off(); }
-    _settingsAllBadgeRef = database.ref('users/' + uid + '/badges');
-    _settingsAllBadgeRef.on('value', snap => {
-        _settingsAllBadgeData = snap.val() || {};
-        renderSettingsRank();
+    // 내 배터리 — 실시간 (리스너 먼저 등록)
+    if (_settingsEnergyRef) { _settingsEnergyRef.off(); }
+    _settingsEnergyRef = database.ref('users/' + uid + '/energy');
+    _settingsEnergyRef.on('value', snap => {
+        _settingsEnergyData = snap.val() || { pct: 0 };
+        renderSettingsBattery();
     });
 
-    // 오늘 받은 배지 — 실시간 (리스너 먼저 등록)
-    if (_settingsBadgeRef) { _settingsBadgeRef.off(); }
-    _settingsBadgeRef = database.ref('users/' + uid + '/dailyBadges/' + today);
-    _settingsBadgeRef.on('value', snap => {
-        _settingsDailyBadgeData = snap.val() || {};
-        renderSettingsDailyBadges();
+    // 오늘 받은 번개 — 실시간 (리스너 먼저 등록)
+    if (_settingsDailyEnergyRef) { _settingsDailyEnergyRef.off(); }
+    _settingsDailyEnergyRef = database.ref('users/' + uid + '/dailyEnergy/' + today);
+    _settingsDailyEnergyRef.on('value', snap => {
+        _settingsDailyEnergyData = snap.val() || 0;
+        renderSettingsDailyEnergy();
     });
 
     // 잔여 시간 (await는 리스너 등록 후에 실행)
@@ -7740,7 +7602,7 @@ B-TALK은 이용자 간 연결을 위한 플랫폼만을 제공합니다. 대화
 • Type a topic you want to talk about right now, or jump straight into an already-active room
 • Join a live group voice conversation (real-time voice, not text) with multiple participants
 • Use real-time auto-translation to talk across languages (Premium feature)
-• Save people you enjoyed talking to and collect unique Talk Badges
+• Save people you enjoyed talking to, and send/receive ⚡ lightning to charge your battery
 
 ─── Who It's For ───
 • People who enjoy meeting new perspectives and talking with strangers
@@ -7762,7 +7624,7 @@ Every session starts with 10 free minutes. To keep talking longer, you can subsc
 • 지금 이야기하고 싶은 주제를 직접 입력하거나, 이미 열려 있는 대화방에 바로 참여
 • 여러 명이 함께 참여하는 실시간 그룹 음성 채팅 (텍스트가 아닌 실제 음성 대화)
 • 실시간 자동 번역으로 언어가 달라도 대화 가능 (Premium 기능)
-• 마음에 맞았던 대화 상대를 저장하고 나만의 배지 수집
+• 마음에 맞았던 대화 상대를 저장하고, 번개(⚡)를 주고받아 배터리 충전
 
 ─── 이런 분들에게 ───
 • 새로운 관점과 낯선 사람과의 대화를 즐기고 싶은 분
@@ -7800,20 +7662,20 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
 
 ─── 🗓️ 월간 구독 ($4.99 / 월) ───
 결제 방식: 매월 자동 갱신 (언제든 해지 가능)
-제공 혜택: 대화 세션당 시간 제한 없음(10분 이상 통화 가능) · 실시간 번역 기능 제공 · 친구 추가 및 배지 기능(보내기/모으기) 완벽 지원
+제공 혜택: 대화 세션당 시간 제한 없음(10분 이상 통화 가능) · 실시간 번역 기능 제공 · 친구 추가 및 번개(⚡) 기능(보내기/받기) 완벽 지원
 
 ─── 📅 주간 구독 ($1.99 / 주) ───
 결제 방식: 7일마다 자동 갱신 (언제든 해지 가능)
-제공 혜택: 대화 세션당 시간 제한 없음(10분 이상 통화 가능) · 실시간 번역 기능 제공 · 친구 추가 및 배지 기능(보내기/모으기) 완벽 지원
+제공 혜택: 대화 세션당 시간 제한 없음(10분 이상 통화 가능) · 실시간 번역 기능 제공 · 친구 추가 및 번개(⚡) 기능(보내기/받기) 완벽 지원
 
 ─── 🆓 무료 회원 ───
 이용 조건: 회원가입 후 로그인 시 적용
-제공 혜택: 친구 추가 가능, 배지 보내기 및 모으기 가능
+제공 혜택: 친구 추가 가능, 번개(⚡) 보내기 및 받기 가능
 제한 사항: 대화 세션당 최대 10분 제한 (실시간 번역 기능 이용 불가)
 
 ─── 👤 게스트 체험 (비회원) ───
 이용 조건: 별도 가입 없이 바로 맛보기 가능
-제한 사항: 대화 세션당 최대 10분 제한 (친구 추가, 배지 기능, 실시간 번역 이용 불가)
+제한 사항: 대화 세션당 최대 10분 제한 (친구 추가, 번개 기능, 실시간 번역 이용 불가)
 
 ─── 🎉 초기 회원 50명 프로모션 ───
 선착순 회원 50명에게는 가입일로부터 30일간 대화 세션당 10분 제한 없이 무료로 통화할 수 있는 혜택을 드려요. 구독 없이도 적용되며, 게스트를 포함한 모든 이용자와 동일하게 하루 총 2시간 한도는 그대로 적용됩니다. (선착순 마감이니 지금 가입해서 혜택을 받아보세요!)
