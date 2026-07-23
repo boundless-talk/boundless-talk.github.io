@@ -1678,7 +1678,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <span class="disco-navbar-word">boundless talk</span>
                 </div>
                 <div class="disco-navbar-links">
-                    <a class="active">Discover</a><a>Trending</a><a>My Circles</a>
+                    <a class="active">Discover</a><a>Trending</a><a onclick="openMyCirclesModal()" style="cursor:pointer;">My Circles</a>
                 </div>
                 <button class="disco-navbar-cta" onclick="openDiscoCreateModal()">Start a circle</button>
             </div>
@@ -1695,7 +1695,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div class="disco-trending-row" id="disco-trending-row"></div>
             <div class="disco-grid" id="disco-grid"></div>
             <div class="disco-empty" id="disco-empty" style="display:none;">지금 진행 중인 방이 없어요. 첫 방을 만들어보세요!</div>
-            <button class="disco-toggle-manual" id="disco-toggle-manual" onclick="toggleDiscoManualEntry()">직접 주제 입력하기 ↓</button>
         </div>
 
         <!-- ── 방 만들기 모달 ── -->
@@ -1723,8 +1722,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
         </div>
 
-        <div class="disco-divider" id="manual-entry-divider"><div class="line"></div><span>직접 입력</span><div class="line"></div></div>
+        <!-- ── My Circles 모달 (대화스탯 / 톡어게인) ── -->
+        <div class="modal-overlay" id="my-circles-modal" onclick="if(event.target===this) closeMyCirclesModal()">
+            <div class="disco-modal-box" style="max-width:380px; max-height:80vh; overflow-y:auto;">
+                <div class="disco-modal-title">My Circles</div>
+                <div id="my-circles-modal-body"></div>
+                <button class="disco-modal-cancel" onclick="closeMyCirclesModal()">닫기</button>
+            </div>
+        </div>
 
+        <!-- ── 기존 '직접 주제 입력' 방식: Discover로 대체되어 화면엔 숨김, join-btn 등 내부 로직은 그대로 재사용 ── -->
+        <div id="manual-entry-wrap" style="display:none;">
         <div id="live-topics-bar" style="display:none; margin-bottom:10px;">
     <div style="font-size:11px; color:rgba(255,255,255,0.35); margin-bottom:8px; display:flex; align-items:center; gap:6px;">
         <span style="display:inline-block; width:7px; height:7px; border-radius:50%; background:#00e5ff; animation:pulse-dot 1.4s infinite;"></span>
@@ -1813,8 +1821,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
         <button id="report-btn">🚨 Report Toxic User</button>
         <button id="leave-btn">Leave Room</button>
+        </div>
 
-        
+
     </div>
 
     <div id="user-action-buttons">
@@ -2841,6 +2850,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             if (manualBtn) manualBtn.textContent = currentLang === 'ko' ? '직접 주제 입력하기 ↓' : 'Type your own topic ↓';
         }, 0);
     });
+    // ── My Circles 모달 (기존 '또 대화하기' / '대화스탯' 버튼 + 스탯 보드를 그대로 옮겨서 재사용) ──
+    function openMyCirclesModal() {
+        document.getElementById('my-circles-modal').classList.add('active');
+    }
+    function closeMyCirclesModal() {
+        document.getElementById('my-circles-modal').classList.remove('active');
+    }
+    (function relocateMyCirclesUI() {
+        const body = document.getElementById('my-circles-modal-body');
+        if (!body) return;
+        ['btn-talk-again', 'toggle-rep-btn', 'reputation-section'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) body.appendChild(el);
+        });
+    })();
+
     // ══════════════════ /Discover 화면 ══════════════════
 
     function getRankEmoji(total) {
