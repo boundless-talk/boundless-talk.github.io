@@ -527,7 +527,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             gap: 12px;
         }
 
-        .auth-form-inner .form-title {
+        .auth-form-inner .form-title,
+        .form-title {
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -539,7 +540,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             margin-bottom: 0;
         }
 
-        .auth-form-inner .form-hint {
+        .form-hint {
             font-size: 11.5px;
             color: rgba(255,255,255,0.3);
             line-height: 1.5;
@@ -832,6 +833,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.06) !important; color: rgba(43,31,36,0.4) !important;
         }
         html[data-cute-mode="cute"] #cp-cancel-btn { color: rgba(43,31,36,0.35) !important; }
+        html[data-cute-mode="cute"] #logout-btn {
+            background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.12) !important; color: rgba(43,31,36,0.6) !important;
+        }
+        html[data-cute-mode="cute"] #guest-badge {
+            background: rgba(0,0,0,0.04) !important; border-color: rgba(255,111,156,0.4) !important; color: rgba(43,31,36,0.55) !important;
+        }
+        html[data-cute-mode="cute"] .auth-or-line { background: rgba(0,0,0,0.08) !important; }
+        html[data-cute-mode="cute"] .auth-or-text { color: rgba(43,31,36,0.35) !important; }
+        html[data-cute-mode="cute"] #signup-modal-close-btn { color: rgba(43,31,36,0.4) !important; }
+        html[data-cute-mode="cute"] .step-indicator { color: rgba(43,31,36,0.4) !important; }
+        html[data-cute-mode="cute"] .step-dot { background: rgba(0,0,0,0.15) !important; }
+        html[data-cute-mode="cute"] .step-dot.active { background: #ff6f9c !important; }
         /* ── 대화방(Room) 화면: 큐트 모드 ── */
         html[data-cute-mode="cute"] #room-screen { background: #fff8f4; }
         html[data-cute-mode="cute"] .room-header-v2 { background: #fff; border-bottom-color: rgba(0,0,0,0.06); }
@@ -1958,46 +1971,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     </div>
                 </div>
 
-                <div class="auth-form-panel" id="signup-form-panel">
-                    <div class="auth-form-inner">
-
-                        <div class="step-indicator">
-                            <div class="step-dot active" id="step-dot-1"></div>
-                            <div style="width:20px; height:1px; background:rgba(255,255,255,0.1);"></div>
-                            <div class="step-dot" id="step-dot-2"></div>
-                            <div style="width:20px; height:1px; background:rgba(255,255,255,0.1);"></div>
-                            <div class="step-dot" id="step-dot-3"></div>
-                            <span id="step-label" style="margin-left:6px;">이메일 입력</span>
-                        </div>
-
-                        <div id="signup-step-1">
-                            <input type="email" id="signup-email-input" placeholder="가입할 이메일 주소" style="margin-bottom:0;">
-                            <div class="form-hint" id="signup-hint-1" style="margin-top:8px;">인증 메일을 발송해 드립니다.</div>
-                            <button class="auth-submit-btn primary" id="send-verify-btn" style="margin-top:10px;">인증 메일 발송</button>
-                        </div>
-
-                        <div id="signup-step-2" style="display:none; text-align:center;">
-                            <div style="font-size:32px; margin-bottom:8px;">📬</div>
-                            <div class="form-hint" id="signup-hint-2">이메일로 발송된 6자리 코드를 입력하세요.</div>
-                            <input type="text" id="verify-code-input" placeholder="인증 코드 6자리" maxlength="6" style="text-align:center; letter-spacing:6px; font-size:18px; margin-top:10px;">
-                            <button class="auth-submit-btn primary" id="check-verify-btn" style="margin-top:12px;">인증 확인</button>
-                            <button style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; margin-top:6px; width:100%; padding:6px;" id="resend-verify-btn">코드 재전송</button>
-                        </div>
-
-                        <div id="signup-step-3" style="display:none;">
-                            <input type="password" id="signup-pw-input" placeholder="비밀번호 (영문+숫자+특수문자)" style="margin-bottom:0;">
-                            <input type="password" id="signup-pw-confirm-input" placeholder="비밀번호 확인 (재입력)" style="margin-bottom:0; margin-top:10px;">
-                            <div class="form-hint" id="pw-match-hint" style="margin-top:6px; min-height:16px;"></div>
-                            <button class="auth-submit-btn primary" id="email-signup-btn" style="margin-top:4px;" disabled>가입 완료</button>
-                        </div>
-
-                    </div>
-                </div>
-
                 <div style="display:flex; align-items:center; gap:10px; margin:6px 0;">
-                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
-                    <span style="font-size:11px; color:rgba(255,255,255,0.25);">or</span>
-                    <div style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                    <div class="auth-or-line" style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
+                    <span class="auth-or-text" style="font-size:11px; color:rgba(255,255,255,0.25);">or</span>
+                    <div class="auth-or-line" style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
                 </div>
                 <button id="guest-login-btn" style="background:transparent; border:1px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.55); font-size:13px; padding:13px 14px; font-weight:500; border-radius:4px; margin:0 0 6px 0;"><span id="guest-login-text">게스트로 체험하기</span></button>
 
@@ -2204,6 +2181,43 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <p style="font-size:12px; margin-bottom:18px; color:rgba(255,255,255,0.35);" id="join-nick-desc">This is how others will see you in the conversation.</p>
             <input type="text" id="join-nickname-input" placeholder="Enter nickname (max 16 chars)" maxlength="16" style="margin-bottom:16px;">
             <button id="join-nick-confirm-btn" class="intro2-start-btn" style="margin:0;">Continue</button>
+        </div>
+    </div>
+
+    <!-- 이메일 회원가입 모달 -->
+    <div class="modal-overlay" id="signup-modal" onclick="if(event.target===this) closeSignupModal()">
+        <div class="modal-content" style="max-width:340px; text-align:left; position:relative;">
+            <button id="signup-modal-close-btn" onclick="closeSignupModal()" style="position:absolute; top:16px; right:16px; background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer; padding:0;">✕</button>
+
+            <div class="step-indicator">
+                <div class="step-dot active" id="step-dot-1"></div>
+                <div style="width:20px; height:1px; background:rgba(255,255,255,0.1);"></div>
+                <div class="step-dot" id="step-dot-2"></div>
+                <div style="width:20px; height:1px; background:rgba(255,255,255,0.1);"></div>
+                <div class="step-dot" id="step-dot-3"></div>
+                <span id="step-label" style="margin-left:6px;">이메일 입력</span>
+            </div>
+
+            <div id="signup-step-1">
+                <input type="email" id="signup-email-input" placeholder="가입할 이메일 주소" style="margin-bottom:0;">
+                <div class="form-hint" id="signup-hint-1" style="margin-top:8px;">인증 메일을 발송해 드립니다.</div>
+                <button class="auth-submit-btn primary" id="send-verify-btn" style="margin-top:10px;">인증 메일 발송</button>
+            </div>
+
+            <div id="signup-step-2" style="display:none; text-align:center;">
+                <div style="font-size:32px; margin-bottom:8px;">📬</div>
+                <div class="form-hint" id="signup-hint-2">이메일로 발송된 6자리 코드를 입력하세요.</div>
+                <input type="text" id="verify-code-input" placeholder="인증 코드 6자리" maxlength="6" style="text-align:center; letter-spacing:6px; font-size:18px; margin-top:10px;">
+                <button class="auth-submit-btn primary" id="check-verify-btn" style="margin-top:12px;">인증 확인</button>
+                <button style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; margin-top:6px; width:100%; padding:6px;" id="resend-verify-btn">코드 재전송</button>
+            </div>
+
+            <div id="signup-step-3" style="display:none;">
+                <input type="password" id="signup-pw-input" placeholder="비밀번호 (영문+숫자+특수문자)" style="margin-bottom:0;">
+                <input type="password" id="signup-pw-confirm-input" placeholder="비밀번호 확인 (재입력)" style="margin-bottom:0; margin-top:10px;">
+                <div class="form-hint" id="pw-match-hint" style="margin-top:6px; min-height:16px;"></div>
+                <button class="auth-submit-btn primary" id="email-signup-btn" style="margin-top:4px;" disabled>가입 완료</button>
+            </div>
         </div>
     </div>
 
@@ -4314,26 +4328,21 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         requireConsent(() => {
             loginFormOpen = !loginFormOpen;
             document.getElementById('login-form-panel').classList.toggle('open', loginFormOpen);
-            if (loginFormOpen && signupFormOpen) {
-                signupFormOpen = false;
-                document.getElementById('signup-form-panel').classList.remove('open');
-            }
         });
     });
 
+    function closeSignupModal() {
+        signupFormOpen = false;
+        document.getElementById('signup-modal').classList.remove('active');
+    }
+
     document.getElementById('email-signup-btn-main').addEventListener('click', () => {
         requireConsent(() => {
-        signupFormOpen = !signupFormOpen;
-        document.getElementById('signup-form-panel').classList.toggle('open', signupFormOpen);
-        if (signupFormOpen && loginFormOpen) {
-            loginFormOpen = false;
-            document.getElementById('login-form-panel').classList.remove('open');
-        }
-        if (signupFormOpen) {
-        auth.signOut().catch(err => console.log("기존 세션 정리 중 예외 발생:", err));
-        resetSignupSteps();
-    }
-        }); // requireConsent end
+            signupFormOpen = true;
+            document.getElementById('signup-modal').classList.add('active');
+            auth.signOut().catch(err => console.log("기존 세션 정리 중 예외 발생:", err));
+            resetSignupSteps();
+        });
     });
 
     // ── 이메일 로그인 제출 ──
@@ -4543,7 +4552,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             signupFormOpen = false;
             signupVerifyCode = null;
             signupVerifyEmail = null;
-            document.getElementById('signup-form-panel').classList.remove('open');
+            document.getElementById('signup-modal').classList.remove('active');
         } catch(e) {
             alert("오류: " + e.message);
             btn.disabled = false;
