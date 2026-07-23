@@ -600,7 +600,7 @@
                         <th>UID</th>
                         <th>이메일</th><th>가입일자</th>
                         <th>상태</th>
-                        <th>배지</th>
+                        <th>배터리</th>
                         <th>액션</th>
                     </tr></thead>
                     <tbody id="dash-user-list">
@@ -627,7 +627,7 @@
                         <th>UID</th>
                         <th>이메일</th><th>가입일자</th>
                         <th>상태</th>
-                        <th>배지 (매너/논리/유머)</th>
+                        <th>배터리</th>
                         <th>친구 수</th>
                         <th>액션</th>
                     </tr></thead>
@@ -648,7 +648,7 @@
 
             <div id="tab-perm" class="tab-content">
                 <div class="table-wrap">
-                    <table><thead><tr><th>UID</th><th>이메일</th><th>배지</th><th>액션</th></tr></thead>
+                    <table><thead><tr><th>UID</th><th>이메일</th><th>배터리</th><th>액션</th></tr></thead>
                     <tbody id="banned-list"><tr class="loading-row"><td colspan="4">불러오는 중...</td></tr></tbody></table>
                 </div>
             </div>
@@ -704,7 +704,7 @@
                         <th>UID</th>
                         <th>이메일</th>
                         <th>상태</th>
-                        <th>배지 (매너/논리/유머)</th>
+                        <th>배터리</th>
                         <th>액션</th>
                     </tr></thead>
                     <tbody id="online-list">
@@ -940,22 +940,24 @@
         return new Date(ts).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
     }
 
+    function batteryPill(u) {
+        const e = u.energy || {};
+        const pct = e.pct || 0;
+        const emoji = pct > 20 ? '🔋' : '🪫';
+        return `<span class="badge-small">${emoji} ${pct}%</span>`;
+    }
+
     function userRow(uid, u, cols) {
         const st = getUserStatus(u);
-        const badges = u.badges || {};
         const friendCount = u.friends ? Object.keys(u.friends).filter(k => u.friends[k].status === 'accepted').length : 0;
-        const email = u.email || '—';
+        const email = u.email || '게스트';
 
         if (cols === 'full') return `
             <tr>
                 <td class="uid-cell" title="${uid}">${uid.substring(0,10)}...</td>
                 <td>${email}</td>
                 <td>${fmtJoinDate(u.createdAt)}</td><td><span class="status-pill ${st.cls}">${st.label}</span></td>
-                <td>
-                    <span class="badge-small">🤝 ${badges.manner||0}</span>
-                    <span class="badge-small">🧠 ${badges.logic||0}</span>
-                    <span class="badge-small">😄 ${badges.humor||0}</span>
-                </td>
+                <td>${batteryPill(u)}</td>
                 <td>${friendCount}명</td>
                 <td><button class="action-btn btn-view" onclick="openUserModal('${uid}')">상세</button></td>
             </tr>`;
@@ -964,10 +966,7 @@
             <tr>
                 <td class="uid-cell" title="${uid}">${uid.substring(0,10)}...</td>
                 <td>${email}</td>
-                <td>
-                    <span class="badge-small">🤝 ${badges.manner||0}</span>
-                    <span class="badge-small">🧠 ${badges.logic||0}</span>
-                </td>
+                <td>${batteryPill(u)}</td>
                 <td>
                     <button class="action-btn btn-restore" onclick="quickAction('${uid}','restore')">✅ 해제</button>
                     <button class="action-btn btn-view" onclick="openUserModal('${uid}')">상세</button>
@@ -1003,10 +1002,7 @@
                 <td class="uid-cell" title="${uid}">${uid.substring(0,10)}...</td>
                 <td>${email}</td>
                 <td>${fmtJoinDate(u.createdAt)}</td><td><span class="status-pill ${st.cls}">${st.label}</span></td>
-                <td>
-                    <span class="badge-small">🤝 ${badges.manner||0}</span>
-                    <span class="badge-small">🧠 ${badges.logic||0}</span>
-                </td>
+                <td>${batteryPill(u)}</td>
                 <td><button class="action-btn btn-view" onclick="openUserModal('${uid}')">상세</button></td>
             </tr>`;
     }
@@ -1162,18 +1158,17 @@
     function openUserModal(uid) {
         const u = allUsers[uid] || {};
         const st = getUserStatus(u);
-        const badges = u.badges || {};
         const friends = u.friends ? Object.entries(u.friends).filter(([,v])=>v.status==='accepted').length : 0;
 
         document.getElementById('modal-title').textContent = '회원 상세';
         document.getElementById('modal-uid').textContent = `UID: ${uid}`;
         document.getElementById('modal-detail-grid').innerHTML = `
-            <div class="detail-item"><div class="detail-key">이메일</div><div class="detail-val">${u.email||'—'}</div></div>
+            <div class="detail-item"><div class="detail-key">이메일</div><div class="detail-val">${u.email||'게스트'}</div></div>
             <div class="detail-item"><div class="detail-key">상태</div><div class="detail-val"><span class="status-pill ${st.cls}">${st.label}</span></div></div>
-            <div class="detail-item"><div class="detail-key">매너 배지</div><div class="detail-val">🤝 ${badges.manner||0}</div></div>
-            <div class="detail-item"><div class="detail-key">논리 배지</div><div class="detail-val">🧠 ${badges.logic||0}</div></div>
-            <div class="detail-item"><div class="detail-key">유머 배지</div><div class="detail-val">😄 ${badges.humor||0}</div></div>
+            <div class="detail-item"><div class="detail-key">배터리</div><div class="detail-val">${batteryPill(u)}</div></div>
             <div class="detail-item"><div class="detail-key">친구 수</div><div class="detail-val">${friends}명</div></div>
+            <div class="detail-item"><div class="detail-key">최초 접속일</div><div class="detail-val">${fmtJoinDate(u.createdAt)}</div></div>
+            <div class="detail-item"><div class="detail-key">마지막 로그인</div><div class="detail-val">${fmtJoinDate(u.lastLoginAt)}</div></div>
             <div class="detail-item"><div class="detail-key">경고일</div><div class="detail-val">${fmtDate(u.warnedAt)}</div></div>
             <div class="detail-item"><div class="detail-key">정지 해제일</div><div class="detail-val">${fmtDate(u.suspendedUntil)}</div></div>
             ${u.suspendReason ? `<div class="detail-item" style="grid-column:1/-1"><div class="detail-key">정지 사유</div><div class="detail-val">${u.suspendReason}</div></div>` : ''}
@@ -1492,17 +1487,12 @@
             }
             tbody.innerHTML = onlineUsers.map(([uid, u]) => {
                 const st = getUserStatus(u);
-                const badges = u.badges || {};
-                const email = u.email || '—';
+                const email = u.email || '게스트';
                 return `<tr>
                     <td class="uid-cell" title="${uid}">${uid.substring(0,10)}...</td>
                     <td>${email}</td>
                     <td><span class="status-pill ${st.cls}">${st.label}</span></td>
-                    <td>
-                        <span class="badge-small">🤝 ${badges.manner||0}</span>
-                        <span class="badge-small">🧠 ${badges.logic||0}</span>
-                        <span class="badge-small">😄 ${badges.humor||0}</span>
-                    </td>
+                    <td>${batteryPill(u)}</td>
                     <td><button class="action-btn btn-view" onclick="openUserModal('${uid}')">상세</button></td>
                 </tr>`;
             }).join('');
