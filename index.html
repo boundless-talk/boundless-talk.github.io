@@ -1303,10 +1303,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .disco-search-input:focus { border-color: var(--dr); box-shadow: 0 0 12px var(--dr-glow); }
         .disco-search-input::placeholder { color: rgba(255,255,255,0.3); }
-        .disco-create-btn {
-            flex: none; background: var(--dr); color: #fff; font-size: 13px; font-weight: 700;
-            border: none; border-radius: 8px; padding: 0 16px; cursor: pointer; white-space: nowrap;
-        }
         .disco-chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
         .disco-chip-row::-webkit-scrollbar { display: none; }
         .disco-chip {
@@ -1689,7 +1685,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
             <div class="disco-search-row">
                 <input type="text" id="disco-search-input" class="disco-search-input" placeholder="주제 검색...">
-                <button class="disco-create-btn" id="disco-create-btn" onclick="openDiscoCreateModal()">+ 방 만들기</button>
             </div>
             <div class="disco-chip-row" id="disco-chip-row"></div>
             <div class="disco-trending-row" id="disco-trending-row"></div>
@@ -2842,12 +2837,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             renderDiscoGrid();
             const disTitle = document.getElementById('disco-title');
             if (disTitle) disTitle.textContent = 'Discover';
-            const createBtn = document.getElementById('disco-create-btn');
-            if (createBtn) createBtn.textContent = currentLang === 'ko' ? '+ 방 만들기' : '+ New circle';
             const searchInput = document.getElementById('disco-search-input');
             if (searchInput) searchInput.placeholder = currentLang === 'ko' ? '주제 검색...' : 'Search topics...';
-            const manualBtn = document.getElementById('disco-toggle-manual');
-            if (manualBtn) manualBtn.textContent = currentLang === 'ko' ? '직접 주제 입력하기 ↓' : 'Type your own topic ↓';
         }, 0);
     });
     // ── My Circles 모달 (기존 '또 대화하기' / '대화스탯' 버튼 + 스탯 보드를 그대로 옮겨서 재사용) ──
