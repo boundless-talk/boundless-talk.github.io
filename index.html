@@ -718,6 +718,24 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #withdrawal-cancel-btn {
             background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(43,31,36,0.6) !important;
         }
+        html[data-cute-mode="cute"] #report-reason-input {
+            background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.1) !important; color: #2b1f24 !important;
+        }
+        html[data-cute-mode="cute"] #rep-m-cancel {
+            background: rgba(0,0,0,0.05) !important; color: rgba(43,31,36,0.6) !important;
+        }
+        html[data-cute-mode="cute"] #topic-info-box {
+            background: #fff !important; border-color: rgba(0,0,0,0.08) !important; box-shadow: 0 20px 60px rgba(255,111,156,0.15) !important;
+        }
+        html[data-cute-mode="cute"] #topic-info-title { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #topic-info-close-btn { color: rgba(43,31,36,0.35) !important; }
+        html[data-cute-mode="cute"] #topic-info-intro { color: rgba(43,31,36,0.55) !important; }
+        html[data-cute-mode="cute"] #topic-info-tags-1,
+        html[data-cute-mode="cute"] #topic-info-tags-2,
+        html[data-cute-mode="cute"] #topic-info-tags-3 { color: rgba(43,31,36,0.75) !important; }
+        html[data-cute-mode="cute"] #topic-info-tip {
+            color: rgba(43,31,36,0.4) !important; border-top-color: rgba(0,0,0,0.08) !important;
+        }
         .about-line { color: rgba(255,255,255,0.65); }
         .about-bullet { color: rgba(255,255,255,0.6); }
         html[data-cute-mode="cute"] .about-line,
@@ -753,6 +771,110 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         html[data-cute-mode="cute"] .ai-summary-box { background: rgba(255,111,156,0.05); border-color: rgba(255,111,156,0.3); color: #2b1f24; }
         html[data-cute-mode="cute"] #summary-content { color: rgba(43,31,36,0.65) !important; }
+        html[data-cute-mode="cute"] .summary-loading-text { color: rgba(43,31,36,0.4) !important; }
+        html[data-cute-mode="cute"] #inquiry-modal-desc,
+        html[data-cute-mode="cute"] #join-nick-desc,
+        html[data-cute-mode="cute"] #speech-style-modal-desc { color: rgba(43,31,36,0.55) !important; }
+        html[data-cute-mode="cute"] #inquiry-cancel-btn,
+        html[data-cute-mode="cute"] #friends-close-btn {
+            background: rgba(0,0,0,0.05) !important; color: rgba(43,31,36,0.6) !important;
+        }
+        html[data-cute-mode="cute"] #speech-style-skip-btn { color: rgba(43,31,36,0.4) !important; }
+        html[data-cute-mode="cute"] .nickname-modal-box {
+            background: #fff !important; border-color: rgba(0,0,0,0.06) !important;
+            box-shadow: 0 20px 60px rgba(255,111,156,0.2) !important; color: #2b1f24 !important;
+        }
+        html[data-cute-mode="cute"] .nickname-modal-box p { color: rgba(43,31,36,0.55) !important; }
+        html[data-cute-mode="cute"] .nm-cancel-btn {
+            background: rgba(0,0,0,0.05) !important; color: rgba(43,31,36,0.6) !important; border-color: rgba(0,0,0,0.1) !important;
+        }
+        html[data-cute-mode="cute"] #dob-subtitle,
+        html[data-cute-mode="cute"] #consent-subtitle { color: rgba(43,31,36,0.5) !important; }
+        html[data-cute-mode="cute"] #dob-year,
+        html[data-cute-mode="cute"] #dob-month,
+        html[data-cute-mode="cute"] #dob-day {
+            background: #fff !important; border-color: rgba(0,0,0,0.15) !important; color: #2b1f24 !important; color-scheme: light !important;
+        }
+        html[data-cute-mode="cute"] #dob-cancel-btn,
+        html[data-cute-mode="cute"] #consent-cancel-label { color: rgba(43,31,36,0.4) !important; }
+        html[data-cute-mode="cute"] .consent-item { color: rgba(43,31,36,0.75) !important; }
+        html[data-cute-mode="cute"] .consent-item input[type="checkbox"] { border-color: rgba(0,0,0,0.2) !important; }
+        /* ── 구독 상태 / 플랜 변경 / 환불 모달: 큐트 모드 ── */
+        html[data-cute-mode="cute"] #sub-modal-badge-row,
+        html[data-cute-mode="cute"] #sub-label-plan,
+        html[data-cute-mode="cute"] #sub-label-next { color: rgba(43,31,36,0.5) !important; }
+        html[data-cute-mode="cute"] #sub-modal-title,
+        html[data-cute-mode="cute"] #sub-plan-value,
+        html[data-cute-mode="cute"] #sub-next-value { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #sub-plan-box { background: rgba(0,0,0,0.03) !important; }
+        html[data-cute-mode="cute"] #sub-change-plan-btn {
+            background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(43,31,36,0.6) !important;
+        }
+        html[data-cute-mode="cute"] #sub-btn-refund,
+        html[data-cute-mode="cute"] #sub-btn-close { color: rgba(43,31,36,0.35) !important; }
+        html[data-cute-mode="cute"] #refund-modal-title { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #refund-modal-subtitle,
+        html[data-cute-mode="cute"] #refund-cancel-btn { color: rgba(43,31,36,0.4) !important; }
+        html[data-cute-mode="cute"] #refund-r1,
+        html[data-cute-mode="cute"] #refund-r2,
+        html[data-cute-mode="cute"] #refund-r3,
+        html[data-cute-mode="cute"] #refund-r4,
+        html[data-cute-mode="cute"] #refund-r5,
+        html[data-cute-mode="cute"] #refund-r6 {
+            background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.08) !important; color: rgba(43,31,36,0.75) !important;
+        }
+        html[data-cute-mode="cute"] #cp-title-row { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #cp-weekly-btn {
+            background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: #2b1f24 !important;
+        }
+        html[data-cute-mode="cute"] #cp-weekly-price { color: rgba(43,31,36,0.5) !important; }
+        html[data-cute-mode="cute"] #cp-monthly-btn {
+            background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.06) !important; color: rgba(43,31,36,0.4) !important;
+        }
+        html[data-cute-mode="cute"] #cp-cancel-btn { color: rgba(43,31,36,0.35) !important; }
+        /* ── 대화방(Room) 화면: 큐트 모드 ── */
+        html[data-cute-mode="cute"] #room-screen { background: #fff8f4; }
+        html[data-cute-mode="cute"] .room-header-v2 { background: #fff; border-bottom-color: rgba(0,0,0,0.06); }
+        html[data-cute-mode="cute"] .room-header-label { color: rgba(43,31,36,0.4); }
+        html[data-cute-mode="cute"] .room-live-badge,
+        html[data-cute-mode="cute"] .room-live-dot { color: #ff6f9c; background: #ff6f9c; }
+        html[data-cute-mode="cute"] .room-live-badge { background: none; }
+        html[data-cute-mode="cute"] .room-header-controls .room-leave-btn {
+            background: #fff !important; border-color: rgba(0,0,0,0.08) !important; color: rgba(43,31,36,0.6) !important;
+        }
+        html[data-cute-mode="cute"] #room-part-list::before { border-color: rgba(255,111,156,0.3); }
+        html[data-cute-mode="cute"] .room-seat-avatar {
+            background: #fff; border-color: rgba(255,111,156,0.35); box-shadow: 0 8px 20px rgba(255,111,156,0.1);
+        }
+        html[data-cute-mode="cute"] .room-seat.speaking .room-seat-avatar {
+            border-color: #ff6f9c; box-shadow: 0 8px 20px rgba(255,111,156,0.2);
+        }
+        html[data-cute-mode="cute"] .room-seat-name { color: rgba(43,31,36,0.7); }
+        html[data-cute-mode="cute"] .room-seat.speaking .room-seat-name { color: #2b1f24; }
+        html[data-cute-mode="cute"] .room-seat-icon { color: rgba(43,31,36,0.35); }
+        html[data-cute-mode="cute"] .room-seat-icon:hover { color: #ff6f9c; }
+        html[data-cute-mode="cute"] .room-seat-avatar-empty { border-color: rgba(255,111,156,0.4); color: rgba(255,111,156,0.45); }
+        html[data-cute-mode="cute"] .room-seat-open .room-seat-name { color: rgba(43,31,36,0.4); }
+        html[data-cute-mode="cute"] .room-bottom-controls .room-ctrl-btn {
+            background: #fff; border-color: rgba(0,0,0,0.08); color: rgba(43,31,36,0.7);
+        }
+        html[data-cute-mode="cute"] .room-bottom-controls .room-ctrl-btn.muted { background: rgba(0,0,0,0.06); color: rgba(43,31,36,0.3); }
+        html[data-cute-mode="cute"] .room-bottom-controls .room-ctrl-leave { background: #ff6f9c; color: #fff; }
+        html[data-cute-mode="cute"] #room-side-panel { border-left-color: rgba(0,0,0,0.06); }
+        html[data-cute-mode="cute"] #room-side-panel .room-side-inner { background: #fff; border-color: rgba(0,0,0,0.06); box-shadow: 0 30px 80px rgba(255,111,156,0.2); }
+        html[data-cute-mode="cute"] .room-side-close { color: rgba(43,31,36,0.35); }
+        html[data-cute-mode="cute"] .icebreaker-box { background: #ffe6ee; border-color: rgba(255,111,156,0.25); }
+        html[data-cute-mode="cute"] .icebreaker-icon { color: #ff6f9c; }
+        html[data-cute-mode="cute"] .icebreaker-label { color: rgba(255,111,156,0.7); }
+        html[data-cute-mode="cute"] .icebreaker-text { color: rgba(43,31,36,0.75); }
+        html[data-cute-mode="cute"] .convo-tip-box { background: #fff; border-color: rgba(0,0,0,0.06); }
+        html[data-cute-mode="cute"] .convo-tip-box:active { background: rgba(0,0,0,0.03); }
+        html[data-cute-mode="cute"] .convo-tip-icon { color: rgba(43,31,36,0.3); }
+        html[data-cute-mode="cute"] .convo-tip-label { color: rgba(43,31,36,0.35); }
+        html[data-cute-mode="cute"] .convo-tip-text { color: rgba(43,31,36,0.65); }
+        html[data-cute-mode="cute"] .convo-tip-hint { color: rgba(43,31,36,0.3); }
+        html[data-cute-mode="cute"] .part-item.speaking { color: #2b1f24; }
+        html[data-cute-mode="cute"] .speaking-bar span { background: #ff6f9c; }
         html[data-cute-mode="cute"] #vote-skip { color: rgba(43,31,36,0.35) !important; }
         .badge-vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .badge-vote-btn.btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
@@ -952,9 +1074,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         #room-screen {
             position: fixed;
             inset: 0;
-            background:
-                linear-gradient(180deg, rgba(10,10,15,0.55) 0%, rgba(10,10,15,0.6) 45%, rgba(10,10,15,0.82) 100%),
-                url('intro-bg.png') center center / cover no-repeat;
+            background: #0b0b0c;
             z-index: 8000;
             display: flex;
             flex-direction: column;
@@ -970,16 +1090,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             transform: translateY(0);
             pointer-events: auto;
         }
-        .room-header {
+        .room-main-col { width: 100%; display: flex; flex-direction: column; align-items: center; flex: 1; }
+        @media (min-width: 900px) {
+            #room-screen { flex-direction: row; align-items: stretch; }
+            .room-main-col { flex: 1; }
+            #room-part-list { width: 420px; height: 420px; }
+            .room-seat-avatar, .room-seat-avatar-empty { width: 84px; height: 84px; font-size: 32px; }
+            .room-seat { width: 110px; }
+            .room-ring-wrap { padding: 70px 0 76px; }
+        }
+        .room-header-v2 {
             width: 100%;
             background: #141416;
             border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding: 28px 24px 22px;
+            padding: 18px 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
+        .room-header-topic-block { text-align: center; }
         .room-header-label {
             font-size: 10px;
             text-transform: uppercase;
@@ -987,7 +1117,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             color: rgba(255,255,255,0.4);
         }
         .room-topic-display {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--accent-color);
             text-shadow: 0 0 24px rgba(var(--accent-rgb),0.5), 0 1px 8px rgba(0,0,0,0.5);
@@ -996,15 +1126,39 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             max-width: 340px;
             line-height: 1.3;
         }
+        .room-header-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .room-live-badge {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 11px; font-weight: 700; color: var(--accent-color);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .room-live-dot {
+            width: 6px; height: 6px; border-radius: 50%; background: var(--accent-color);
+            animation: pulseDot 1.4s ease-in-out infinite;
+        }
+        @keyframes pulseDot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.35; transform:scale(.75); } }
+        .room-header-controls .room-leave-btn {
+            width: auto; flex: none; margin: 0; padding: 7px 14px; border-radius: 20px; font-size: 12px;
+        }
+        .room-header-controls .room-pp-switch-btn {
+            width: auto; max-width: none; margin: 0; padding: 7px 12px; border-radius: 20px; font-size: 14px; line-height: 1;
+        }
         .room-body {
             width: 100%;
             max-width: 420px;
-            padding: 24px 20px;
+            padding: 20px 20px 4px;
             display: flex;
             flex-direction: column;
             gap: 20px;
             flex: 1;
         }
+        .room-ring-wrap { display: flex; align-items: center; justify-content: center; padding: 60px 0 66px; }
         .icebreaker-box {
             background: rgba(var(--accent-rgb),0.05);
             border: 1px solid rgba(var(--accent-rgb),0.18);
@@ -1064,32 +1218,111 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .convo-tip-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.22); margin-bottom: 4px; }
         .convo-tip-text { font-size: 13px; color: rgba(255,255,255,0.6); line-height: 1.5; }
         .convo-tip-hint { font-size: 10px; color: rgba(255,255,255,0.18); margin-top: 5px; }
-        .room-participants-section {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .room-part-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .room-part-title {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: rgba(255,255,255,0.38);
-        }
         .room-part-count {
             font-size: 11px;
-            color: rgba(var(--accent-rgb),0.6);
+            color: rgba(var(--accent-rgb),0.85);
             font-weight: 600;
         }
-        .room-waiting {
-            font-size: 12px;
-            color: rgba(255,255,255,0.28);
-            text-align: center;
-            padding: 12px 0;
+
+        /* ── 원형 4자리 배치 (room-participants-section = #room-part-list의 래퍼, 핑퐁 모드 전환 시 JS가 이 클래스를 통째로 숨김) ── */
+        .room-participants-section { display: flex; align-items: center; justify-content: center; }
+        #room-part-list {
+            position: relative;
+            width: 300px; height: 300px;
+        }
+        #room-part-list::before {
+            content: ''; position: absolute; inset: 0; border: 1px dashed rgba(255,255,255,0.12); border-radius: 50%;
+        }
+        .room-seat {
+            position: absolute;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            width: 96px;
+            background: none; border: none; padding: 0; margin: 0; border-radius: 0;
+        }
+        .room-seat:nth-child(1) { top: 0; left: 50%; transform: translate(-50%, -50%); }
+        .room-seat:nth-child(2) { top: 50%; right: 0; transform: translate(50%, -50%); }
+        .room-seat:nth-child(3) { bottom: 0; left: 50%; transform: translate(-50%, 50%); }
+        .room-seat:nth-child(4) { top: 50%; left: 0; transform: translate(-50%, -50%); }
+        .room-seat-avatar {
+            position: relative;
+            width: 62px; height: 62px; border-radius: 50%;
+            background: rgba(255,255,255,0.06); border: 2px solid rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; gap: 3px;
+            font-size: 26px; line-height: 1;
+        }
+        .room-seat.speaking .room-seat-avatar {
+            background: rgba(var(--accent-rgb),0.12); border-color: var(--accent-color);
+            box-shadow: 0 0 14px rgba(var(--accent-rgb),0.3);
+        }
+        .room-seat .speaking-bar {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            display: flex; align-items: center; justify-content: center; gap: 2px; opacity: 0;
+        }
+        .room-seat.speaking .speaking-bar { opacity: 1; }
+        .room-seat.speaking .animal-avatar { display: none; }
+        .room-seat-name {
+            font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,0.75);
+            text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .room-seat.speaking .room-seat-name { color: #fff; }
+        .room-seat-icons { display: flex; gap: 10px; }
+        .room-seat-icon {
+            font-size: 13px; color: rgba(255,255,255,0.35); cursor: pointer; transition: color 0.15s;
+        }
+        .room-seat-icon:hover { color: var(--accent-color); }
+        .room-seat-avatar-empty {
+            width: 62px; height: 62px; border-radius: 50%;
+            border: 2px dashed rgba(255,255,255,0.2); background: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; color: rgba(255,255,255,0.25);
+        }
+        .room-seat-open .room-seat-name { color: rgba(255,255,255,0.32); font-weight: 500; }
+
+        /* ── 하단 컨트롤 (마이크 / 나가기 / 신고 / Talk Tips) ── */
+        .room-bottom-controls {
+            width: 100%; max-width: 420px;
+            display: flex; align-items: center; justify-content: center; gap: 16px;
+            padding: 10px 20px 28px;
+        }
+        .room-ctrl-btn {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.8);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; cursor: pointer; transition: all 0.2s; margin: 0; padding: 0;
+        }
+        .room-ctrl-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+        .room-ctrl-btn.muted { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.35); }
+        .room-ctrl-btn.room-ctrl-leave { background: var(--danger-color); border: none; color: #fff; }
+        .room-ctrl-btn.room-ctrl-leave:hover { color: #fff; opacity: 0.9; }
+        #talk-tips-btn { display: none; }
+
+        /* ── Talk Tips: 데스크톱 사이드바 / 모바일 모달 ── */
+        #room-side-panel {
+            width: 300px; flex: none; border-left: 1px solid rgba(255,255,255,0.08);
+            padding: 28px 24px; display: flex; flex-direction: column; gap: 16px;
+        }
+        .room-side-close { display: none; }
+        @media (max-width: 899px) {
+            #room-side-panel {
+                position: fixed; inset: 0; z-index: 10500;
+                background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+                width: auto; border-left: none; padding: 20px;
+                display: flex; align-items: center; justify-content: center;
+                opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            }
+            #room-side-panel.open { opacity: 1; visibility: visible; }
+            #room-side-panel .room-side-inner {
+                background: #141416; border: 1px solid rgba(255,255,255,0.09); border-radius: 14px;
+                box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+                padding: 24px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto;
+                display: flex; flex-direction: column; gap: 16px; position: relative;
+            }
+            .room-side-close {
+                display: block; position: absolute; top: 14px; right: 16px;
+                background: none; border: none; color: rgba(255,255,255,0.4); font-size: 16px; cursor: pointer; padding: 0;
+            }
+            #talk-tips-btn { display: flex; }
         }
 
         /* ── 핑퐁 모드 토글 ── */
@@ -1218,13 +1451,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             60%  { opacity: 0.9; transform: translateY(-220px) scale(1.3) rotate(12deg); }
             100% { opacity: 0; transform: translateY(-380px) scale(0.7) rotate(-8deg); }
         }
-        .room-footer {
-            width: 100%;
-            max-width: 420px;
-            padding: 12px 20px 36px;
-            display: flex;
-            gap: 10px;
-        }
         .room-leave-btn {
             flex: 1;
             padding: 13px;
@@ -1239,20 +1465,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             margin: 0;
         }
         .room-leave-btn:hover { border-color: var(--accent-color); color: var(--accent-color); background: rgba(var(--accent-rgb),0.05); }
-        .room-report-btn {
-            flex: 1;
-            padding: 13px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.12);
-            color: rgba(255,255,255,0.6);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin: 0;
-        }
-        .room-report-btn:hover { border-color: var(--accent-color); color: var(--accent-color); background: rgba(var(--accent-rgb),0.05); }
 
         /* ── 핑퐁 전환 버튼 (통화 중) ── */
         .room-pp-switch-btn {
@@ -1410,8 +1622,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             .title-block { margin-bottom: 30px; }
 
             .room-body { padding: 16px 14px; }
-            .room-header { padding: 20px 16px 16px; }
-            .room-topic-display { font-size: 20px; }
+            .room-header-v2 { padding: 16px 16px 14px; }
+            .room-topic-display { font-size: 18px; }
 
             .modal-content { padding: 20px 16px; }
         }
@@ -1470,6 +1682,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #app-title { color: #2b1f24; text-shadow: none; }
         html[data-cute-mode="cute"] .sub-title { color: rgba(43,31,36,.55); }
         html[data-cute-mode="cute"] .settings-gear-btn { color: rgba(43,31,36,.45); }
+        /* 전역 입력창 텍스트 색상 — 큐트 모드는 배경이 밝은 톤이라 기본 흰 글씨가 다 안 보임. 어디에 있는 input/textarea든 일괄 적용 */
+        html[data-cute-mode="cute"] input,
+        html[data-cute-mode="cute"] textarea { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] input[type="text"],
+        html[data-cute-mode="cute"] input[type="email"],
+        html[data-cute-mode="cute"] input[type="password"] {
+            background-color: rgba(0,0,0,0.03) !important;
+            border-color: rgba(0,0,0,0.1) !important;
+        }
+        html[data-cute-mode="cute"] textarea {
+            background-color: rgba(0,0,0,0.03) !important;
+            border-color: rgba(0,0,0,0.1) !important;
+        }
 
         /* ── 인트로 화면: 큐트 모드 ── */
         html[data-cute-mode="cute"] #intro-screen { background: #fff8f4; }
@@ -1884,12 +2109,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         <!-- 주제 추천 안내 팝업 (설정 모달과 동일한 톤: 그라데이션 테두리 + 카드형 섹션) -->
         <div class="modal-overlay" id="topic-info-modal" onclick="if(event.target===this) closeTopicInfoModal()">
-            <div style="position:relative; width:400px; max-width:92vw; max-height:80vh; overflow-y:auto; text-align:left;
+            <div id="topic-info-box" style="position:relative; width:400px; max-width:92vw; max-height:80vh; overflow-y:auto; text-align:left;
                 background:#141416;
                 border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:20px 22px 22px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <div id="topic-info-title" style="font-size:15px; font-weight:700; color:#fff;">대화 주제가 고민되신다면</div>
-                    <span onclick="closeTopicInfoModal()" style="color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer;">✕</span>
+                    <span id="topic-info-close-btn" onclick="closeTopicInfoModal()" style="color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer;">✕</span>
                 </div>
                 <div id="topic-info-intro" style="font-size:12.5px; color:rgba(255,255,255,0.5); line-height:1.6; margin-bottom:6px;">
                     어떤 이야기를 해야 할지 고민되시나요? 아래 추천 키워드를 참고해 보세요.
@@ -2073,28 +2298,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <!-- 대화방 입장 화면 -->
     <div id="room-screen">
-        <div class="room-header">
-            <div class="room-header-label" id="room-header-label">대화 주제</div>
-            <div class="room-topic-display" id="room-topic-display">—</div>
+      <div class="room-main-col">
+        <div class="room-header-v2">
+            <div class="room-header-topic-block">
+                <div class="room-header-label" id="room-header-label">대화 주제</div>
+                <div class="room-topic-display" id="room-topic-display">—</div>
+            </div>
+            <div class="room-header-controls">
+                <div class="room-live-badge"><span class="room-live-dot"></span>LIVE</div>
+                <div class="room-part-count" id="room-part-count">나 포함 1명</div>
+                <button class="room-pp-switch-btn" id="room-pp-switch-btn" style="display:none;" onclick="switchToPingpong()">⇄</button>
+                <button class="room-leave-btn" id="room-leave-btn" title="나가기">나가기</button>
+            </div>
         </div>
         <div class="room-body">
-            <div class="icebreaker-box">
-                <i class="ti ti-message-circle icebreaker-icon" aria-hidden="true"></i>
-                <div class="icebreaker-content">
-                    <div class="icebreaker-label" id="icebreaker-label">아이스브레이킹 제안</div>
-                    <div class="icebreaker-text" id="icebreaker-text">"만나서 반가워요!" 라고 인사해보시겠어요?</div>
-                </div>
-                <span id="icebreaker-emoji" style="display:none;"></span>
-                <div class="icebreaker-sub" id="icebreaker-sub" style="display:none;"></div>
-            </div>
-            <div class="convo-tip-box" id="convo-tip-box" onclick="nextConvoTip()">
-                <i class="ti ti-bulb convo-tip-icon" aria-hidden="true"></i>
-                <div class="convo-tip-inner">
-                    <div class="convo-tip-label" id="convo-tip-label">대화 팁</div>
-                    <div class="convo-tip-text" id="convo-tip-text"></div>
-                    <div class="convo-tip-hint" id="convo-tip-hint">탭하면 다음 팁 →</div>
+            <div class="room-ring-wrap">
+                <div class="room-participants-section">
+                    <div id="room-part-list"></div>
                 </div>
             </div>
+
             <div class="subtitle-section" id="subtitle-section">
                 <div class="subtitle-ctrl">
                     <button class="subtitle-toggle-btn" id="subtitle-toggle-btn" onclick="toggleSubtitles()">💬 번역</button>
@@ -2145,19 +2368,37 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
                 <div class="pp-waiting-solo" id="pp-waiting-solo" style="display:none;"></div>
             </div>
-
-            <div class="room-participants-section">
-                <div class="room-part-header">
-                    <div class="room-part-title" id="room-part-title">참여자</div>
-                    <div class="room-part-count" id="room-part-count">나 포함 1명</div>
-                </div>
-                <div id="room-part-list"></div>
-            </div>
         </div>
-        <button class="room-pp-switch-btn" id="room-pp-switch-btn" style="display:none;" onclick="switchToPingpong()">이 방을 핑퐁 모드로 전환하기</button>
-        <div class="room-footer">
-            <button class="room-leave-btn" id="room-leave-btn">🚪 대화방 나가기</button>
-            <button class="room-report-btn" id="room-report-btn">🚨 신고하기</button>
+
+        <div class="room-bottom-controls">
+            <button class="room-ctrl-btn" id="talk-tips-btn" onclick="toggleTalkTipsPanel()" title="Talk Tips">💡</button>
+            <button class="room-ctrl-btn" id="room-mic-btn" title="Mute">🎙</button>
+            <button class="room-ctrl-btn room-ctrl-leave" id="room-leave-btn-circle" title="나가기">✕</button>
+            <button class="room-ctrl-btn" id="room-report-btn" title="신고">⚑</button>
+        </div>
+      </div>
+
+        <div id="room-side-panel" onclick="if(event.target===this) closeTalkTipsPanel()">
+            <div class="room-side-inner">
+                <button class="room-side-close" id="room-side-close-btn" onclick="closeTalkTipsPanel()">✕</button>
+                <div class="icebreaker-box">
+                    <i class="ti ti-message-circle icebreaker-icon" aria-hidden="true"></i>
+                    <div class="icebreaker-content">
+                        <div class="icebreaker-label" id="icebreaker-label">아이스브레이킹 제안</div>
+                        <div class="icebreaker-text" id="icebreaker-text">"만나서 반가워요!" 라고 인사해보시겠어요?</div>
+                    </div>
+                    <span id="icebreaker-emoji" style="display:none;"></span>
+                    <div class="icebreaker-sub" id="icebreaker-sub" style="display:none;"></div>
+                </div>
+                <div class="convo-tip-box" id="convo-tip-box" onclick="nextConvoTip()">
+                    <i class="ti ti-bulb convo-tip-icon" aria-hidden="true"></i>
+                    <div class="convo-tip-inner">
+                        <div class="convo-tip-label" id="convo-tip-label">대화 팁</div>
+                        <div class="convo-tip-text" id="convo-tip-text"></div>
+                        <div class="convo-tip-hint" id="convo-tip-hint">탭하면 다음 팁 →</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2303,12 +2544,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="modal-content" style="max-width:340px;">
             <!-- 헤더 -->
             <div style="margin-bottom:4px;">
-                <div style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:6px;"><span id="sub-modal-badge">추천</span></div>
+                <div id="sub-modal-badge-row" style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:6px;"><span id="sub-modal-badge">추천</span></div>
                 <div id="sub-modal-title" style="font-size:18px; font-weight:700; color:#fff; margin-bottom:4px;">You're already subscribed</div>
                 <p id="sub-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:16px;"></p>
             </div>
             <!-- 플랜 정보 -->
-            <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
+            <div id="sub-plan-box" style="background:rgba(255,255,255,0.05); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.07);">
                     <span id="sub-label-plan" style="font-size:13px; color:rgba(255,255,255,0.45);">현재 플랜</span>
                     <span id="sub-plan-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
@@ -2319,7 +2560,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
             </div>
             <!-- 플랜 변경 -->
-            <button onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; margin-bottom:8px;"><span id="sub-btn-change">플랜 변경하기</span></button>
+            <button id="sub-change-plan-btn" onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; margin-bottom:8px;"><span id="sub-btn-change">플랜 변경하기</span></button>
             <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:2px; text-decoration:underline;" id="sub-btn-refund">구독 취소하기</button>
             <button onclick="document.getElementById('subscription-modal').classList.remove('active')" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.15); font-size:12px; cursor:pointer; margin-top:2px;" id="sub-btn-close">닫기</button>
         </div>
@@ -2359,7 +2600,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 플랜 변경 모달 -->
     <div class="modal-overlay" id="change-plan-modal">
         <div class="modal-content" style="max-width:340px;">
-            <div style="font-size:15px; font-weight:700; color:#fff; margin-bottom:16px;"><span id="cp-title">플랜 변경</span></div>
+            <div id="cp-title-row" style="font-size:15px; font-weight:700; color:#fff; margin-bottom:16px;"><span id="cp-title">플랜 변경</span></div>
             <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
                 <button onclick="switchPlan('weekly')" id="cp-weekly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; cursor:pointer; text-align:left;">
                     <span id="cp-weekly-label">Weekly Plan으로 변경</span> <span style="float:right; color:rgba(255,255,255,0.4);" id="cp-weekly-price">$1.99/week</span>
@@ -2383,7 +2624,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
             <div style="display: flex; gap: 10px; margin-top:10px;">
                 <button id="rep-m-submit" style="background: var(--danger-color); color: #fff;" onclick="executeReport()" disabled>Submit Report</button>
-                <button style="background: rgba(255,255,255,0.05); color: #fff;" onclick="closeReportModal()">Cancel</button>
+                <button id="rep-m-cancel" style="background: rgba(255,255,255,0.05); color: #fff;" onclick="closeReportModal()">Cancel</button>
             </div>
         </div>
     </div>
@@ -2573,6 +2814,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     let client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
     let localAudioTrack = null;
+    let isMicMuted = false;
     let isJoined = false;
     let isJoining = false; // 입장 처리 진행 중 플래그 (중복 클릭 방지)
     let currentChannelName = "";
@@ -2831,12 +3073,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const onEl = document.getElementById('disco-create-pp-on');
         const offEl = document.getElementById('disco-create-pp-off');
         if (!onEl || !offEl) return;
+        const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
+        const dimColor = isCute ? 'rgba(43,31,36,0.35)' : 'rgba(255,255,255,0.35)';
         if (on) {
             onEl.style.background = 'var(--accent-color)'; onEl.style.color = '#000';
-            offEl.style.background = 'transparent'; offEl.style.color = 'rgba(255,255,255,0.35)';
+            offEl.style.background = 'transparent'; offEl.style.color = dimColor;
         } else {
-            offEl.style.background = 'rgba(255,255,255,0.1)'; offEl.style.color = '#fff';
-            onEl.style.background = 'transparent'; onEl.style.color = 'rgba(255,255,255,0.35)';
+            offEl.style.background = isCute ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.1)'; offEl.style.color = isCute ? '#2b1f24' : '#fff';
+            onEl.style.background = 'transparent'; onEl.style.color = dimColor;
         }
     }
     function toggleDiscoCreatePP() {
@@ -3119,8 +3363,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         convoTipLabel: "Conversation tip",
         convoTipHint: "Tap for next tip →",
         roomPartTitle: "Participants",
-        roomLeaveBtn: "🚪 LEAVE",
-        roomReportBtn: "🚨 REPORT",
+        roomLeaveBtn: "Leave",
+        roomReportBtn: "Report",
+        talkTipsBtn: "Talk Tips",
         roomWaiting: "Waiting for others...",
         speechStyleLabel: "How would you like to chat?",
         speechStyleCasual: "Friendly",
@@ -3244,8 +3489,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         convoTipLabel: "대화 팁",
         convoTipHint: "탭하면 다음 팁 →",
         roomPartTitle: "참여자",
-        roomLeaveBtn: "🚪 대화방 나가기",
-        roomReportBtn: "🚨 신고하기",
+        roomLeaveBtn: "나가기",
+        roomReportBtn: "신고",
+        talkTipsBtn: "대화 팁",
         roomWaiting: "다른 참여자를 기다리는 중...",
         speechStyleLabel: "어떤 스타일로 대화할래요?",
         speechStyleCasual: "친구처럼",
@@ -3460,7 +3706,8 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                 // 이메일 저장 (관리자 패널에서 식별용)
     if (user.email) {
         database.ref('users/' + user.uid).update({ email: user.email });
-                // 가입일자 기록 (최초 1회만, Firebase Auth의 실제 가입 시각 사용)
+    }
+                // 가입일자(최초 접속일) 기록 — 게스트 포함 모든 유저, 최초 1회만
                 if (user.metadata && user.metadata.creationTime) {
                     const joinRef = database.ref('users/' + user.uid + '/createdAt');
                     joinRef.once('value').then(snap => {
@@ -3469,7 +3716,8 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                         }
                     });
                 }
-    }
+                // 마지막 로그인 시각 기록 — 게스트 포함 모든 유저, 접속할 때마다 갱신
+                database.ref('users/' + user.uid + '/lastLoginAt').set(Date.now());
 
             // [보안 핵심] 로그인 즉시 Realtime DB에서 제재 상태 실시간 리스닝
             database.ref('users/' + user.uid).on('value', (snapshot) => {
@@ -3821,9 +4069,10 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         // room screen 라벨 업데이트
         document.getElementById('room-header-label').innerText = lang.roomHeaderLabel;
         document.getElementById('icebreaker-label').innerText = lang.icebrkLabel;
-        document.getElementById('room-part-title').innerText = lang.roomPartTitle;
         document.getElementById('room-leave-btn').innerText = lang.roomLeaveBtn;
-        document.getElementById('room-report-btn').innerText = lang.roomReportBtn;
+        document.getElementById('room-report-btn').title = lang.roomReportBtn;
+        document.getElementById('room-leave-btn-circle').title = lang.roomLeaveBtn;
+        document.getElementById('talk-tips-btn').title = lang.talkTipsBtn;
         // 대화 스타일 모달 언어 업데이트
         const ssmTitle = document.getElementById('speech-style-modal-title');
         const ssmDesc = document.getElementById('speech-style-modal-desc');
@@ -3937,8 +4186,9 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             btn.style.cursor = 'pointer';
             btn.style.boxShadow = '0 0 16px rgba(var(--accent-rgb),0.2)';
         } else {
+            const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
             btn.style.background = 'rgba(var(--accent-rgb),0.08)';
-            btn.style.color = 'rgba(255,255,255,0.3)';
+            btn.style.color = isCute ? 'rgba(43,31,36,0.35)' : 'rgba(255,255,255,0.3)';
             btn.style.borderColor = 'rgba(var(--accent-rgb),0.15)';
             btn.style.cursor = 'not-allowed';
             btn.style.boxShadow = 'none';
@@ -4597,6 +4847,9 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             const micTrack = micStream.getAudioTracks()[0];
             localAudioTrack = AgoraRTC.createCustomAudioTrack({ mediaStreamTrack: micTrack });
             dbg('5. 마이크 트랙 생성 성공: ' + (localAudioTrack ? 'OK' : 'NULL'));
+            isMicMuted = false;
+            const micBtnInit = document.getElementById('room-mic-btn');
+            if (micBtnInit) micBtnInit.classList.remove('muted');
 
             const firebaseUser = auth.currentUser;
             const agoraUid = firebaseUser ? firebaseUser.uid : null;
@@ -5030,9 +5283,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         document.getElementById('icebreaker-label').textContent = lang.icebrkLabel;
         document.getElementById('convo-tip-label').textContent = lang.convoTipLabel;
         document.getElementById('convo-tip-hint').textContent = lang.convoTipHint;
-        document.getElementById('room-part-title').textContent = lang.roomPartTitle;
         document.getElementById('room-leave-btn').textContent = lang.roomLeaveBtn;
-        document.getElementById('room-report-btn').textContent = lang.roomReportBtn;
+        document.getElementById('room-report-btn').title = lang.roomReportBtn;
+        document.getElementById('room-leave-btn-circle').title = lang.roomLeaveBtn;
+        document.getElementById('talk-tips-btn').title = lang.talkTipsBtn;
 
         updateRoomParticipants();
         document.getElementById('room-screen').classList.add('active');
@@ -5746,47 +6000,59 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
     }
 
+    const ROOM_RING_CAPACITY = 4;
     function updateRoomParticipants() {
         const list = document.getElementById('room-part-list');
         const countEl = document.getElementById('room-part-count');
         if (!list) return;
         list.innerHTML = '';
 
-        // 내 항목 먼저 표시
+        // 내 자리 (원 위쪽, 아이콘 없음 — 자기 자신은 친구추가/신고 대상이 아님)
         {
             const meEl = document.createElement('div');
-            meEl.className = 'part-item';
+            meEl.className = 'room-seat part-item speaking-slot';
             meEl.id = 'room-part-me';
             const meLabel = currentLang === 'ko' ? '(나)' : '(You)';
             const myStyleBadge = selectedSpeechStyle ? `<span class="speech-style-badge">${textData[currentLang]['speechStyleBadge' + (selectedSpeechStyle === 'casual' ? 'Casual' : 'Polite')]}</span>` : '';
             const displayName = myNickname || 'Me';
-            meEl.innerHTML = `<span class="animal-avatar">${myBatteryEmoji}</span><span class="animal-name">${displayName} ${meLabel}${myStyleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
+            meEl.innerHTML = `
+                <div class="room-seat-avatar"><span class="animal-avatar">${myBatteryEmoji}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
+                <div class="room-seat-name">${displayName} ${meLabel}${myStyleBadge}</div>`;
             list.appendChild(meEl);
         }
 
-        if (roomParticipants.length === 0) {
-            const waitEl = document.createElement('div');
-            waitEl.className = 'room-waiting';
-            waitEl.textContent = currentLang === 'ko' ? '다른 참여자를 기다리는 중...' : 'Waiting for others...';
-            list.appendChild(waitEl);
-        } else {
-            roomParticipants.forEach((uid, index) => {
-                const el = document.createElement('div');
-                el.className = 'part-item';
-                el.id = `room-part-${uid}`;
-                const fbUid = agoraToFirebaseUid[uid] || uid;
-                const nickname = uidToNickname[fbUid] || uidToNickname[uid] || `User ${index + 1}`;
-                const guestFlag = uidToIsGuest[fbUid] || uidToIsGuest[uid];
-                const guestBadge = guestFlag ? `<span style="font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.4);border-radius:10px;padding:1px 7px;margin-left:6px;font-weight:500;">Guest</span>` : '';
-                const style = speechStyleMap[fbUid];
-                const styleBadge = style ? `<span class="speech-style-badge">${textData[currentLang]['speechStyleBadge' + (style === 'casual' ? 'Casual' : 'Polite')]}</span>` : '';
-                const energyEmoji = uidToBatteryEmoji[fbUid] || '👋';
-                el.innerHTML = `<span class="animal-avatar">${energyEmoji}</span><span class="animal-name">${nickname}${guestBadge}${styleBadge}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span>`;
-                list.appendChild(el);
-            });
+        roomParticipants.forEach((uid, index) => {
+            const el = document.createElement('div');
+            el.className = 'room-seat part-item speaking-slot';
+            el.id = `room-part-${uid}`;
+            const fbUid = agoraToFirebaseUid[uid] || uid;
+            const nickname = uidToNickname[fbUid] || uidToNickname[uid] || `User ${index + 1}`;
+            const guestFlag = uidToIsGuest[fbUid] || uidToIsGuest[uid];
+            const guestBadge = guestFlag ? `<span style="font-size:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);color:rgba(255,255,255,0.4);border-radius:10px;padding:1px 7px;margin-left:6px;font-weight:500;">Guest</span>` : '';
+            const style = speechStyleMap[fbUid];
+            const styleBadge = style ? `<span class="speech-style-badge">${textData[currentLang]['speechStyleBadge' + (style === 'casual' ? 'Casual' : 'Polite')]}</span>` : '';
+            const energyEmoji = uidToBatteryEmoji[fbUid] || '👋';
+            el.innerHTML = `
+                <div class="room-seat-avatar"><span class="animal-avatar">${energyEmoji}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
+                <div class="room-seat-name">${nickname}${guestBadge}${styleBadge}</div>
+                <div class="room-seat-icons">
+                    <span class="room-seat-icon" title="${currentLang === 'ko' ? '친구 추가' : 'Add friend'}" onclick="addFriendMidCall('${fbUid}')">＋</span>
+                    <span class="room-seat-icon" title="${currentLang === 'ko' ? '신고' : 'Report'}" onclick="reportParticipant('${fbUid}')">⚑</span>
+                </div>`;
+            list.appendChild(el);
+        });
+
+        // 빈 자리 (원 슬롯 채우기)
+        const occupied = roomParticipants.length + 1;
+        const openSeats = Math.max(0, ROOM_RING_CAPACITY - occupied);
+        for (let i = 0; i < openSeats; i++) {
+            const openEl = document.createElement('div');
+            openEl.className = 'room-seat room-seat-open';
+            openEl.innerHTML = `<div class="room-seat-avatar room-seat-avatar-empty">+</div><div class="room-seat-name">${currentLang === 'ko' ? '빈 자리' : 'Open seat'}</div>`;
+            list.appendChild(openEl);
         }
 
-        const total = roomParticipants.length + 1;
+        const total = occupied;
         countEl.textContent = currentLang === 'ko' ? `나 포함 ${total}명` : `${total} including you`;
     }
 
@@ -5796,6 +6062,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     document.getElementById('room-report-btn').onclick = function() {
         document.getElementById('report-btn').click();
     };
+    const roomLeaveBtnCircle = document.getElementById('room-leave-btn-circle');
+    if (roomLeaveBtnCircle) roomLeaveBtnCircle.onclick = function() {
+        document.getElementById('leave-btn').click();
+    };
+    const roomMicBtn = document.getElementById('room-mic-btn');
+    if (roomMicBtn) roomMicBtn.onclick = toggleMic;
 
     // 볼륨 감지 → 발화자 카드 하이라이트
     function startVolumeIndicator() {
@@ -5851,7 +6123,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     // 9. 신고 모달 팝업 및 AI 1분 분석 유해 검사 제출 로직
-    document.getElementById('report-btn').onclick = function() {
+    function openReportModal(preselectUid) {
         // 결제 모달이 떠있으면 닫고 신고 모달 열기
         clearPayCountdown();
         document.getElementById('payment-modal').style.display = 'none';
@@ -5870,6 +6142,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         reportTargets.forEach((uid, index) => {
             const btn = document.createElement('button');
             btn.className = "target-btn";
+            btn.dataset.uid = uid;
             const nickname = uidToNickname[uid] || `User ${index + 1}`;
             btn.innerText = `${uidToBatteryEmoji[uid] || '👋'} ${nickname}`;
             btn.onclick = () => {
@@ -5882,7 +6155,61 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         });
 
         document.getElementById('report-modal').classList.add('active');
-    };
+
+        if (preselectUid) {
+            const preBtn = container.querySelector(`.target-btn[data-uid="${preselectUid}"]`);
+            if (preBtn) preBtn.click();
+        }
+    }
+    document.getElementById('report-btn').onclick = function() { openReportModal(); };
+
+    // 대화방 원형 좌석에서 특정 참여자를 바로 신고 (참여자 선택 단계 생략)
+    function reportParticipant(uid) {
+        openReportModal(uid);
+    }
+
+    // 대화방 원형 좌석에서 특정 참여자를 바로 친구 추가 (통화 종료 후가 아니라 통화 중에 바로)
+    async function addFriendMidCall(uid) {
+        if (!auth.currentUser || isGuest) return;
+        const myUid = auth.currentUser.uid;
+        if (uid === myUid) return;
+        if (uidToIsGuest[uid]) {
+            alert(currentLang === 'ko' ? '게스트 유저는 친구로 추가할 수 없습니다.' : 'Guest users cannot be added as friends.');
+            return;
+        }
+        try {
+            const snap = await database.ref(`users/${myUid}/friends/${uid}`).once('value');
+            const status = snap.exists() ? snap.val().status : null;
+            if (status === 'accepted') {
+                alert(currentLang === 'ko' ? "이미 친구로 등록된 사용자입니다." : "Already your friend.");
+                return;
+            }
+            if (status === 'pending_sent') {
+                alert(currentLang === 'ko' ? "이미 친구 요청을 보낸 상태입니다." : "Friend request already sent.");
+                return;
+            }
+        } catch(e) { console.error('addFriendMidCall check failed:', e); }
+
+        pendingFriendTargetUid = uid;
+        document.getElementById('nickname-input').value = "";
+        document.getElementById('nickname-modal').classList.add('active');
+    }
+
+    // 대화방 마이크 음소거 토글
+    function toggleMic() {
+        isMicMuted = !isMicMuted;
+        if (localAudioTrack) localAudioTrack.setEnabled(!isMicMuted);
+        const btn = document.getElementById('room-mic-btn');
+        if (btn) btn.classList.toggle('muted', isMicMuted);
+    }
+
+    // Talk Tips 패널 (데스크톱: 상시 사이드바 / 모바일: 버튼 눌러 여는 모달)
+    function toggleTalkTipsPanel() {
+        document.getElementById('room-side-panel').classList.toggle('open');
+    }
+    function closeTalkTipsPanel() {
+        document.getElementById('room-side-panel').classList.remove('open');
+    }
 
     function closeReportModal() {
         document.getElementById('report-modal').classList.remove('active');
@@ -5912,20 +6239,23 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         closeReportModal();
 
         try {
-            // Netlify 백엔드 서버리스 AI 검사 엔드포인트 호출 연동
             const response = await fetch(TOKEN_SERVER_URL + "/reportUser", {
                 method: "POST",
                 body: formData
             });
+            if (!response.ok) throw new Error('HTTP ' + response.status);
 
-            // 프로토타입 시뮬레이션용 가상 결과 출력 (백엔드 인프라가 미완성일 때를 대비한 분기 처리 정비)
             setTimeout(() => {
                 alert(textData[currentLang].reportSuccess);
             }, 1000);
 
         } catch (err) {
-            console.error("Report execution network issue:", err);
-            alert(textData[currentLang].reportSuccess);
+            console.error("Report submission failed:", err);
+            setTimeout(() => {
+                alert(currentLang === 'ko'
+                    ? '신고 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'
+                    : 'Something went wrong while submitting your report. Please try again shortly.');
+            }, 1000);
         }
     }
 
@@ -6499,7 +6829,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                     badgeSentThisSession = false;
                     document.getElementById('badge-modal').classList.add('active');
                     document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
-                    document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
+                    document.getElementById('summary-content').innerHTML = '<span class="summary-loading-text">🤖 AI가 대화 내용을 분석하는 중...</span>';
                     requestAISummary();
                     uidToAnimal = {};
                 }, 400);
@@ -6528,7 +6858,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                     badgeSentThisSession = false;
                     document.getElementById('badge-modal').classList.add('active');
                     document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
-                    document.getElementById('summary-content').innerHTML = '<span style="color:rgba(255,255,255,0.35);">🤖 AI가 대화 내용을 분석하는 중...</span>';
+                    document.getElementById('summary-content').innerHTML = '<span class="summary-loading-text">🤖 AI가 대화 내용을 분석하는 중...</span>';
                     requestAISummary();
                     uidToAnimal = {};
                 }, 400);
