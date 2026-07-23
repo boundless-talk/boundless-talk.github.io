@@ -31,7 +31,7 @@
     <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.0.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#062C6D">
+    <meta name="theme-color" content="#041025">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -44,7 +44,7 @@
 
     <style>
         :root {
-            --bg-gradient: #062C6D;
+            --bg-gradient: #041025;
             --accent-color: #99E1D9;
             --accent-rgb: 153,225,217;
             --accent-hover: #7DD4C9;
@@ -62,7 +62,7 @@
 
         body {
             font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, sans-serif;
-            background: #062C6D;
+            background: #041025;
             color: #f5f4f2;
             display: flex;
             flex-direction: column;
@@ -83,7 +83,7 @@
         #splash-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: #04193F;
+            background: #041025;
             z-index: 6000;
             display: flex;
             flex-direction: column;
@@ -321,7 +321,7 @@
         #settings-modal {
             position: absolute; top: 64px; right: 20px;
             width: 280px;
-            background: #0A3A82;
+            background: #0A1E3F;
             border: 1px solid rgba(255,255,255,0.09);
             border-radius: 10px; padding: 16px 16px 20px;
             animation: fadeDown 0.2s ease;
@@ -680,16 +680,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .tip-card {
-            background: #0D3D8A;
+            background: #0D2547;
             border: 1px solid rgba(255,255,255,0.09);
         }
         .glass-card {
-            background: #0A3A82;
+            background: #0A1E3F;
             border: 1px solid rgba(255,255,255,0.09);
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
         .modal-content {
-            background: #0A3A82;
+            background: #0A1E3F;
             border: 1px solid rgba(255,255,255,0.09);
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             padding: 30px;
@@ -842,7 +842,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 }
 .nickname-modal-overlay.active { opacity: 1; visibility: visible; }
 .nickname-modal-box {
-    background: #0A3A82;
+    background: #0A1E3F;
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 10px; padding: 28px 24px; width: 100%; max-width: 380px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
@@ -961,7 +961,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .room-header {
             width: 100%;
-            background: #0D3D8A;
+            background: #0D2547;
             border-bottom: 1px solid rgba(255,255,255,0.08);
             padding: 28px 24px 22px;
             display: flex;
@@ -1255,7 +1255,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         /* ── Discover 화면 (시안 1a 충실 재현: 레드 액센트 + 다크 카드) ── */
         #discover-screen {
-            --dr: var(--accent-color); --dr-glow: rgba(var(--accent-rgb),.35); --dsurf: #0D3D8A; --dbord: rgba(255,255,255,.08);
+            --dr: var(--accent-color); --dr-glow: rgba(var(--accent-rgb),.35); --dsurf: #0D2547; --dbord: rgba(255,255,255,.08);
             width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
         }
         @keyframes discoWave1 { 0%,100%{height:5px} 50%{height:18px} }
@@ -1275,7 +1275,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-navbar-links a { cursor: default; }
         .disco-navbar-links a.active { color: #f5f4f2; font-weight: 700; }
         .disco-navbar-cta {
-            flex: none; background: var(--dr); color: #062C6D; font-size: 12.5px; font-weight: 700;
+            flex: none; background: var(--dr); color: #041025; font-size: 12.5px; font-weight: 700;
             border: none; border-radius: 4px; padding: 9px 16px; cursor: pointer; white-space: nowrap;
         }
         .disco-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--dr); margin-bottom: -6px; }
@@ -1296,7 +1296,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(255,255,255,0.06); border: 1px solid var(--dbord); color: rgba(255,255,255,0.7);
             cursor: pointer; transition: all 0.15s; user-select: none;
         }
-        .disco-chip.active { background: var(--dr); border-color: var(--dr); color: #062C6D; font-weight: 600; }
+        .disco-chip.active { background: var(--dr); border-color: var(--dr); color: #041025; font-weight: 600; }
         .disco-trending-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
         .disco-trending-row::-webkit-scrollbar { display: none; }
         .disco-trending-label { font-size: 12px; color: rgba(255,255,255,0.35); flex: none; }
@@ -1332,7 +1332,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-divider span { font-size: 11px; color: rgba(255,255,255,0.3); white-space: nowrap; }
 
         /* ── 방 만들기 모달 (같은 레드 액센트) ── */
-        .disco-modal-box { --dr: var(--accent-color); width: 100%; max-width: 340px; background: #0A3A82; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 20px 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+        .disco-modal-box { --dr: var(--accent-color); width: 100%; max-width: 340px; background: #0A1E3F; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 20px 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
         .disco-modal-title { font-size: 15px; font-weight: 700; color: #f5f4f2; margin-bottom: 14px; }
         .disco-modal-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin: 14px 0 7px; }
         .disco-modal-label:first-of-type { margin-top: 0; }
@@ -1344,7 +1344,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-cat-grid { display: flex; flex-wrap: wrap; gap: 7px; }
         .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; padding: 10px 12px; }
         .disco-pp-row-label { font-size: 12.5px; color: rgba(255,255,255,0.7); }
-        .disco-modal-submit { width: 100%; margin-top: 18px; padding: 12px; border-radius: 8px; background: var(--dr); color: #062C6D; font-weight: 700; font-size: 14px; border: none; cursor: pointer; }
+        .disco-modal-submit { width: 100%; margin-top: 18px; padding: 12px; border-radius: 8px; background: var(--dr); color: #041025; font-weight: 700; font-size: 14px; border: none; cursor: pointer; }
         .disco-modal-cancel { width: 100%; margin-top: 8px; padding: 10px; border-radius: 8px; background: none; color: rgba(255,255,255,0.4); font-weight: 600; font-size: 12.5px; border: none; cursor: pointer; }
 
         /* ── 번역 자막 ── */
@@ -1409,12 +1409,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 <body class="intro-open">
 
     <!-- 스플래시 화면 — body 최상단에서 즉시 렌더링 -->
-    <div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#04193F;z-index:6000;display:flex;align-items:center;justify-content:center;">
+    <div id="splash-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#041025;z-index:6000;display:flex;align-items:center;justify-content:center;">
         <div style="position:relative; width:min(480px, 80vw);">
             <video id="splash-video" muted playsinline style="width:100%; height:auto; display:block;">
                 <source src="splash.mp4" type="video/mp4">
             </video>
-            <div style="position:absolute; inset:0; pointer-events:none; background: linear-gradient(to right, #04193F 0%, transparent 20%, transparent 80%, #04193F 100%), linear-gradient(to bottom, #04193F 0%, transparent 12%, transparent 93%, #04193F 100%);"></div>
+            <div style="position:absolute; inset:0; pointer-events:none; background: linear-gradient(to right, #041025 0%, transparent 20%, transparent 80%, #041025 100%), linear-gradient(to bottom, #041025 0%, transparent 12%, transparent 93%, #041025 100%);"></div>
         </div>
     </div>
 
@@ -1730,7 +1730,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 </div>
 
 <div id="more-topics-modal" class="modal-overlay" onclick="if(event.target===this) closeMoreTopicsModal()">
-    <div style="width:100%; max-width:320px; background:#0A3A82; border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:16px; box-shadow:0 20px 60px rgba(0,0,0,0.5); position:relative;">
+    <div style="width:100%; max-width:320px; background:#0A1E3F; border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:16px; box-shadow:0 20px 60px rgba(0,0,0,0.5); position:relative;">
         <span onclick="closeMoreTopicsModal()" style="position:absolute; top:14px; right:16px; color:rgba(255,255,255,0.35); font-size:16px; cursor:pointer;">✕</span>
         <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:2px;" id="more-topics-title">지금 대화 중인 주제</div>
         <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-bottom:16px;" id="more-topics-sub">눌러서 바로 참여해보세요</div>
@@ -1753,7 +1753,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <!-- 주제 추천 안내 팝업 (설정 모달과 동일한 톤: 그라데이션 테두리 + 카드형 섹션) -->
         <div class="modal-overlay" id="topic-info-modal" onclick="if(event.target===this) closeTopicInfoModal()">
             <div style="position:relative; width:400px; max-width:92vw; max-height:80vh; overflow-y:auto; text-align:left;
-                background:#0A3A82;
+                background:#0A1E3F;
                 border:1px solid rgba(255,255,255,0.09); border-radius:10px; padding:20px 22px 22px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <div id="topic-info-title" style="font-size:15px; font-weight:700; color:#fff;">대화 주제가 고민되신다면</div>
