@@ -665,7 +665,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7);
             display: flex; align-items: center; justify-content: center;
-            z-index: 10000; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            z-index: 10000; opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s ease;
             padding: 20px;
         }
         .modal-overlay.active { opacity: 1; visibility: visible; }
@@ -684,10 +684,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             box-shadow: 0 30px 80px rgba(0,0,0,0.5);
             padding: 30px;
             border-radius: 14px; text-align: center; width: 100%; max-width: 440px;
-            transform: scale(0.95); transition: all 0.3s ease;
+            transform: scale(0.9) translateY(10px); opacity: 0;
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
             max-height: calc(100vh - 40px); overflow-y: auto;
         }
-        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
         .modal-content h3 { margin-top: 0; font-weight: 400; letter-spacing: 1px; font-size: 20px; }
         .modal-content p { color: rgba(255,255,255,0.5); font-size: 13.5px; margin-bottom: 20px; line-height: 1.5; }
         html[data-cute-mode="cute"] .modal-overlay { background: rgba(43,31,36,0.25); }
@@ -701,6 +702,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #about-nav-btn { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #inquiry-btn-hero,
         html[data-cute-mode="cute"] #about-nav-btn-hero { color: rgba(43,31,36,0.4) !important; }
+        html[data-cute-mode="cute"] #inquiry-btn:hover,
+        html[data-cute-mode="cute"] #about-nav-btn:hover,
+        html[data-cute-mode="cute"] #inquiry-btn-hero:hover,
+        html[data-cute-mode="cute"] #about-nav-btn-hero:hover,
+        html[data-cute-mode="cute"] #subscribe-btn:hover {
+            color: #ff6f9c !important; background: rgba(255,111,156,0.12) !important;
+        }
         html[data-cute-mode="cute"] #about-modal button[id^="about-btn-"] {
             background: rgba(0,0,0,0.03) !important; color: rgba(43,31,36,0.8) !important;
         }
@@ -716,6 +724,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #report-reason-input {
             background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.1) !important; color: #2b1f24 !important;
         }
+        #topic-info-box {
+            transform: scale(0.9) translateY(10px); opacity: 0;
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+        }
+        .modal-overlay.active #topic-info-box { transform: scale(1) translateY(0); opacity: 1; }
         html[data-cute-mode="cute"] #topic-info-box {
             background: #fff !important; border-color: rgba(0,0,0,0.08) !important; box-shadow: 0 20px 60px rgba(255,111,156,0.15) !important;
         }
@@ -969,7 +982,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center;
-    z-index: 10100; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+    z-index: 10100; opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s ease;
     padding: 20px;
 }
 .nickname-modal-overlay.active { opacity: 1; visibility: visible; }
@@ -978,7 +991,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     border: 1px solid rgba(255,255,255,0.09);
     border-radius: 10px; padding: 28px 24px; width: 100%; max-width: 380px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    transform: scale(0.9) translateY(10px); opacity: 0;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
 }
+.nickname-modal-overlay.active .nickname-modal-box { transform: scale(1) translateY(0); opacity: 1; }
 .nickname-modal-box h3 { margin: 0 0 6px 0; font-size: 18px; font-weight: 500; }
 .nickname-modal-box p { color: rgba(255,255,255,0.45); font-size: 13px; margin: 0 0 18px 0; line-height: 1.5; }
 .nickname-modal-box input {
@@ -1493,8 +1509,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-navbar-logo { width: 22px; height: 22px; flex: none; object-fit: contain; display: block; }
         .disco-navbar-word { font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: #f5f4f2; }
         .disco-navbar-links { display: flex; gap: 18px; font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.5); flex: 1 1 auto; }
-        .disco-navbar-links a { cursor: default; }
+        .disco-navbar-links a { cursor: default; border-radius: 6px; padding: 4px 7px; margin: -4px -7px; transition: background 0.15s ease, color 0.15s ease; }
+        .disco-navbar-links a:hover { background: rgba(var(--accent-rgb),0.08); color: var(--accent-color); }
         .disco-navbar-links a.active { color: #f5f4f2; font-weight: 700; }
+        .footer-link-btn { background: transparent; border: none; cursor: pointer; text-decoration: underline; border-radius: 7px; transition: background 0.15s ease, color 0.15s ease; }
+        .footer-link-btn:hover { background: rgba(var(--accent-rgb),0.08); color: var(--accent-color) !important; }
         .disco-navbar-cta {
             width: auto; flex: none; margin: 0; background: var(--dr); color: #041025; font-size: 12.5px; font-weight: 700;
             border: none; border-radius: 4px; padding: 9px 16px; cursor: pointer; white-space: nowrap;
@@ -1553,7 +1572,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-divider span { font-size: 11px; color: rgba(255,255,255,0.3); white-space: nowrap; }
 
         /* ── 방 만들기 모달 (같은 레드 액센트) ── */
-        .disco-modal-box { --dr: var(--accent-color); width: 100%; max-width: 340px; background: #141416; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 20px 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+        .disco-modal-box {
+            --dr: var(--accent-color); width: 100%; max-width: 340px; background: #141416; border: 1px solid rgba(255,255,255,.09); border-radius: 10px; padding: 20px 20px 22px; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+            transform: scale(0.9) translateY(10px); opacity: 0;
+            transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+        }
+        .modal-overlay.active .disco-modal-box { transform: scale(1) translateY(0); opacity: 1; }
         .disco-modal-title { font-size: 15px; font-weight: 700; color: #f5f4f2; margin-bottom: 14px; }
         .disco-modal-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin: 14px 0 7px; }
         .disco-modal-label:first-of-type { margin-top: 0; }
@@ -1730,6 +1754,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-modal-title { color: #2b1f24; }
         html[data-cute-mode="cute"] .disco-navbar-links { color: rgba(43,31,36,.5); }
         html[data-cute-mode="cute"] .disco-navbar-links a.active { color: #2b1f24; }
+        html[data-cute-mode="cute"] .disco-navbar-links a:hover,
+        html[data-cute-mode="cute"] .footer-link-btn:hover { background: rgba(255,111,156,0.12); color: #ff6f9c !important; }
         html[data-cute-mode="cute"] .disco-live-count,
         html[data-cute-mode="cute"] .disco-card-cat,
         html[data-cute-mode="cute"] .disco-occupancy,
@@ -1835,8 +1861,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <button class="intro-how-btn" id="intro-how-btn" onclick="showIntro2()">How it works</button>
         </div>
         <div style="margin-top:64px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
-            <button id="inquiry-btn-hero" onclick="openInquiryModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.22)'">문의하기</button>
-            <button id="about-nav-btn-hero" onclick="openAboutModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.22)'">About</button>
+            <button class="footer-link-btn" id="inquiry-btn-hero" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
+            <button class="footer-link-btn" id="about-nav-btn-hero" onclick="openAboutModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">About</button>
         </div>
     </div>
 
@@ -2133,9 +2159,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <button id="logout-btn" style="display: none;">LOGOUT</button>
     </div>
     <div style="text-align:center; margin-top:10px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
-        <button id="inquiry-btn" onclick="openInquiryModal()" style="background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">문의하기</button>
-        <button onclick="openAboutModal()" id="about-nav-btn" style="background:transparent; border:none; color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(255,255,255,0.35)'">About</button>
-        <button onclick="openMainPayModal()" id="subscribe-btn" style="background:transparent; border:none; color:rgba(var(--accent-rgb),0.6); font-size:12px; padding:4px 8px; margin:0; width:auto; text-decoration:underline; cursor:pointer; font-weight:600;" onmouseover="this.style.color='var(--accent-color)'" onmouseout="this.style.color='rgba(var(--accent-rgb),0.6)'">Go Premium ✨</button>
+        <button class="footer-link-btn" id="inquiry-btn" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
+        <button class="footer-link-btn" onclick="openAboutModal()" id="about-nav-btn" style="color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto;">About</button>
+        <button class="footer-link-btn" onclick="openMainPayModal()" id="subscribe-btn" style="color:rgba(var(--accent-rgb),0.6); font-size:12px; padding:4px 8px; margin:0; width:auto; font-weight:600;">Go Premium ✨</button>
     </div>
 
 
