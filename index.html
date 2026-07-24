@@ -465,15 +465,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         #google-login-btn {
             background-color: #fff;
             color: #1f1f1f;
-            margin: 0 0 12px 0;
+            margin: 0 0 10px 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            font-size: 14px;
-            padding: 13px 14px;
+            gap: 10px;
+            font-size: 13.5px;
+            padding: 12px 14px;
             font-weight: 700;
-            border-radius: 4px;
+            border-radius: 12px;
         }
         #google-login-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(0,0,0,0.15); }
         html[data-cute-mode="cute"] #google-login-btn { border-radius: 24px; border: 1px solid rgba(0,0,0,0.06); }
@@ -482,30 +482,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background-color: rgba(255,255,255,0.06);
             color: #f5f4f2;
             border: 1px solid rgba(255,255,255,0.1);
-            margin: 0 0 12px 0;
-            font-size: 14px;
-            padding: 13px 14px;
+            margin: 0 0 16px 0;
+            font-size: 13.5px;
+            padding: 12px 14px;
             font-weight: 600;
-            border-radius: 4px;
+            border-radius: 12px;
         }
         #email-login-btn-main:hover { background-color: rgba(255,255,255,0.1); transform: translateY(-1px); }
         html[data-cute-mode="cute"] #email-login-btn-main { background: #ffe6ee; color: #2b1f24; border: none; border-radius: 24px; }
         html[data-cute-mode="cute"] #email-login-btn-main:hover { background: #ffd6e5; }
 
-        #email-signup-btn-main {
-            background-color: transparent;
-            color: rgba(255,255,255,0.45);
-            border: none;
-            margin: 4px 0 0 0;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 6px 0;
-            text-decoration: underline;
-            text-decoration-color: var(--accent-color);
+        .auth-signup-prompt {
+            text-align: center; font-size: 12.5px; color: rgba(255,255,255,0.4);
+            margin: 14px 0 0; line-height: 1.5;
         }
-        #email-signup-btn-main:hover { color: var(--accent-color); }
-        html[data-cute-mode="cute"] #email-signup-btn-main { color: rgba(43,31,36,0.5); }
-        html[data-cute-mode="cute"] #email-signup-btn-main:hover { color: #ff6f9c; }
+        #email-signup-btn-main {
+            color: var(--accent-color); font-weight: 600; cursor: pointer;
+        }
+        #email-signup-btn-main:hover { text-decoration: underline; }
+        html[data-cute-mode="cute"] .auth-signup-prompt { color: rgba(43,31,36,0.45); }
+        html[data-cute-mode="cute"] #email-signup-btn-main { color: #ff6f9c; }
 
         /* 인라인 폼 패널 */
         .auth-form-panel {
@@ -1499,16 +1495,35 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── Discover 화면 (시안 1a 충실 재현: 레드 액센트 + 다크 카드) ── */
         #discover-screen {
             --dr: var(--accent-color); --dr-glow: rgba(var(--accent-rgb),.35); --dsurf: #141416; --dbord: rgba(255,255,255,.08);
-            width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
+            width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; padding-bottom: 64px;
         }
+        #post-login-footer {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;
+            padding: 10px 20px max(10px, env(safe-area-inset-bottom)) 20px;
+            background: #0b0b0c;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            z-index: 40;
+        }
+        html[data-cute-mode="cute"] #post-login-footer { background: #fff8f4; border-top-color: rgba(0,0,0,0.06); }
+        #intro-footer {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap;
+            padding: 10px 20px max(10px, env(safe-area-inset-bottom)) 20px;
+            background: #0b0b0c;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            z-index: 40;
+        }
+        html[data-cute-mode="cute"] #intro-footer { background: #fff8f4; border-top-color: rgba(0,0,0,0.06); }
         @keyframes discoWave1 { 0%,100%{height:5px} 50%{height:18px} }
         @keyframes discoWave2 { 0%,100%{height:14px} 50%{height:6px} }
         @keyframes discoWave3 { 0%,100%{height:9px} 50%{height:20px} }
         @keyframes discoWave4 { 0%,100%{height:17px} 50%{height:7px} }
         .disco-navbar {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
-            padding: 0 4px 16px; margin: -2px -4px 4px; border-bottom: 1px solid var(--dbord);
+            padding: 12px 4px 16px; margin: -2px -4px 4px; border-bottom: 1px solid var(--dbord);
             flex-wrap: wrap; row-gap: 10px;
+            position: sticky; top: 0; z-index: 30; background: #0b0b0c;
         }
         .disco-navbar-brand { display: flex; align-items: center; gap: 8px; flex: none; }
         .disco-navbar-logo { width: 22px; height: 22px; flex: none; object-fit: contain; display: block; }
@@ -1541,7 +1556,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .disco-search-input:focus { border-color: var(--dr); box-shadow: 0 0 12px var(--dr-glow); }
         .disco-search-input::placeholder { color: rgba(255,255,255,0.3); }
-        .disco-chip-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+        .disco-chip-row {
+            display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none;
+            mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+        }
         .disco-chip-row::-webkit-scrollbar { display: none; }
         .disco-chip {
             flex: none; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 20px;
@@ -1549,7 +1568,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             cursor: pointer; transition: all 0.15s; user-select: none;
         }
         .disco-chip.active { background: var(--dr); border-color: var(--dr); color: #041025; font-weight: 600; }
-        .disco-trending-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+        .disco-trending-row {
+            display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none;
+            mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent 100%);
+        }
         .disco-trending-row::-webkit-scrollbar { display: none; }
         .disco-trending-label { font-size: 12px; color: rgba(255,255,255,0.35); flex: none; }
         .disco-trending-tag { width: auto; flex: none; font-size: 12px; color: var(--dr); padding: 5px 12px; margin: 0; border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 14px; cursor: pointer; background: none; }
@@ -1641,6 +1664,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── 모바일 반응형 ── */
         @media (max-width: 400px) {
             body { padding: 12px; }
+            .lang-container { top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
 
             .intro-title { font-size: 24px; letter-spacing: 4px; }
             h2 { font-size: 22px; letter-spacing: 4px; }
@@ -1759,7 +1783,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             --dr: #ff6f9c; --dr-glow: rgba(255,111,156,.3); --dsurf: #ffffff; --dbord: rgba(0,0,0,.08);
             background: #fff8f4; border-radius: 16px; padding: 12px 12px 16px; margin: 0 -12px 24px;
         }
-        html[data-cute-mode="cute"] .disco-navbar { border-color: rgba(0,0,0,.08); }
+        html[data-cute-mode="cute"] .disco-navbar { border-color: rgba(0,0,0,.08); background: #fff8f4; }
         html[data-cute-mode="cute"] .disco-navbar-word,
         html[data-cute-mode="cute"] .disco-title,
         html[data-cute-mode="cute"] .disco-card-title,
@@ -1863,16 +1887,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="" style="width:150px; height:150px; object-fit:contain; position:relative; filter:drop-shadow(0 0 40px rgba(var(--accent-rgb),0.25));">
         <div class="intro-wordmark" id="intro-wordmark">boundless talk</div>
         <p class="intro-desc" id="intro-desc" style="margin-top:12px; margin-bottom:14px;">Some conversations change you.<br>Discover diverse perspectives.</p>
-        <div style="margin-bottom: 8px;">
-            <span class="intro-pulse"></span>
-            <span class="intro-pulse"></span>
-            <span class="intro-pulse"></span>
-        </div>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
             <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">Start listening</button>
             <button class="intro-how-btn" id="intro-how-btn" onclick="showIntro2()">How it works</button>
         </div>
-        <div style="margin-top:64px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+        <div style="margin-top:24px;">
+            <span class="intro-pulse"></span>
+            <span class="intro-pulse"></span>
+            <span class="intro-pulse"></span>
+        </div>
+        <div id="intro-footer">
             <button class="footer-link-btn" id="inquiry-btn-hero" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
             <button class="footer-link-btn" id="about-nav-btn-hero" onclick="openAboutModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">About</button>
         </div>
@@ -1968,10 +1992,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="main-container">
         <div class="title-block" id="title-block">
-            <img class="app-logo-dark" src="logoboundlesstalk.png" alt="Boundless Talk" style="width:72px; height:72px; display:block; margin:0 auto -22px; border-radius:16px; object-fit:contain;">
-            <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="Boundless Talk" style="width:72px; height:72px; display:block; margin:0 auto -22px; border-radius:16px; object-fit:contain;">
-            <h2 id="app-title" style="font-size:22px; letter-spacing:4px;">BOUNDLESS TALK</h2>
-            <p id="app-subtitle" class="sub-title">talk about anything with anyone!</p>
+            <img class="app-logo-dark" src="logoboundlesstalk.png" alt="Boundless Talk" style="width:80px; height:80px; display:block; margin:0 auto 12px; object-fit:contain; filter:drop-shadow(0 0 24px rgba(var(--accent-rgb),0.2));">
+            <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="Boundless Talk" style="width:80px; height:80px; display:block; margin:0 auto 12px; object-fit:contain; filter:drop-shadow(0 0 24px rgba(var(--accent-rgb),0.2));">
+            <h2 id="app-title" style="font-size:22px; font-weight:800; letter-spacing:-0.02em; text-transform:none;">Log in to boundless talk</h2>
+            <p id="app-subtitle" class="sub-title">No names, no faces — just voices, 4 at a time.</p>
         </div>
 
         <div id="auth-section" style="display:none;">
@@ -1985,10 +2009,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                         <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
                         <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
                     </svg>
-                    <span id="google-login-text">Sign in with Google</span>
+                    <span id="google-login-text">Continue with Google</span>
                 </button>
 
-                <button id="email-login-btn-main">✉️ 이메일 로그인</button>
+                <button id="email-login-btn-main">✉️ 이메일로 계속하기</button>
 
                 <div class="auth-form-panel" id="login-form-panel">
                     <div class="auth-form-inner">
@@ -2005,9 +2029,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <span class="auth-or-text" style="font-size:11px; color:rgba(255,255,255,0.25);">or</span>
                     <div class="auth-or-line" style="flex:1; height:1px; background:rgba(255,255,255,0.07);"></div>
                 </div>
-                <button id="guest-login-btn" style="background:transparent; border:1px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.55); font-size:13px; padding:13px 14px; font-weight:500; border-radius:4px; margin:0 0 6px 0;"><span id="guest-login-text">게스트로 체험하기</span></button>
+                <button id="guest-login-btn" style="background:transparent; border:1px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.55); font-size:12.5px; padding:12px 14px; font-weight:500; border-radius:12px; margin:0;"><span id="guest-login-text">계정 없이 게스트로 계속하기</span></button>
 
-                <button id="email-signup-btn-main">✨ 이메일로 회원가입</button>
+                <p class="auth-signup-prompt"><span id="signup-prompt-text">계정이 없으신가요?</span> <span id="email-signup-btn-main">이메일로 회원가입</span></p>
 
             </div>
 
@@ -2178,7 +2202,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <div id="user-action-buttons">
     <button id="btn-talk-again" style="margin: 0; display: none;">또 대화하기</button>
     </div>
-    <div style="text-align:center; margin-top:10px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+    <div id="post-login-footer">
         <button class="footer-link-btn" id="inquiry-btn" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
         <button class="footer-link-btn" onclick="openAboutModal()" id="about-nav-btn" style="color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto;">About</button>
         <button class="footer-link-btn" onclick="openMainPayModal()" id="subscribe-btn" style="color:rgba(var(--accent-rgb),0.6); font-size:12px; padding:4px 8px; margin:0; width:auto; font-weight:600;">Go Premium ✨</button>
@@ -3288,8 +3312,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     // 다국어 데이터 사전 사전 정의
     const textData = {
         en: {
-            title: "Boundless Talk",
-            subtitle: "Talk about anything with anyone!",
+            title: "Log in to boundless talk",
+            subtitle: "No names, no faces — just voices, 4 at a time.",
             placeholder: "What's on your mind? (e.g., career, books, life advice...)",
             maxPeopleLabel: "Max People:",
             startBtn: "Start Talk",
@@ -3369,7 +3393,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2S6: ``,
         intro2S7: ``,
         talkAgainBtn: "TALK AGAIN",
-        guestLoginBtn: "👀 Try as Guest",
+        guestLoginBtn: "👀 Continue as guest — no account needed",
         addFriendBtn: "➕ ADD FRIEND",
         friendsModalTitle: "MY FRIEND LIST",
         noFriends: "No friends added yet.<br>Make some friends after a talk!",
@@ -3414,8 +3438,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         iosBannerDesc: `Tap the share button (⬆) below,<br>then select <strong style="color:rgba(255,255,255,0.7);">"Add to Home Screen"</strong>.`,
         },
         ko: {
-            title: "Boundless Talk",
-            subtitle: "지금껏 없던 대화를 경험하세요!",
+            title: "boundless talk 로그인",
+            subtitle: "이름도 얼굴도 없이 — 목소리로만, 최대 4명.",
             placeholder: "어떤 이야기할래요? (예: 커리어, 독서, 고민상담...)",
             maxPeopleLabel: "최대 인원:",
             startBtn: "대화 시작하기",
@@ -3495,7 +3519,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2S6: ``,
         intro2S7: ``,
         talkAgainBtn: "또 대화하기",
-        guestLoginBtn: "👀 게스트로 체험하기",
+        guestLoginBtn: "👀 계정 없이 게스트로 계속하기",
         addFriendBtn: "➕ 친구 추가",
         friendsModalTitle: "나의 친구 목록",
         noFriends: "아직 추가된 친구가 없습니다.<br>대화 후 친구를 맺어보세요!",
@@ -3563,6 +3587,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 if (talkControls) talkControls.style.display = "block";
                 const titleBlock = document.getElementById('title-block');
                 if (titleBlock) titleBlock.style.display = 'none';
+                const mainContainer = document.getElementById('main-container');
+                if (mainContainer) mainContainer.style.justifyContent = 'flex-start';
                 const mainBattery = document.getElementById("main-battery");
                 if (mainBattery) mainBattery.style.display = "flex";
                 if (startBtn && !isJoined) startBtn.disabled = false;
@@ -3854,6 +3880,8 @@ window.closeTopicInfoModal = closeTopicInfoModal;
             if (talkControls) talkControls.style.display = "none";
             const titleBlock = document.getElementById('title-block');
             if (titleBlock) titleBlock.style.display = 'flex';
+            const mainContainer = document.getElementById('main-container');
+            if (mainContainer) mainContainer.style.justifyContent = 'center';
             document.getElementById("btn-talk-again").style.display = "none";
             const mainBattery = document.getElementById("main-battery");
             if (mainBattery) mainBattery.style.display = "none";
@@ -4122,11 +4150,12 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         }
 
         if (document.getElementById('google-login-text')) {
-            document.getElementById('google-login-text').innerText = (currentLang === 'en') ? "Sign in with Google" : "구글 로그인";
+            document.getElementById('google-login-text').innerText = (currentLang === 'en') ? "Continue with Google" : "구글로 계속하기";
         }
         document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "LOGOUT" : "로그아웃";
-        document.getElementById('email-login-btn-main').innerText = (currentLang === 'en') ? "Email Login" : "이메일 로그인";
-        document.getElementById('email-signup-btn-main').innerText = (currentLang === 'en') ? "Sign Up with Email" : "이메일로 회원가입";
+        document.getElementById('email-login-btn-main').innerText = (currentLang === 'en') ? "Continue with email" : "이메일로 계속하기";
+        document.getElementById('email-signup-btn-main').innerText = (currentLang === 'en') ? "Sign up with email" : "이메일로 회원가입";
+        document.getElementById('signup-prompt-text').innerText = (currentLang === 'en') ? "Don't have an account?" : "계정이 없으신가요?";
         const findPwBtn = document.getElementById('find-pw-btn'); if(findPwBtn) findPwBtn.textContent = isKo ? '비밀번호를 잊으셨나요?' : 'Forgot password?';
 
         // ── 이메일 로그인/회원가입 패널 내부 요소 번역 반영 ──
