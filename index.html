@@ -117,15 +117,6 @@
             text-shadow: 0 0 30px rgba(var(--accent-rgb),0.55), 0 0 60px rgba(var(--accent-rgb),0.25), 0 2px 10px rgba(0,0,0,0.5);
             margin-bottom: 56px;
         }
-        .intro-desc {
-            font-size: 15px;
-            color: rgba(255,255,255,0.5);
-            line-height: 1.6;
-            max-width: 360px;
-            margin-top: 24px;
-            margin-bottom: 32px;
-            letter-spacing: 0.2px;
-        }
         .intro-start-btn {
             width: auto !important;
             padding: 16px 48px !important;
@@ -151,12 +142,13 @@
             background: radial-gradient(circle, rgba(var(--accent-rgb),0.18), transparent 70%);
             pointer-events: none;
         }
-        .intro-wordmark {
-            position: relative;
-            font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
-            color: #fff;
+        .intro-brand-small {
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+            margin-top: 40px;
+            font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
+            color: rgba(255,255,255,0.35);
         }
-        html[data-cute-mode="cute"] .intro-wordmark { color: #2b1f24; }
+        html[data-cute-mode="cute"] .intro-brand-small { color: rgba(43,31,36,0.35); }
         .app-logo-cute { display: none !important; }
         html[data-cute-mode="cute"] .app-logo-dark { display: none !important; }
         html[data-cute-mode="cute"] .app-logo-cute { display: block !important; }
@@ -1729,7 +1721,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── 인트로 화면: 큐트 모드 ── */
         html[data-cute-mode="cute"] #intro-screen { background: #fff8f4; }
         html[data-cute-mode="cute"] .intro-title { color: #2b1f24; text-shadow: none; }
-        html[data-cute-mode="cute"] .intro-desc { color: rgba(43,31,36,.55); }
 
         /* ── How it works 팝업: 큐트 모드 ── */
         html[data-cute-mode="cute"] #intro-screen-2 .modal-content {
@@ -1856,10 +1847,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 인트로 화면 -->
     <div id="intro-screen" style="display:none;">
         <div class="intro-glow" aria-hidden="true"></div>
-        <img class="app-logo-dark" src="logoboundlesstalk.png" alt="" style="width:150px; height:150px; object-fit:contain; position:relative; filter:drop-shadow(0 0 40px rgba(var(--accent-rgb),0.25));">
-        <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="" style="width:150px; height:150px; object-fit:contain; position:relative; filter:drop-shadow(0 0 40px rgba(var(--accent-rgb),0.25));">
-        <div class="intro-wordmark" id="intro-wordmark">boundless talk</div>
-        <p class="intro-desc" id="intro-desc" style="margin-top:12px; margin-bottom:14px;">Some conversations change you.<br>Discover diverse perspectives.</p>
         <div style="margin-bottom: 8px;">
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
@@ -1869,7 +1856,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">Start listening</button>
             <button class="intro-how-btn" id="intro-how-btn" onclick="showIntro2()">How it works</button>
         </div>
-        <div style="margin-top:64px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+        <div class="intro-brand-small">
+            <img class="app-logo-dark" src="logoboundlesstalk.png" alt="" style="width:20px; height:20px; object-fit:contain;">
+            <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="" style="width:20px; height:20px; object-fit:contain;">
+            <span>boundless talk</span>
+        </div>
+        <div style="margin-top:24px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
             <button class="footer-link-btn" id="inquiry-btn-hero" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
             <button class="footer-link-btn" id="about-nav-btn-hero" onclick="openAboutModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">About</button>
         </div>
@@ -1895,10 +1887,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div class="main-battery-nub"></div>
             <span class="main-battery-pct" id="main-battery-pct">0%</span>
         </div>
-        <div class="cute-mode-toggle" id="cute-mode-toggle" onclick="toggleCuteMode()" aria-label="Dark / Cute 테마 전환">
-            <span class="cute-mode-seg" data-mode="dark" id="cute-mode-seg-dark">Dark</span>
-            <span class="cute-mode-seg" data-mode="cute" id="cute-mode-seg-cute">Cute</span>
-        </div>
         <button id="lang-toggle-btn" style="display:none;">KO</button>
         <button class="settings-gear-btn" id="settings-gear-btn" onclick="openSettingsModal()">⋮</button>
     </div>
@@ -1915,6 +1903,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div class="lang-pills">
                     <button class="lang-pill" id="pill-ko" onclick="setLangFromSettings('ko')">KO</button>
                     <button class="lang-pill" id="pill-en" onclick="setLangFromSettings('en')">EN</button>
+                </div>
+            </div>
+
+            <div class="settings-section-label" id="settings-theme-label">Theme</div>
+            <div class="settings-row">
+                <div class="settings-row-left">🎨 <span id="settings-theme-text">Dark / Cute</span></div>
+                <div class="cute-mode-toggle" id="cute-mode-toggle" onclick="toggleCuteMode()" aria-label="Dark / Cute 테마 전환">
+                    <span class="cute-mode-seg" data-mode="dark" id="cute-mode-seg-dark">Dark</span>
+                    <span class="cute-mode-seg" data-mode="cute" id="cute-mode-seg-cute">Cute</span>
                 </div>
             </div>
 
@@ -7376,6 +7373,8 @@ function updateSettingsModalLang() {
     document.getElementById('settings-title').textContent = isKo ? '설정' : 'Settings';
     document.getElementById('settings-lang-label').textContent = isKo ? '언어' : 'Language';
     document.getElementById('settings-lang-text').textContent = isKo ? '표시 언어' : 'Display language';
+    document.getElementById('settings-theme-label').textContent = isKo ? '테마' : 'Theme';
+    document.getElementById('settings-theme-text').textContent = isKo ? '다크 / 큐트' : 'Dark / Cute';
     document.getElementById('settings-mypage-label').textContent = isKo ? '마이페이지' : 'My page';
     document.getElementById('settings-time-label').textContent = isKo ? '오늘 남은 시간' : 'Today\'s remaining time';
     document.getElementById('settings-time-sub').textContent = isKo ? '구독 혜택' : 'Subscription benefit';
@@ -8155,7 +8154,6 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     }
 
     function backToIntroFromLogin() {
-        document.getElementById('auth-section').style.display = 'none';
         const intro = document.getElementById('intro-screen');
         intro.classList.remove('hide');
         intro.style.display = 'flex';
