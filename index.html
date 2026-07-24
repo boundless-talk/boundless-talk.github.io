@@ -117,6 +117,15 @@
             text-shadow: 0 0 30px rgba(var(--accent-rgb),0.55), 0 0 60px rgba(var(--accent-rgb),0.25), 0 2px 10px rgba(0,0,0,0.5);
             margin-bottom: 56px;
         }
+        .intro-desc {
+            font-size: 15px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.6;
+            max-width: 360px;
+            margin-top: 24px;
+            margin-bottom: 32px;
+            letter-spacing: 0.2px;
+        }
         .intro-start-btn {
             width: auto !important;
             padding: 16px 48px !important;
@@ -142,13 +151,18 @@
             background: radial-gradient(circle, rgba(var(--accent-rgb),0.18), transparent 70%);
             pointer-events: none;
         }
-        .intro-brand-small {
+        .intro-wordmark {
+            position: relative;
+            font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
+            color: #fff;
+        }
+        html[data-cute-mode="cute"] .intro-wordmark { color: #2b1f24; }
+        .brand-mark-small {
             display: flex; align-items: center; justify-content: center; gap: 7px;
-            margin-top: 40px;
             font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
             color: rgba(255,255,255,0.35);
         }
-        html[data-cute-mode="cute"] .intro-brand-small { color: rgba(43,31,36,0.35); }
+        html[data-cute-mode="cute"] .brand-mark-small { color: rgba(43,31,36,0.35); }
         .app-logo-cute { display: none !important; }
         html[data-cute-mode="cute"] .app-logo-dark { display: none !important; }
         html[data-cute-mode="cute"] .app-logo-cute { display: block !important; }
@@ -363,14 +377,13 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 64px;
-            margin-bottom: 32px;
+            margin-top: 32px;
+            margin-bottom: 16px;
         }
 
         h2 { font-size: 30px; font-weight: 700; letter-spacing: 6px; margin-bottom: 10px; text-transform: uppercase; text-align: center; color: #fff; text-shadow: 0 0 30px rgba(var(--accent-rgb),0.5), 0 0 60px rgba(var(--accent-rgb),0.2); }
 
         /* 추가된 서브타이틀 스타일 */
-        .sub-title { font-size: 14px; color: rgba(255,255,255,0.6); text-align: center; margin-top: -4px; margin-bottom: 0; letter-spacing: 1px; }
 
         .input-group {
             width: 100%;
@@ -943,19 +956,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     margin-bottom: 8px;
 }
 .friend-info { display: flex; flex-direction: column; gap: 4px; }
-.friend-name { font-size: 13.5px; color: #fff; font-weight: 500; }
+.friend-name { font-size: 13.5px; color: #fff; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 .friend-date { font-size: 11px; color: rgba(255,255,255,0.4); }
 .friend-call-btn {
     background: var(--accent-color);
     color: #000;
     border: none;
-    padding: 4px 9px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
+    width: 30px; height: 30px; padding: 0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
     cursor: pointer;
     margin: 0;
-    width: auto;
 }
 .friend-call-btn:hover { background: var(--accent-hover); }
 
@@ -1023,20 +1035,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 .frb-reject-btn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1) !important; }
 .frb-reject-btn:hover { background: rgba(255,255,255,0.1); }
 
-/* 친구 목록 아이템 — 닉네임 편집 버튼 */
-.friend-edit-btn {
-    background: transparent; border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.4); padding: 4px 9px; border-radius: 6px;
-    font-size: 11px; cursor: pointer; margin: 0; width: auto;
+/* 친구 목록 아이템 — 닉네임 편집 버튼 (닉네임 옆 작은 연필 아이콘) */
+.friend-edit-icon-btn {
+    background: transparent; border: none;
+    color: rgba(255,255,255,0.3); padding: 0; margin: 0; width: auto;
+    font-size: 11px; cursor: pointer; line-height: 1;
 }
-.friend-edit-btn:hover { border-color: var(--accent-color); color: var(--accent-color); }
+.friend-edit-icon-btn:hover { color: var(--accent-color); }
 .friend-unfriend-btn {
     background: transparent; border: 1px solid rgba(255,59,48,0.25);
-    color: rgba(255,59,48,0.5); padding: 4px 9px; border-radius: 6px;
-    font-size: 11px; cursor: pointer; margin: 0; width: auto;
+    color: rgba(255,59,48,0.5); width: 30px; height: 30px; padding: 0;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; cursor: pointer; margin: 0;
 }
 .friend-unfriend-btn:hover { border-color: var(--danger-color); color: var(--danger-color); }
-.friend-action-group { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.friend-action-group { display: flex; flex-direction: row; align-items: center; gap: 8px; }
 
 /* 동물 닉네임 참여자 카드 */
 .part-item {
@@ -1589,7 +1602,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; padding: 10px 12px; }
         .disco-pp-row-label { font-size: 12.5px; color: rgba(255,255,255,0.7); }
         .disco-modal-submit { width: 100%; margin-top: 18px; padding: 12px; border-radius: 8px; background: var(--dr); color: #041025; font-weight: 700; font-size: 14px; border: none; cursor: pointer; }
-        .disco-modal-cancel { width: 100%; margin-top: 8px; padding: 10px; border-radius: 8px; background: none; color: rgba(255,255,255,0.4); font-weight: 600; font-size: 12.5px; border: none; cursor: pointer; }
 
         /* ── 번역 자막 ── */
         .subtitle-section { width: 100%; max-width: 520px; padding: 0 4px; }
@@ -1701,8 +1713,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         /* ── 페이지 배경 + 메인/로그인 타이틀 영역: 큐트 모드 (Discover 카드 밖, body 배경 위에 바로 얹혀 있음) ── */
         html[data-cute-mode="cute"] body { background: #fff8f4; }
-        html[data-cute-mode="cute"] #app-title { color: #2b1f24; text-shadow: none; }
-        html[data-cute-mode="cute"] .sub-title { color: rgba(43,31,36,.55); }
         html[data-cute-mode="cute"] .settings-gear-btn { color: rgba(43,31,36,.45); }
         /* 전역 입력창 텍스트 색상 — 큐트 모드는 배경이 밝은 톤이라 기본 흰 글씨가 다 안 보임. 어디에 있는 input/textarea든 일괄 적용 */
         html[data-cute-mode="cute"] input,
@@ -1721,6 +1731,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── 인트로 화면: 큐트 모드 ── */
         html[data-cute-mode="cute"] #intro-screen { background: #fff8f4; }
         html[data-cute-mode="cute"] .intro-title { color: #2b1f24; text-shadow: none; }
+        html[data-cute-mode="cute"] .intro-desc { color: rgba(43,31,36,.55); }
 
         /* ── How it works 팝업: 큐트 모드 ── */
         html[data-cute-mode="cute"] #intro-screen-2 .modal-content {
@@ -1778,7 +1789,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.1); color: #2b1f24;
         }
         html[data-cute-mode="cute"] .disco-pp-row { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
-        html[data-cute-mode="cute"] .disco-modal-cancel { color: rgba(43,31,36,.45); }
         html[data-cute-mode="cute"] #btn-talk-again {
             background: #ffe6ee; border-color: rgba(255,111,156,.3); color: #ff6f9c;
         }
@@ -1847,6 +1857,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 인트로 화면 -->
     <div id="intro-screen" style="display:none;">
         <div class="intro-glow" aria-hidden="true"></div>
+        <img class="app-logo-dark" src="logoboundlesstalk.png" alt="" style="width:150px; height:150px; object-fit:contain; position:relative; filter:drop-shadow(0 0 40px rgba(var(--accent-rgb),0.25));">
+        <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="" style="width:150px; height:150px; object-fit:contain; position:relative; filter:drop-shadow(0 0 40px rgba(var(--accent-rgb),0.25));">
+        <div class="intro-wordmark" id="intro-wordmark">boundless talk</div>
+        <p class="intro-desc" id="intro-desc" style="margin-top:12px; margin-bottom:14px;">Some conversations change you.<br>Discover diverse perspectives.</p>
         <div style="margin-bottom: 8px;">
             <span class="intro-pulse"></span>
             <span class="intro-pulse"></span>
@@ -1856,12 +1870,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">Start listening</button>
             <button class="intro-how-btn" id="intro-how-btn" onclick="showIntro2()">How it works</button>
         </div>
-        <div class="intro-brand-small">
-            <img class="app-logo-dark" src="logoboundlesstalk.png" alt="" style="width:20px; height:20px; object-fit:contain;">
-            <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="" style="width:20px; height:20px; object-fit:contain;">
-            <span>boundless talk</span>
-        </div>
-        <div style="margin-top:24px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+        <div style="margin-top:64px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
             <button class="footer-link-btn" id="inquiry-btn-hero" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
             <button class="footer-link-btn" id="about-nav-btn-hero" onclick="openAboutModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">About</button>
         </div>
@@ -1936,6 +1945,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="settings-badge-chips" id="settings-badge-chips"></div>
                 </div>
             </div>
+
+            <div class="settings-section-label" id="settings-account-label">Account</div>
+            <button id="logout-btn" style="display:none; width:100%; margin-top:0;">LOGOUT</button>
         </div>
     </div>
 
@@ -1954,10 +1966,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="main-container">
         <div class="title-block">
-            <img class="app-logo-dark" src="logoboundlesstalk.png" alt="Boundless Talk" style="width:72px; height:72px; display:block; margin:0 auto -22px; border-radius:16px; object-fit:contain;">
-            <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="Boundless Talk" style="width:72px; height:72px; display:block; margin:0 auto -22px; border-radius:16px; object-fit:contain;">
-            <h2 id="app-title" style="font-size:22px; letter-spacing:4px;">BOUNDLESS TALK</h2>
-            <p id="app-subtitle" class="sub-title">talk about anything with anyone!</p>
+            <div class="brand-mark-small">
+                <img class="app-logo-dark" src="logoboundlesstalk.png" alt="" style="width:20px; height:20px; object-fit:contain;">
+                <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="" style="width:20px; height:20px; object-fit:contain;">
+                <span>boundless talk</span>
+            </div>
         </div>
 
         <div id="auth-section" style="display:none;">
@@ -2050,7 +2063,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
 
                 <button class="disco-modal-submit" id="disco-create-submit-btn" onclick="submitDiscoCreate()">방 만들고 시작하기</button>
-                <button class="disco-modal-cancel" id="disco-create-cancel-btn" onclick="closeDiscoCreateModal()">취소</button>
             </div>
         </div>
 
@@ -2063,7 +2075,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="settings-card-label" id="mycircles-sub-label">구독 현황</div>
                     <div class="settings-card-value" id="mycircles-sub-value" style="color:var(--accent-color);">--</div>
                 </div>
-                <button class="disco-modal-cancel" id="my-circles-close-btn" onclick="closeMyCirclesModal()">닫기</button>
                 <div style="text-align:center; margin-top:10px;">
                     <span id="mycircles-withdrawal-link" onclick="openWithdrawalModal()" style="font-size:10px; color:rgba(255,255,255,0.18); text-decoration:underline; cursor:pointer;">회원탈퇴</span>
                 </div>
@@ -2165,7 +2176,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="user-action-buttons">
     <button id="btn-talk-again" style="margin: 0; display: none;">또 대화하기</button>
-    <button id="logout-btn" style="display: none;">LOGOUT</button>
     </div>
     <div style="text-align:center; margin-top:10px; display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
         <button class="footer-link-btn" id="inquiry-btn" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
@@ -3157,8 +3167,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('disco-create-mode-label', '모드', 'Mode');
         setText('disco-pp-row-label', '핑퐁 모드 (순서대로 1분 30초씩 발언)', 'Ping Pong mode (take 90s turns speaking in order)');
         setText('disco-create-submit-btn', '방 만들고 시작하기', 'Create and start');
-        setText('disco-create-cancel-btn', '취소', 'Cancel');
-        setText('my-circles-close-btn', '닫기', 'Close');
         setText('mycircles-sub-label', '구독 현황', 'Subscription');
         setText('mycircles-withdrawal-link', '회원탈퇴', 'Delete account');
         renderDiscoCreateCatGrid();
@@ -3886,8 +3894,6 @@ window.closeTopicInfoModal = closeTopicInfoModal;
     // 4. UI 갱신 & 다국어 바인딩 매핑 로직
 function updateUI() {
         const lang = textData[currentLang];
-        const appTitle = document.getElementById('app-title');
-        const appSubtitle = document.getElementById('app-subtitle');
 
         document.getElementById('btn-talk-again').innerText = lang.talkAgainBtn;
         const guestLoginText = document.getElementById('guest-login-text');
@@ -3939,9 +3945,6 @@ function updateUI() {
         const frbAcceptBtn = document.getElementById('frb-accept-btn'); if (frbAcceptBtn) frbAcceptBtn.textContent = lang.frbAccept;
         const frbRejectBtn = document.getElementById('frb-reject-btn'); if (frbRejectBtn) frbRejectBtn.textContent = lang.frbReject;
 
-        if (appTitle) appTitle.innerText = lang.title;
-        if (appSubtitle) appSubtitle.innerText = lang.subtitle;
-        document.getElementById('app-title').innerText = lang.title;
 
         // PWA 배너 다국어
         const pwaTitle = document.getElementById('pwa-title');
@@ -7290,6 +7293,13 @@ function loadFriendsList() {
             nameNode.textContent = displayName;
             friendNameSpan.appendChild(nameNode);
 
+            const editBtn = document.createElement('button');
+            editBtn.className = 'friend-edit-icon-btn';
+            editBtn.textContent = '✏️';
+            editBtn.title = textData[currentLang].editNickname;
+            editBtn.onclick = () => editFriendNickname(friendUid);
+            friendNameSpan.appendChild(editBtn);
+
             const dateSpan = document.createElement('span');
             dateSpan.className = 'friend-date';
             dateSpan.textContent = `${textData[currentLang].lastTalked} ${dateStr}`;
@@ -7302,21 +7312,17 @@ function loadFriendsList() {
 
             const callBtn = document.createElement('button');
             callBtn.className = 'friend-call-btn';
-            callBtn.textContent = `📞 ${textData[currentLang].callBtn}`;
+            callBtn.textContent = '📞';
+            callBtn.title = textData[currentLang].callBtn;
             callBtn.onclick = () => connectToFriend(friendUid);
-
-            const editBtn = document.createElement('button');
-            editBtn.className = 'friend-edit-btn';
-            editBtn.textContent = textData[currentLang].editNickname;
-            editBtn.onclick = () => editFriendNickname(friendUid);
 
             const unfriendBtn = document.createElement('button');
             unfriendBtn.className = 'friend-unfriend-btn';
-            unfriendBtn.textContent = textData[currentLang].unfriend;
+            unfriendBtn.textContent = '🚫';
+            unfriendBtn.title = textData[currentLang].unfriend;
             unfriendBtn.onclick = () => unfriendUser(friendUid);
 
             actionGroup.appendChild(callBtn);
-            actionGroup.appendChild(editBtn);
             actionGroup.appendChild(unfriendBtn);
 
             el.appendChild(friendInfo);
