@@ -6983,7 +6983,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     // 실결제(라이브 모드) 준비되면 true로 변경
-    const PREMIUM_LIVE = false;
+    const PREMIUM_LIVE = true;
     function showPremiumComingSoon() {
         alert(currentLang === 'ko'
             ? '프리미엄이 곧 찾아옵니다! 🎉\n\n지금은 준비 중이라 조금만 더 기다려 주세요.\n그동안은 무료로 계속 대화를 즐겨보세요 😊'
