@@ -837,6 +837,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(43,31,36,0.6) !important;
         }
         html[data-cute-mode="cute"] #sub-btn-refund { color: rgba(43,31,36,0.35) !important; }
+        html[data-cute-mode="cute"] #sub-refund-note { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #refund-modal-title { color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #refund-modal-subtitle { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #refund-r1,
@@ -1171,7 +1172,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .room-top-brand { display: flex; align-items: center; gap: 8px; }
         html[data-cute-mode="cute"] .room-top-brand .disco-navbar-word { color: #2b1f24; }
         .lang-container.in-room-flow { position: static !important; top: auto !important; right: auto !important; }
-        .room-top-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.08); margin-top: 14px; flex: none; }
+        .room-top-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.08); margin-top: 7px; flex: none; }
         html[data-cute-mode="cute"] .room-top-divider { background: rgba(0,0,0,0.07); }
         .room-ring-wrap { display: flex; align-items: center; justify-content: center; padding: 50px 0 66px; }
         .icebreaker-box {
@@ -2473,7 +2474,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 혼자 대기 중 → 인연 레이더 켜두기 배너 -->
     <div id="waitlist-banner" class="glass-card" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:360px; border-radius:16px; padding:16px; z-index:9500;">
         <div style="font-size:13px; font-weight:700; color:var(--accent-color); margin-bottom:6px;">📡 <span id="wl-title">지금은 이 주제를 공유할 사람이 없네요.</span></div>
-        <div style="font-size:11.5px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:12px;" id="wl-desc">24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 신호를 보내드릴게요.</div>
+        <div style="font-size:11.5px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:12px;" id="wl-desc">24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 알림을 보내드릴게요.</div>
         <div style="display:flex; gap:8px; align-items:center;">
             <button id="wl-enable-btn" class="intro2-start-btn" onclick="subscribeWaitlist()" style="flex:3; padding:12px; font-size:13px; white-space:nowrap; margin:0;"></button>
             <button id="wl-close-btn" onclick="document.getElementById('waitlist-banner').style.display='none'" style="flex:1; background:transparent; border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.4); border-radius:8px; padding:9px 8px; font-size:11px; cursor:pointer; white-space:nowrap; margin:0;"></button>
@@ -2732,11 +2733,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
 
             <hr id="pay-modal-hr" style="border:none; border-top:1px solid rgba(255,255,255,0.07); margin:6px 0 8px;">
-            <button id="pay-modal-close" onclick="document.getElementById('payment-modal').style.display='none'" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.25); font-size:12px; cursor:pointer; border-radius:10px;" id="pay-modal-close-btn">닫기</button>
-            <button id="pay-modal-leave" style="width:100%; padding:11px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; border-radius:10px;">End conversation</button>
+            <button id="pay-modal-close" onclick="document.getElementById('payment-modal').style.display='none'" style="width:100%; padding:11px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; border-radius:10px;">닫기</button>
             <div id="pay-countdown-row" style="font-size:11px; color:rgba(255,255,255,0.2); text-align:center; margin-top:6px;">
                 Call ends in <span id="pay-countdown">60</span>s
             </div>
+            <p id="pay-refund-note" style="font-size:10.5px; color:rgba(255,255,255,0.25); text-align:center; margin:10px 0 0; line-height:1.5;"></p>
         </div>
     </div>
 
@@ -2770,6 +2771,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <!-- 플랜 변경 -->
             <button id="sub-change-plan-btn" onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; margin-bottom:8px;"><span id="sub-btn-change">플랜 변경하기</span></button>
             <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:2px; text-decoration:underline;" id="sub-btn-refund">구독 취소하기</button>
+            <p id="sub-refund-note" style="font-size:10.5px; color:rgba(255,255,255,0.25); text-align:center; margin:10px 0 0; line-height:1.5;"></p>
         </div>
     </div>
 
@@ -2979,7 +2981,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const perm = await Notification.requestPermission();
             if (perm !== 'granted') {
                 showBadgeToast(currentLang === 'ko' ? '알림 권한을 허용해 주세요.' : 'Please allow notifications.');
-                if (btn) { btn.disabled = false; btn.textContent = '📡 인연의 신호 켜두기'; }
+                if (btn) { btn.disabled = false; btn.textContent = '📡 알림 받기'; }
                 return;
             }
             await initMessaging();
@@ -3002,7 +3004,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         } catch (e) {
             console.error('subscribeWaitlist error:', e);
             showBadgeToast(currentLang === 'ko' ? '알림 설정에 실패했어요: ' + e.message : 'Failed: ' + e.message);
-            if (btn) { btn.disabled = false; btn.textContent = '📡 인연의 신호 켜두기'; }
+            if (btn) { btn.disabled = false; btn.textContent = '📡 알림 받기'; }
         }
     }
 
@@ -3777,8 +3779,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "A TOPIC-DRIVEN GLOBAL VOICE DISCUSSION PLATFORM",
         payModalTitle: "Too good to stop now? 😊",
-        payModalSub: "Keep the conversation going",
-        payModalClose: "Close",
+        payModalSub: "Enjoy plenty of time, well beyond 10 minutes",
+        payModalClose: "Not now",
         payPopular: "Popular",
         payMonthlyTitle: "Monthly Plan  +  Real-time Translation",
         payMonthlyDesc: "No 10-min session limit — talk freely",
@@ -3786,7 +3788,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payWeeklyTitle: "Weekly Plan  +  Real-time Translation",
         payWeeklyDesc: "No 10-min session limit — talk freely",
         payWeeklyPeriod: "/ wk",
-        payLeave: "End conversation",
+        payRefundNote: "Request a refund within 14 days of subscribing for a full refund and immediate cancellation.",
         payCountdown: "Call ends in",
         intro2S1: `<strong>Pick a Topic</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span>`,
         intro2S2: `<strong>Fuel the Chat</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span>`,
@@ -3805,7 +3807,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         unfriend: "🚫 Unfriend",
         wlTitle: "No one to share this topic with right now.",
         wlDesc: "We'll keep the radar on for 24 hours. If someone enters the same keyword, we'll send you a signal right away.",
-        wlEnable: "📡 Turn on Connection Radar",
+        wlEnable: "📡 Get Notified",
         wlClose: "Close",
         frbTitle: "💌 Friend request received!",
         frbDesc: "Looks like you two clicked!<br>They'd love to chat again — what do you say?",
@@ -3902,8 +3904,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "전 세계와 연결되는 주제 기반 라이브 음성 토론 플랫폼",
         payModalTitle: "대화가 너무 좋았나요? 😊",
-        payModalSub: "대화를 계속 이어가보세요",
-        payModalClose: "닫기",
+        payModalSub: "10분 이상 여유있게 대화 가능합니다",
+        payModalClose: "다음에 할게요",
         payPopular: "인기",
         payMonthlyTitle: "월간 구독권  +  실시간번역 포함",
         payMonthlyDesc: "세션당 10분 제한 없이 자유롭게 대화",
@@ -3911,7 +3913,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payWeeklyTitle: "주간 구독권  +  실시간번역 포함",
         payWeeklyDesc: "세션당 10분 제한 없이 자유롭게 대화",
         payWeeklyPeriod: "/ 주",
-        payLeave: "대화 종료",
+        payRefundNote: "구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
         payCountdown: "통화 종료까지",
         intro2S1: `<strong>주제 던지기</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">지금 하고 싶은 이야기를 입력하거나, 이미 활기찬 대화방에 바로 조인하세요!</span>`,
         intro2S2: `<strong>10분의 몰입</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">매 세션 10분은 완전히 무료! 대화 흐름을 끊고 싶지 않다면 언제든 구독해보세요.</span>`,
@@ -3929,8 +3931,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         editNickname: "✏️ 이름 변경",
         unfriend: "🚫 친구 끊기",
         wlTitle: "지금은 이 주제를 공유할 사람이 없네요.",
-        wlDesc: "24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 신호를 보내드릴게요.",
-        wlEnable: "📡 인연의 신호 켜두기",
+        wlDesc: "24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 알림을 보내드릴게요.",
+        wlEnable: "📡 알림 받기",
         wlClose: "닫기",
         frbTitle: "💌 친구 요청이 왔어요!",
         frbDesc: "통하는 게 있었나 봐요!<br>상대방이 '다음에 또 얘기하자'며 친구 요청을 슬쩍 던졌습니다.<br>잡을까요, 말까요?",
@@ -4009,7 +4011,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 const langContainerEl = document.getElementById('lang-container');
                 if (langContainerEl) langContainerEl.style.position = 'absolute';
                 const mainBattery = document.getElementById("main-battery");
-                if (mainBattery) mainBattery.style.display = "flex";
+                // 게스트는 번개를 주고받을 수 없어서 배터리 표시 자체가 의미가 없음
+                if (mainBattery) mainBattery.style.display = isGuest ? "none" : "flex";
                 if (startBtn && !isJoined) startBtn.disabled = false;
                 // 로그인 시 이전 세션의 잔류 상태 메시지 초기화
                 document.getElementById("matching-status").innerText = "";
@@ -4378,7 +4381,7 @@ function updateUI() {
         const pmWeeklyDesc = document.getElementById('pay-weekly-desc'); if (pmWeeklyDesc) pmWeeklyDesc.textContent = lang.payWeeklyDesc;
         const pmMonthlyPeriod = document.getElementById('pay-monthly-period'); if (pmMonthlyPeriod) pmMonthlyPeriod.textContent = lang.payMonthlyPeriod;
         const pmWeeklyPeriod = document.getElementById('pay-weekly-period'); if (pmWeeklyPeriod) pmWeeklyPeriod.textContent = lang.payWeeklyPeriod;
-        const pmLeave = document.getElementById('pay-modal-leave'); if (pmLeave) pmLeave.textContent = lang.payLeave;
+        const pmRefundNote = document.getElementById('pay-refund-note'); if (pmRefundNote) pmRefundNote.textContent = lang.payRefundNote;
         const s1 = document.getElementById('intro2-s1'); if (s1) s1.innerHTML = lang.intro2S1;
         const s2 = document.getElementById('intro2-s2'); if (s2) s2.innerHTML = lang.intro2S2;
         const s3 = document.getElementById('intro2-s3'); if (s3) s3.innerHTML = lang.intro2S3;
@@ -7148,10 +7151,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (!user || user.isAnonymous) {
             // 게스트: 구독 플랜 모달은 보여주되, 실제 구독 버튼 클릭 시 alert
             const modal = document.getElementById('payment-modal');
-            const leaveBtn = document.getElementById('pay-modal-leave');
             const countdownRow = document.getElementById('pay-countdown-row');
             const hr = document.getElementById('pay-modal-hr');
-            if (leaveBtn) leaveBtn.style.display = 'none';
             if (countdownRow) countdownRow.style.display = 'none';
             if (hr) hr.style.display = 'none';
             modal.style.display = 'flex';
@@ -7189,21 +7190,21 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             document.getElementById('sub-label-price').textContent = isKo ? '가격' : 'Price';
             document.getElementById('sub-price-value').textContent = priceLabel;
             document.getElementById('sub-btn-change').textContent = isKo ? '플랜 변경하기' : 'Change plan';
+            document.getElementById('sub-refund-note').textContent = isKo
+                ? '구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.'
+                : 'Request a refund within 14 days of subscribing for a full refund and immediate cancellation.';
             document.getElementById('subscription-modal').classList.add('active');
             return;
         }
         const modal = document.getElementById('payment-modal');
-        const leaveBtn = document.getElementById('pay-modal-leave');
         const countdownRow = document.getElementById('pay-countdown-row');
         const hr = document.getElementById('pay-modal-hr');
-        if (leaveBtn) leaveBtn.style.display = 'none';
         if (countdownRow) countdownRow.style.display = 'none';
         if (hr) hr.style.display = 'none';
         modal.style.display = 'flex';
         modal.onclick = (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
-                if (leaveBtn) leaveBtn.style.display = '';
                 if (countdownRow) countdownRow.style.display = '';
                 if (hr) hr.style.display = '';
             }
@@ -7280,12 +7281,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             window.history.replaceState({}, '', newUrl);
         }
     })();
-
-    document.getElementById('pay-modal-leave').onclick = () => {
-        document.getElementById('payment-modal').style.display = 'none';
-        clearPayCountdown();
-        document.getElementById('leave-btn').click();
-    };
 
     window.addEventListener('beforeunload', () => {
         // PC 탭/창 닫기 시도 시 (모바일에선 동작 안 함)
@@ -7967,6 +7962,13 @@ function updateTopicInfoModalLang() {
 // currentLang을 매번 새로 읽어서 렌더링 — 언어 토글 시에도 정확히 반영됨
 function renderSettingsBattery() {
     if (!_settingsEnergyData) return;
+    const isKo = currentLang === 'ko';
+    if (isGuest) {
+        document.getElementById('settings-rank-name').textContent = isKo ? '회원전용' : 'Members only';
+        const subEl = document.getElementById('settings-rank-sub');
+        if (subEl) subEl.textContent = '';
+        return;
+    }
     const pct = _settingsEnergyData.pct || 0;
     document.getElementById('settings-rank-emoji').textContent = getBatteryEmoji(pct);
     document.getElementById('settings-rank-name').textContent = pct + '%';
@@ -7975,6 +7977,11 @@ function renderSettingsBattery() {
 function renderSettingsDailyEnergy() {
     if (_settingsDailyEnergyData == null) return;
     const isKo = currentLang === 'ko';
+    if (isGuest) {
+        document.getElementById('settings-badge-count').textContent = isKo ? '회원전용' : 'Members only';
+        document.getElementById('settings-badge-chips').innerHTML = '';
+        return;
+    }
     const count = _settingsDailyEnergyData || 0;
     document.getElementById('settings-badge-count').textContent = count;
     const chipsEl = document.getElementById('settings-badge-chips');
