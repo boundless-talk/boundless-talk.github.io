@@ -2869,14 +2869,30 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     // 운영자(관리자) 본인 로그인 시 — 이 기기를 "로그인 알림" 수신 기기로 등록
     async function registerAdminPushToken() {
+        const isKo = currentLang === 'ko';
         try {
+            if (!('Notification' in window)) {
+                showBadgeToast(isKo ? '이 브라우저는 알림을 지원하지 않아요 (아이폰은 홈 화면에 추가 후 접속해야 알림이 가능해요)' : 'This browser doesn\'t support notifications (on iPhone, add to Home Screen first)');
+                return;
+            }
             const perm = await Notification.requestPermission();
-            if (perm !== 'granted') return;
+            if (perm !== 'granted') {
+                showBadgeToast(isKo ? '알림 권한이 허용되지 않아 로그인 알림을 받을 수 없어요' : 'Notification permission was not granted');
+                return;
+            }
             await initMessaging();
             const reg = await navigator.serviceWorker.ready;
             const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
-            if (token) await database.ref('meta/adminFcmToken').set(token);
-        } catch (e) { console.warn('registerAdminPushToken failed:', e.message); }
+            if (token) {
+                await database.ref('meta/adminFcmToken').set(token);
+                showBadgeToast(isKo ? '✅ 이 기기로 로그인 알림을 받도록 등록했어요' : '✅ Registered this device for login alerts');
+            } else {
+                showBadgeToast(isKo ? '알림 등록에 실패했어요 (토큰 발급 실패)' : 'Failed to register for notifications');
+            }
+        } catch (e) {
+            console.warn('registerAdminPushToken failed:', e.message);
+            showBadgeToast((isKo ? '알림 등록 중 오류: ' : 'Notification registration error: ') + e.message);
+        }
     }
 
     // 운영자가 아닌 누군가(게스트 포함) 로그인하면 운영자에게 푸시 알림
