@@ -297,7 +297,7 @@
         #ban-overlay > p { font-size: 16px; color: #a0aec0; max-width: 500px; line-height: 1.6; }
         #appeal-textarea:focus { border-color: rgba(255,59,48,0.5); box-shadow: 0 0 12px rgba(255,59,48,0.15); }
 
-        .lang-container { position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 9000; display: flex; align-items: center; gap: 8px; }
+        .lang-container { position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 9000; display: flex; align-items: center; gap: 3px; }
         .settings-gear-btn {
             width: 40px; height: 40px; border-radius: 50%; margin: 0; padding: 0;
             background: transparent; border: none; outline: none;
@@ -378,17 +378,18 @@
 
         #main-container {
             width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
+            /* body 자체에 상하 패딩이 있어서 100vh 그대로 쓰면 항상 그만큼 넘쳐서 스크롤이 생김 */
+            min-height: calc(100vh - 40px);
             justify-content: center;
-            padding: 64px 0 24px;
+            padding: 16px 0;
         }
 
         .title-block {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 64px;
-            margin-bottom: 32px;
+            margin-top: 0;
+            margin-bottom: 16px;
         }
 
         h2 { font-size: 30px; font-weight: 700; letter-spacing: 6px; margin-bottom: 10px; text-transform: uppercase; text-align: center; color: #fff; text-shadow: 0 0 30px rgba(var(--accent-rgb),0.5), 0 0 60px rgba(var(--accent-rgb),0.2); }
@@ -1162,7 +1163,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             gap: 20px;
             flex: 1;
         }
-        .room-top-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.08); margin-top: 46px; flex: none; }
+        .room-top-bar {
+            display: flex; align-items: center; justify-content: space-between; width: 100%; flex: none; min-height: 40px;
+            position: sticky; top: 0; z-index: 5; background: #0b0b0c; padding-bottom: 8px; margin-bottom: -8px;
+        }
+        html[data-cute-mode="cute"] .room-top-bar { background: #fff8f4; }
+        .room-top-brand { display: flex; align-items: center; gap: 8px; }
+        html[data-cute-mode="cute"] .room-top-brand .disco-navbar-word { color: #2b1f24; }
+        .lang-container.in-room-flow { position: static !important; top: auto !important; right: auto !important; }
+        .room-top-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.08); margin-top: 14px; flex: none; }
         html[data-cute-mode="cute"] .room-top-divider { background: rgba(0,0,0,0.07); }
         .room-ring-wrap { display: flex; align-items: center; justify-content: center; padding: 50px 0 66px; }
         .icebreaker-box {
@@ -1517,7 +1526,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
            페이지와 함께 스크롤되어 사라짐 (아래 disco-navbar가 sticky로 대신 남음) */
         .disco-brand-fixed {
             position: absolute; top: calc(20px + env(safe-area-inset-top, 0px)); left: calc(20px + env(safe-area-inset-left, 0px));
-            height: 40px; z-index: 9000; display: flex; align-items: center; gap: 8px;
+            height: 40px; z-index: 25; display: flex; align-items: center; gap: 8px;
         }
         .disco-navbar-logo { width: 22px; height: 22px; flex: none; object-fit: contain; display: block; }
         .disco-navbar-word { font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: #f5f4f2; }
@@ -1720,6 +1729,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── 모바일 반응형 ── */
         @media (max-width: 400px) {
             body { padding: 12px; }
+            #main-container { min-height: calc(100vh - 24px); }
             .lang-container { top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
             #login-back-btn { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
             .disco-brand-fixed { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
@@ -1732,7 +1742,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             .auth-form-panel { width: 100%; }
 
             #main-container { padding: 56px 0 16px; }
-            .title-block { margin-bottom: 30px; }
+            .title-block { margin-bottom: 16px; }
 
             .room-body { padding: 16px 14px; }
             .room-topic-display { font-size: 13px; }
@@ -2008,6 +2018,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <div id="lang-container-anchor" style="display:none;"></div>
     <div class="lang-container" id="lang-container">
         <div class="main-battery" id="main-battery" title="Battery">
             <div class="main-battery-body"><div class="main-battery-fill" id="main-battery-fill" style="width:0%"></div></div>
@@ -2495,6 +2506,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <div id="room-screen">
       <div class="room-main-col">
         <div class="room-body">
+            <div class="room-top-bar" id="room-top-bar">
+                <div class="room-top-brand">
+                    <img class="disco-navbar-logo app-logo-dark" src="logoboundlesstalk.png" alt="Boundless Talk">
+                    <img class="disco-navbar-logo app-logo-cute" src="logoboundlesstalkcute.png" alt="Boundless Talk">
+                    <span class="disco-navbar-word">boundless talk</span>
+                </div>
+                <div id="room-top-lang-slot"></div>
+            </div>
             <div class="room-top-divider"></div>
             <div class="room-topic-header">
                 <div class="room-topic-header-row">
@@ -5765,19 +5784,31 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         updateRoomParticipants();
         document.getElementById('room-screen').classList.add('active');
         document.body.classList.add('room-open');
-        // 통화 화면은 자체 고정 오버레이라, 배경(Discover)이 스크롤된 상태였어도 battery/설정이 항상 보이도록 고정 위치로 되돌림
+        // guest/배터리/설정을 방 화면 상단 바 안으로 옮겨서, 방 내용(주제 등)과 함께
+        // 한 덩어리로 스크롤되도록 함 (고정 위치로 두면 스크롤 시 내용이 그 밑으로 겹쳐 보임)
         const langContainerRoomEl = document.getElementById('lang-container');
-        if (langContainerRoomEl) langContainerRoomEl.style.position = 'fixed';
+        const roomTopLangSlot = document.getElementById('room-top-lang-slot');
+        if (langContainerRoomEl && roomTopLangSlot) {
+            roomTopLangSlot.appendChild(langContainerRoomEl);
+            langContainerRoomEl.classList.add('in-room-flow');
+        }
         listenSubtitleRequesters();
     }
 
     async function hideRoomScreen() {
         document.getElementById('room-screen').classList.remove('active');
         document.body.classList.remove('room-open');
-        // Discover 화면으로 돌아가므로 스크롤에 맞춰 함께 움직이는 절대 위치로 복귀
+        // 방 상단 바에 옮겨뒀던 guest/배터리/설정을 원래 자리(body 최상단)로 복귀
         const langContainerBackEl = document.getElementById('lang-container');
+        const langContainerAnchor = document.getElementById('lang-container-anchor');
+        if (langContainerBackEl && langContainerAnchor) {
+            langContainerAnchor.parentNode.insertBefore(langContainerBackEl, langContainerAnchor);
+            langContainerBackEl.classList.remove('in-room-flow');
+        }
         if (langContainerBackEl && document.getElementById('discover-screen').style.display !== 'none') {
             langContainerBackEl.style.position = 'absolute';
+        } else if (langContainerBackEl) {
+            langContainerBackEl.style.position = 'fixed';
         }
         document.getElementById('topic-input').style.visibility = 'visible';
         stopConvoTip();
@@ -6161,7 +6192,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function toggleSubtitles() {
         if (!isSubscribed && !subtitlesEnabled) {
             const isKo = currentLang === 'ko';
-            alert(isKo ? '실시간 번역 서비스는 Premium 기능입니다.\nGo Premium에서 구독 후 이용하실 수 있어요 ✨' : 'Real-time translation is a Premium feature.\nSubscribe via Go Premium to unlock it ✨');
+            showBadgeToast(isKo ? '실시간 번역은 Premium 기능이에요. Go Premium에서 구독해보세요 ✨' : 'Real-time translation is a Premium feature. Subscribe via Go Premium ✨');
             return;
         }
         subtitlesEnabled = !subtitlesEnabled;
