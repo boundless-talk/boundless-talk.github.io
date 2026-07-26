@@ -3041,6 +3041,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let discoActiveCategory = 'all';
     let discoSearchQuery = '';
     let pendingRoomCategory = null;   // Discover에서 방 만들기/입장 시, join-btn 흐름에 실어 보낼 카테고리
+    let pendingDirectChannelId = null; // Discover 카드로 기존 방에 바로 들어갈 때, 주제 재정규화를 건너뛰고 쓸 정확한 채널 ID
     let discoCreatePP = false;
 
     function renderDiscoChipRow() {
@@ -3224,6 +3225,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         selectedSpeechStyle = room.style || null;
         document.getElementById('topic-input').value = room.topic;
         document.getElementById('max-people-select').value = String(room.maxPeople || 4);
+        // 이미 있는 방의 정확한 channelId를 알고 있으므로, 주제를 다시 정규화(소문자 변환 등)해서
+        // 다른 채널로 새고 서로 연결이 안 되는 일이 없도록 그대로 직행
+        pendingDirectChannelId = room.channelId;
         document.getElementById('join-btn').click();
     }
 
@@ -3863,6 +3867,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             // 로그인 직후 곧바로 화면을 열지 않고, 생년월일 확인이 끝난 뒤에만 공개함
             // (그렇지 않으면 DOB 조회가 끝나기 전 잠깐 대화 화면이 노출되는 깜빡임이 생김)
             function revealMainScreen() {
+                // 이미 로그인된 상태로 새로고침한 경우, 인트로 화면(1번)을 거치지 않고 바로 Discover(3번)로
+                const introEl = document.getElementById('intro-screen');
+                if (introEl && introEl.style.display !== 'none') {
+                    introEl.style.display = 'none';
+                    document.body.classList.remove('intro-open');
+                }
                 document.getElementById("auth-section").style.display = "none";
                 if (logoutBtn) logoutBtn.style.display = "inline-block";
                 if (talkControls) talkControls.style.display = "block";
@@ -3945,7 +3955,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 database.ref('activeTopics').on('value', (snap) => {
     const data = snap.val() || {};
     const topics = [];
-    const STALE_MS = 5 * 60 * 1000; // 5분 이상 업데이트 없으면 유령 방으로 간주
+    const STALE_MS = 3 * 60 * 1000; // 3분 이상 업데이트 없으면 유령 방으로 간주 (하트비트가 1분 간격이라 여유 있음)
     const now = Date.now();
     const discoRoomsBuilt = [];
 
@@ -5116,8 +5126,16 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         const maxPeople = 4;
         document.getElementById('join-btn').disabled = true;
 
+        // Discover 카드로 이미 존재하는 방에 직접 들어가는 경우: 주제를 다시 정규화하면
+        // (예: 대소문자 변환) 원래 방과 다른 채널 ID가 나와 서로 연결이 안 될 수 있으므로,
+        // 알고 있는 channelId로 바로 직행하고 주제 재정규화 단계를 건너뜀
+        const directChannelId = pendingDirectChannelId;
+        pendingDirectChannelId = null;
+
         let finalTopic;
-        if (rawTopic.startsWith("🔒_")) {
+        if (directChannelId) {
+            finalTopic = rawTopic;
+        } else if (rawTopic.startsWith("🔒_")) {
             finalTopic = rawTopic; // 친구 1:1 방은 AI를 거치지 않고 다이렉트 패스
             document.getElementById('matching-status').innerText = (currentLang === 'ko') ? "🔒 1:1 비밀 채널 개설 완료!" : "🔒 Private Channel Connected!";
             document.getElementById('matching-status').innerText = (currentLang === 'ko') ? "🔒 1:1 비밀 채널 개설 완료!" : "🔒 Private Channel Connected!";
@@ -5132,14 +5150,18 @@ document.getElementById('max-people-group').style.visibility = "hidden";
         currentChannelName = finalTopic;
 
         // 🚨 전역 변수에 저장 — 저장/조회 시 항상 동일값 보장
-        const baseAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 60) + (pingpongMode && !finalTopic.startsWith('🔒_') ? '_pp' : '');
         let joinedOverflowRoom = false;
-        if (finalTopic.startsWith('🔒_')) {
-            safeAgoraChannelId = baseAgoraChannelId;
+        if (directChannelId) {
+            safeAgoraChannelId = directChannelId;
         } else {
-            const resolved = await resolveChannelForCapacity(baseAgoraChannelId, maxPeople);
-            safeAgoraChannelId = resolved.channelId;
-            joinedOverflowRoom = resolved.roomIndex > 1;
+            const baseAgoraChannelId = encodeURIComponent(finalTopic).replace(/%/g, "_").slice(0, 60) + (pingpongMode && !finalTopic.startsWith('🔒_') ? '_pp' : '');
+            if (finalTopic.startsWith('🔒_')) {
+                safeAgoraChannelId = baseAgoraChannelId;
+            } else {
+                const resolved = await resolveChannelForCapacity(baseAgoraChannelId, maxPeople);
+                safeAgoraChannelId = resolved.channelId;
+                joinedOverflowRoom = resolved.roomIndex > 1;
+            }
         }
 
     
@@ -5201,7 +5223,10 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             hadPeer = false;
             waitlistTopic = finalTopic.startsWith('🔒_') ? null : finalTopic;
             dbg('8. Agora join 시도');
-            myUid = await client.join(AGORA_APP_ID, safeAgoraChannelId, agoraToken, 0);
+            // uid=0으로 고정하면 같은 채널에 동시에 들어온 두 사람이 서로 같은 Agora UID로
+            // 충돌해서(서로 연결이 안 되거나 상대 이름이 내 이름으로 겹쳐 보이는 원인) null을 넘겨
+            // Agora가 매번 고유한 UID를 자동 배정하도록 함 (토큰은 uid=0 와일드카드라 그대로 유효)
+            myUid = await client.join(AGORA_APP_ID, safeAgoraChannelId, agoraToken, null);
             dbg('9. join 성공');
             isJoined = true;
             recordRecentCircle(finalTopic, pendingRoomCategory || guessDiscoCategory(finalTopic));
@@ -5250,7 +5275,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
     window._heartbeatInterval = setInterval(() => {
         if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
         myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
-    }, 2 * 60 * 1000);
+    }, 60 * 1000);
                     } catch(e) { console.warn('activeTopics write failed (may be permission):', e.message); }
                 }
                 // 리스너는 토픽 종류와 무관하게 항상 등록 (상대방 Firebase UID 확보용)
