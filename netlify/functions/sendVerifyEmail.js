@@ -59,32 +59,30 @@ exports.handler = async (event) => {
     const html = `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;background:#0d0e12;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0d0e12;padding:40px 0;">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f6;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">인증 코드: ${code} (10분간 유효)</div>
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f6;padding:40px 0;">
     <tr><td align="center">
-      <table width="480" cellpadding="0" cellspacing="0" style="background:#16181f;border-radius:16px;overflow:hidden;max-width:480px;">
+      <table width="440" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:14px;overflow:hidden;max-width:440px;border:1px solid #ececec;">
         <tr>
-          <td align="center" style="padding:36px 40px 24px;">
-            <div style="font-size:22px;font-weight:800;letter-spacing:3px;color:#ffffff;">BOUNDLESS TALK</div>
-            <div style="width:40px;height:2px;background:#00e5ff;margin:10px auto 0;border-radius:2px;"></div>
+          <td align="center" style="padding:32px 40px 8px;">
+            <span style="font-size:17px;font-weight:700;letter-spacing:-0.02em;color:#1a1a1a;">boundless talk</span>
           </td>
         </tr>
         <tr>
-          <td align="center" style="padding:0 40px 28px;">
-            <p style="color:rgba(255,255,255,0.55);font-size:14px;line-height:1.7;margin:0 0 28px;">
-              아래 인증 코드를 입력하여 이메일 인증을 완료해 주세요.<br>
-              <span style="font-size:12px;color:rgba(255,255,255,0.3);">Enter the code below to verify your email.</span>
-            </p>
-            <div style="background:#0d0e12;border:1.5px solid rgba(0,229,255,0.3);border-radius:12px;padding:22px 40px;display:inline-block;">
-              <div style="font-size:36px;font-weight:700;letter-spacing:10px;color:#00e5ff;">${code}</div>
+          <td align="center" style="padding:12px 40px 0;">
+            <p style="color:#333333;font-size:15px;line-height:1.6;margin:0 0 4px;font-weight:600;">이메일 인증 코드를 보내드려요</p>
+            <p style="color:#8a8a8a;font-size:13px;line-height:1.6;margin:0 0 24px;">아래 6자리 코드를 입력하면 인증이 완료됩니다.</p>
+            <div style="background:#f9f4f2;border:1px solid #f0dbd6;border-radius:10px;padding:18px 0;width:100%;">
+              <div style="font-size:30px;font-weight:700;letter-spacing:8px;color:#c8391f;">${code}</div>
             </div>
-            <p style="color:rgba(255,255,255,0.25);font-size:11px;margin:20px 0 0;">이 코드는 10분간 유효합니다 · Valid for 10 minutes</p>
+            <p style="color:#a8a8a8;font-size:12px;margin:16px 0 0;">10분 후 만료됩니다. 코드를 다른 사람과 공유하지 마세요.</p>
           </td>
         </tr>
         <tr>
-          <td align="center" style="padding:20px 40px 32px;border-top:1px solid rgba(255,255,255,0.06);">
-            <p style="color:rgba(255,255,255,0.2);font-size:11px;margin:0;">본인이 요청하지 않았다면 이 메일을 무시해 주세요.<br>If you didn't request this, please ignore this email.</p>
+          <td align="center" style="padding:24px 40px 28px;">
+            <p style="color:#b5b5b5;font-size:11.5px;line-height:1.6;margin:0;border-top:1px solid #f0f0f0;padding-top:16px;">본인이 요청한 인증이 아니라면 이 메일을 무시하셔도 안전합니다.<br>이 메일은 boundless talk 이메일 인증을 위해 발송되었습니다.</p>
           </td>
         </tr>
       </table>
@@ -95,9 +93,9 @@ exports.handler = async (event) => {
 
     try {
         await transporter.sendMail({
-            from: `"BOUNDLESS TALK" <${process.env.GMAIL_USER}>`,
+            from: `"boundless talk" <${process.env.GMAIL_USER}>`,
             to: email,
-            subject: `[BOUNDLESS TALK] 이메일 인증 코드: ${code}`,
+            subject: `이메일 인증 코드가 도착했어요`,
             html
         });
         return { statusCode: 200, headers: headers, body: JSON.stringify({ ok: true }) };
