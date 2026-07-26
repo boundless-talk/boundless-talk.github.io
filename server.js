@@ -148,6 +148,20 @@ app.use(express.json());
 // subscription 필드는 Firebase 규칙상 관리자(서버)만 쓸 수 있으므로,
 // 클라이언트가 uid를 그냥 보내는 게 아니라 ID 토큰을 검증해서 본인 확인 후 서버가 직접 부여함
 const EARLY_ACCESS_LIMIT = 50;
+
+// 로그인 전 화면에서 "선착순 N명 남음" 안내에 쓰는 잔여 수량 조회 (인증 불필요, 숫자만 공개)
+app.get('/early50-remaining', async (req, res) => {
+    if (!admin.apps.length) return res.json({ remaining: 0 });
+    try {
+        const snap = await admin.database().ref('meta/early50Count').once('value');
+        const count = snap.val() || 0;
+        res.json({ remaining: Math.max(0, EARLY_ACCESS_LIMIT - count) });
+    } catch (e) {
+        console.error('[early50-remaining] error:', e.message);
+        res.status(500).json({ remaining: 0 });
+    }
+});
+
 app.post('/claim-early-access', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
     const { idToken } = req.body;
@@ -706,6 +720,29 @@ app.post('/push/notify', async (req, res) => {
     } catch (err) {
         console.error('push/notify error:', err.message);
         res.status(500).json({ error: err.message });
+    }
+});
+
+// 누군가(게스트 포함) 로그인하면 운영자 기기로 푸시 알림 — meta/adminFcmToken에 등록된 기기로 전송
+app.post('/notify-admin-login', async (req, res) => {
+    if (!admin.apps.length) return res.json({ notified: false });
+    try {
+        const { isGuest, email } = req.body;
+        const tokenSnap = await admin.database().ref('meta/adminFcmToken').once('value');
+        const token = tokenSnap.val();
+        if (!token) return res.json({ notified: false });
+
+        await admin.messaging().send({
+            token,
+            notification: {
+                title: '새 로그인 알림 🔔',
+                body: isGuest ? '게스트가 접속했어요' : `${email || '회원'}님이 로그인했어요`
+            }
+        });
+        res.json({ notified: true });
+    } catch (e) {
+        console.error('[notify-admin-login] error:', e.message);
+        res.json({ notified: false });
     }
 });
 
