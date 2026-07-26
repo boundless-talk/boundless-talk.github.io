@@ -359,6 +359,9 @@
         html[data-cute-mode="cute"] .settings-row-left { color: rgba(43,31,36,0.75); }
         html[data-cute-mode="cute"] .lang-pill.inactive { background: rgba(0,0,0,0.05); color: rgba(43,31,36,0.4); border-color: rgba(0,0,0,0.1); }
         html[data-cute-mode="cute"] .settings-card-label { color: rgba(43,31,36,0.45); }
+        html[data-cute-mode="cute"] #settings-rank-name,
+        html[data-cute-mode="cute"] #settings-badge-count { color: #7BC4A1 !important; }
+        html[data-cute-mode="cute"] .settings-badge-chip { color: #7BC4A1; background: rgba(123,196,161,0.1); border-color: rgba(123,196,161,0.25); }
         html[data-cute-mode="cute"] .settings-card-value { color: #2b1f24; }
         html[data-cute-mode="cute"] .settings-card-value.dim { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] .settings-card-sub { color: rgba(43,31,36,0.4); }
@@ -851,7 +854,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(0,0,0,0.04) !important; border-color: rgba(255,111,156,0.4) !important; color: rgba(43,31,36,0.55) !important;
         }
         html[data-cute-mode="cute"] #login-back-btn {
-            background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(43,31,36,0.6) !important;
+            background: none !important; border: none !important; color: rgba(43,31,36,0.6) !important;
         }
         html[data-cute-mode="cute"] .auth-or-line { background: rgba(0,0,0,0.08) !important; }
         html[data-cute-mode="cute"] .auth-or-text { color: rgba(43,31,36,0.35) !important; }
@@ -904,7 +907,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .room-bottom-controls .room-ctrl-leave { background: #ff6f9c; color: #fff; border-color: transparent; }
         html[data-cute-mode="cute"] #room-side-panel { border-left-color: rgba(0,0,0,0.06); }
         html[data-cute-mode="cute"] #room-side-panel .room-side-inner { background: #fff; border-color: rgba(0,0,0,0.06); box-shadow: 0 30px 80px rgba(255,111,156,0.2); }
-        html[data-cute-mode="cute"] .room-side-close { color: rgba(43,31,36,0.35); }
         html[data-cute-mode="cute"] .icebreaker-box { background: #ffe6ee; border-color: rgba(255,111,156,0.25); }
         html[data-cute-mode="cute"] .icebreaker-icon { color: #ff6f9c; }
         html[data-cute-mode="cute"] .icebreaker-label { color: rgba(255,111,156,0.7); }
@@ -1316,7 +1318,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             width: 300px; flex: none; border-left: 1px solid rgba(255,255,255,0.08);
             padding: 72px 24px 28px; display: flex; flex-direction: column; gap: 16px;
         }
-        .room-side-close { display: none; }
         @media (max-width: 899px) {
             #room-side-panel {
                 position: fixed; inset: 0; z-index: 10500;
@@ -1331,10 +1332,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 box-shadow: 0 30px 80px rgba(0,0,0,0.5);
                 padding: 24px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto;
                 display: flex; flex-direction: column; gap: 16px; position: relative;
-            }
-            .room-side-close {
-                display: block; position: absolute; top: 14px; right: 16px;
-                background: none; border: none; color: rgba(255,255,255,0.4); font-size: 16px; cursor: pointer; padding: 0;
             }
             #talk-tips-btn { display: flex; }
         }
@@ -2072,7 +2069,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
 
         <div id="auth-section" style="display:none;">
-            <button id="login-back-btn" onclick="backToIntroFromLogin()" style="position:fixed; top:20px; left:20px; z-index:150; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7); width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; margin:0;">←</button>
+            <button id="login-back-btn" onclick="backToIntroFromLogin()" style="position:fixed; top:20px; left:20px; z-index:150; width:auto; background:none; border:none; color:rgba(255,255,255,0.7); padding:6px; display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer; margin:0;">←</button>
 
             <div class="auth-btn-group">
                 <button id="google-login-btn">
@@ -2545,7 +2542,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         <div id="room-side-panel" onclick="if(event.target===this) closeTalkTipsPanel()">
             <div class="room-side-inner">
-                <button class="room-side-close" id="room-side-close-btn" onclick="closeTalkTipsPanel()">✕</button>
                 <div class="icebreaker-box">
                     <i class="ti ti-message-circle icebreaker-icon" aria-hidden="true"></i>
                     <div class="icebreaker-content">
@@ -6497,7 +6493,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     // 대화방 원형 좌석에서 특정 참여자를 바로 친구 추가 (통화 종료 후가 아니라 통화 중에 바로)
     async function addFriendMidCall(uid) {
-        if (!auth.currentUser || isGuest) return;
+        if (!auth.currentUser) return;
+        if (isGuest) {
+            showBadgeToast(currentLang === 'ko' ? '게스트는 친구 추가를 이용할 수 없어요. 로그인 후 이용해 주세요.' : 'Guests cannot add friends. Please sign in.');
+            return;
+        }
         const myUid = auth.currentUser.uid;
         if (uid === myUid) return;
         if (uidToIsGuest[uid]) {
@@ -7285,16 +7285,20 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             };
             container.appendChild(btn);
         });
+
+        // 참여자가 한 명뿐이면(가장 흔한 1:1 통화) 자동으로 선택해서
+        // "이름을 먼저 눌러야 버튼이 활성화된다"는 걸 몰라 아무 반응이 없어 보이는 상황을 방지
+        if (sessionParticipants.length === 1) {
+            const onlyBtn = container.querySelector('.target-btn');
+            if (onlyBtn) {
+                onlyBtn.classList.add('selected');
+                selectedVoteTarget = sessionParticipants[0];
+                toggleVoteBadgeButtons(true);
+            }
+        }
     }
 
-    // 배지를 보낸 대상은 목록에서 제거하고, 다음 대상을 선택할 수 있도록 모달을 유지
     let badgeSentThisSession = false;
-
-    function removeVoteTarget(uid) {
-        selectedVoteTarget = null;
-        toggleVoteBadgeButtons(false);
-        // 모달은 자동으로 닫지 않음 — 닫기 버튼으로만 닫힘
-    }
 
     function toggleVoteBadgeButtons(enable) {
         ['btn-send-bolt','btn-add-friend'].forEach(id => {
@@ -7305,6 +7309,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 el.disabled = false;
             } else {
                 el.classList.add('btn-disabled');
+                el.disabled = true;
             }
         });
     }
@@ -7341,13 +7346,15 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
             badgeSentThisSession = true;
             showBadgeToast(textData[currentLang].badgeSuccess);
-            removeVoteTarget(selectedVoteTarget);
+            // 번개는 보냈어도 같은 상대에게 친구 추가는 계속 할 수 있어야 하므로
+            // 선택 상태(selectedVoteTarget)는 유지하고 번개 버튼만 비활성화
+            const boltBtn = document.getElementById('btn-send-bolt');
+            if (boltBtn) { boltBtn.classList.add('btn-disabled'); boltBtn.disabled = true; }
 
         } catch (err) {
             console.error("Firebase transaction processing failure:", err);
             const reason = (err && err.code) ? ` (${err.code})` : '';
             showBadgeToast((currentLang === 'ko' ? '번개 전송에 실패했습니다.' : 'Failed to send lightning.') + reason);
-            removeVoteTarget(selectedVoteTarget);
         }
     }
 
@@ -7392,13 +7399,20 @@ let friendRequestListener = null;       // Firebase 리스너 참조
 
 // 1. 친구 추가 버튼 클릭 → 닉네임 입력 모달 열기
 async function executeAddFriend() {
-    if (!selectedVoteTarget || !auth.currentUser) return;
-    if (isGuest) return;
+    if (!auth.currentUser) return;
+    if (!selectedVoteTarget) {
+        showBadgeToast(currentLang === 'ko' ? '먼저 상대방 이름을 선택해 주세요.' : 'Please select a peer first.');
+        return;
+    }
+    if (isGuest) {
+        showBadgeToast(currentLang === 'ko' ? '게스트는 친구 추가를 이용할 수 없어요. 로그인 후 이용해 주세요.' : 'Guests cannot add friends. Please sign in.');
+        return;
+    }
     const myUid = auth.currentUser.uid;
     if (selectedVoteTarget === myUid) return;
 
     if (uidToIsGuest[selectedVoteTarget]) {
-        alert(currentLang === 'ko' ? '게스트 유저는 친구로 추가할 수 없습니다.' : 'Guest users cannot be added as friends.');
+        showBadgeToast(currentLang === 'ko' ? '게스트 유저는 친구로 추가할 수 없습니다.' : 'Guest users cannot be added as friends.');
         return;
     }
 
@@ -7408,11 +7422,11 @@ async function executeAddFriend() {
         const status = snap.exists() ? snap.val().status : null;
 
         if (status === 'accepted') {
-            alert(currentLang === 'ko' ? "이미 친구로 등록된 사용자입니다." : "Already your friend.");
+            showBadgeToast(currentLang === 'ko' ? "이미 친구로 등록된 사용자입니다." : "Already your friend.");
             return;
         }
         if (status === 'pending_sent') {
-            alert(currentLang === 'ko' ? "이미 친구 요청을 보낸 상태입니다." : "Friend request already sent.");
+            showBadgeToast(currentLang === 'ko' ? "이미 친구 요청을 보낸 상태입니다." : "Friend request already sent.");
             return;
         }
     } catch(e) {
