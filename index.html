@@ -844,9 +844,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: #2b1f24 !important;
         }
         html[data-cute-mode="cute"] #cp-weekly-price { color: rgba(43,31,36,0.5) !important; }
+        html[data-cute-mode="cute"] #cp-weekly-desc { color: rgba(43,31,36,0.5) !important; }
         html[data-cute-mode="cute"] #cp-monthly-btn {
             background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.06) !important; color: rgba(43,31,36,0.4) !important;
         }
+        html[data-cute-mode="cute"] #cp-monthly-price { color: rgba(43,31,36,0.35) !important; }
+        html[data-cute-mode="cute"] #cp-monthly-desc { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] #logout-btn {
             background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.12) !important; color: rgba(43,31,36,0.6) !important;
         }
@@ -2766,11 +2769,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="modal-content" style="max-width:340px;">
             <div id="cp-title-row" style="font-size:15px; font-weight:700; color:#fff; margin-bottom:16px;"><span id="cp-title">플랜 변경</span></div>
             <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-                <button onclick="switchPlan('weekly')" id="cp-weekly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; cursor:pointer; text-align:left;">
-                    <span id="cp-weekly-label">Weekly Plan으로 변경</span> <span style="float:right; color:rgba(255,255,255,0.4);" id="cp-weekly-price">$1.99/week</span>
+                <button onclick="switchPlan('weekly')" id="cp-weekly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; cursor:pointer; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                    <div>
+                        <div id="cp-weekly-label" style="font-weight:600;">Weekly Plan으로 변경</div>
+                        <div id="cp-weekly-desc" style="font-size:11px; font-weight:400; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit + real-time translation</div>
+                    </div>
+                    <span style="color:rgba(255,255,255,0.4); font-size:13px; white-space:nowrap;" id="cp-weekly-price">$1.99/week</span>
                 </button>
-                <button onclick="switchPlan('monthly')" id="cp-monthly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; color:rgba(255,255,255,0.4); font-size:14px; cursor:default; text-align:left;" disabled>
-                    <span id="cp-monthly-label">Monthly Plan 유지</span>
+                <button onclick="switchPlan('monthly')" id="cp-monthly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; color:rgba(255,255,255,0.4); font-size:14px; cursor:default; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;" disabled>
+                    <div>
+                        <div id="cp-monthly-label" style="font-weight:600;">Monthly Plan 유지</div>
+                        <div id="cp-monthly-desc" style="font-size:11px; font-weight:400; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit + real-time translation</div>
+                    </div>
+                    <span style="color:rgba(255,255,255,0.4); font-size:13px; white-space:nowrap;" id="cp-monthly-price">$4.99/month</span>
                 </button>
             </div>
         </div>
@@ -3361,8 +3372,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const sub = subSnap.val();
             const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
             if (subValid) {
-                const planName = sub.plan === 'monthly' ? 'Monthly' : 'Weekly';
-                valueEl.textContent = isKo ? `${planName} 플랜 이용 중` : `On the ${planName} Plan`;
+                if (sub.plan === 'early50') {
+                    valueEl.textContent = isKo ? '첫 유저 50명 프리미엄 혜택 이용 중' : 'On the first-50-members Premium perk';
+                } else {
+                    const planName = sub.plan === 'monthly' ? 'Monthly' : 'Weekly';
+                    valueEl.textContent = isKo ? `${planName} 플랜 이용 중` : `On the ${planName} Plan`;
+                }
                 valueEl.classList.remove('dim');
                 valueEl.style.color = 'var(--accent-color)';
             } else {
@@ -6948,30 +6963,43 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function openChangePlanModal() {
         const isKo = currentLang === 'ko';
         document.getElementById('subscription-modal').classList.remove('active');
-        // 현재 플랜 확인해서 변경 가능한 플랜만 활성화
+        // 현재 플랜 확인해서 변경 가능한 플랜만 활성화 (early50 프로모션은 유료 플랜이 아니므로 둘 다 선택 가능)
         database.ref('users/' + auth.currentUser.uid + '/subscription').once('value').then(snap => {
             const sub = snap.val();
-            const currentPlan = sub ? sub.plan : 'monthly';
+            const currentPlan = sub ? sub.plan : null;
             const weeklyBtn = document.getElementById('cp-weekly-btn');
             const monthlyBtn = document.getElementById('cp-monthly-btn');
             document.getElementById('cp-title').textContent = isKo ? '플랜 변경' : 'Change Plan';
+
+            const descText = isKo ? '세션당 10분 제한 없이 대화 + 실시간 번역' : 'No 10-min session limit + real-time translation';
+            document.getElementById('cp-weekly-desc').textContent = descText;
+            document.getElementById('cp-monthly-desc').textContent = descText;
+            document.getElementById('cp-weekly-price').textContent = isKo ? '$1.99 / 주' : '$1.99/week';
+            document.getElementById('cp-monthly-price').textContent = isKo ? '$4.99 / 월' : '$4.99/month';
+
+            function setEnabled(btn, labelId, text) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                document.getElementById(labelId).textContent = text;
+            }
+            function setCurrent(btn, labelId, text) {
+                btn.disabled = true;
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'default';
+                document.getElementById(labelId).textContent = text;
+            }
+
             if (currentPlan === 'monthly') {
-                weeklyBtn.disabled = false;
-                weeklyBtn.style.opacity = '1';
-                weeklyBtn.style.cursor = 'pointer';
-                document.getElementById('cp-weekly-label').textContent = isKo ? 'Weekly Plan으로 변경' : 'Switch to Weekly Plan';
-                document.getElementById('cp-weekly-price').textContent = '$1.99/week';
-                monthlyBtn.disabled = true;
-                monthlyBtn.style.opacity = '0.4';
-                document.getElementById('cp-monthly-label').textContent = isKo ? 'Monthly Plan 유지' : 'Keep Monthly Plan';
+                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan으로 변경' : 'Switch to Weekly Plan');
+                setCurrent(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan 유지' : 'Keep Monthly Plan');
+            } else if (currentPlan === 'weekly') {
+                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan으로 변경' : 'Switch to Monthly Plan');
+                setCurrent(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan 유지' : 'Keep Weekly Plan');
             } else {
-                monthlyBtn.disabled = false;
-                monthlyBtn.style.opacity = '1';
-                monthlyBtn.style.cursor = 'pointer';
-                document.getElementById('cp-monthly-label').textContent = isKo ? 'Monthly Plan으로 변경' : 'Switch to Monthly Plan';
-                weeklyBtn.disabled = true;
-                weeklyBtn.style.opacity = '0.4';
-                document.getElementById('cp-weekly-label').textContent = isKo ? 'Weekly Plan 유지' : 'Keep Weekly Plan';
+                // early50 프로모션 등 — 아직 유료 구독 중이 아니므로 두 플랜 모두 선택 가능
+                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan 시작하기' : 'Start Weekly Plan');
+                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan 시작하기' : 'Start Monthly Plan');
             }
             document.getElementById('change-plan-modal').classList.add('active');
         });
@@ -7011,24 +7039,29 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date()) {
             // 구독 중 → 상태 모달 표시
             const isKo = currentLang === 'ko';
+            const isEarly50 = sub.plan === 'early50';
             const planName = sub.plan === 'monthly' ? 'Monthly' : 'Weekly';
-            const priceLabel = sub.plan === 'monthly' ? (isKo ? '$4.99 / 월' : '$4.99 / mo') : (isKo ? '$1.99 / 주' : '$1.99 / wk');
+            const priceLabel = isEarly50
+                ? (isKo ? '무료' : 'Free')
+                : (sub.plan === 'monthly' ? (isKo ? '$4.99 / 월' : '$4.99 / mo') : (isKo ? '$1.99 / 주' : '$1.99 / wk'));
             const fmtDot = (d) => `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
             const expiresDate = new Date(sub.expiresAt);
             const daysInPlan = sub.plan === 'weekly' ? 7 : 30;
             const startedDate = new Date(expiresDate.getTime() - daysInPlan * 86400000);
             const validDates = !isNaN(expiresDate) && !isNaN(startedDate);
 
-            document.getElementById('sub-modal-title').textContent = isKo ? `${planName} Plan을 이용 중입니다 ✨` : `You're on the ${planName} Plan ✨`;
+            document.getElementById('sub-modal-title').textContent = isEarly50
+                ? (isKo ? '첫 유저 50명 프리미엄 혜택을 이용중입니다! 🎉' : "You're enjoying our first 50 members' Premium perk! 🎉")
+                : (isKo ? `${planName} Plan을 이용 중입니다 ✨` : `You're on the ${planName} Plan ✨`);
             document.getElementById('sub-modal-desc').textContent = isKo ? '플랜을 변경하시겠어요?' : 'Would you like to change your plan?';
             document.getElementById('sub-label-benefit').textContent = isKo ? '혜택' : 'Benefits';
-            document.getElementById('sub-benefit-value').textContent = isKo ? '세션당 10분 제한 없이 대화 + 실시간 번역' : 'No 10-min session limit + real-time translation';
+            document.getElementById('sub-benefit-value').innerHTML = isKo ? '세션당 10분 제한 없이 대화 <br>+ 실시간 번역' : 'No 10-min session limit <br>+ real-time translation';
             document.getElementById('sub-label-period').textContent = isKo ? '이용 기간' : 'Active period';
             document.getElementById('sub-period-value').textContent = validDates
                 ? `${fmtDot(startedDate)} ~ ${fmtDot(expiresDate)}`
                 : '-';
             document.getElementById('sub-label-next').textContent = isKo ? '다음 결제일' : 'Next billing';
-            document.getElementById('sub-next-value').textContent = validDates ? fmtDot(expiresDate) : sub.expiresAt;
+            document.getElementById('sub-next-value').textContent = isEarly50 ? '' : (validDates ? fmtDot(expiresDate) : sub.expiresAt);
             document.getElementById('sub-label-price').textContent = isKo ? '가격' : 'Price';
             document.getElementById('sub-price-value').textContent = priceLabel;
             document.getElementById('sub-btn-change').textContent = isKo ? '플랜 변경하기' : 'Change plan';
