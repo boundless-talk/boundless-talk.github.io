@@ -1989,7 +1989,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <img class="app-logo-cute" src="logoboundlesstalkcute.png" alt="" style="width:150px; height:150px; object-fit:contain; position:relative; filter:drop-shadow(0 0 40px rgba(var(--accent-rgb),0.25));">
         <div class="intro-wordmark" id="intro-wordmark">boundless talk</div>
 
-        <p class="intro-desc" id="intro-desc" style="margin-top:12px; margin-bottom:14px;">Some conversations change you.<br>Discover diverse perspectives.</p>
+        <p class="intro-desc" id="intro-desc" style="margin-top:12px; margin-bottom:14px;">Some conversations change you.<br>Where the most honest voices gather.</p>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
             <button class="intro-start-btn" id="intro-start-btn" onclick="startFromIntro()">Start listening</button>
             <button class="intro-how-btn" id="intro-how-btn" onclick="showIntro2()">How it works</button>
@@ -2170,7 +2170,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div class="disco-chip-row" id="disco-chip-row"></div>
                 <div class="disco-trending-row" id="disco-trending-row"></div>
                 <div class="disco-grid" id="disco-grid"></div>
-                <div class="disco-empty" id="disco-empty" style="display:none;">지금 진행 중인 방이 없어요. 첫 방을 만들어보세요!</div>
+                <div class="disco-empty" id="disco-empty" style="display:none;">지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!</div>
             </div>
 
             <div id="discover-tab-trending" style="display:none;">
@@ -3321,7 +3321,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             if (empty) {
                 empty.style.display = 'block';
                 empty.textContent = discoRooms.length === 0
-                    ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 첫 방을 만들어보세요!' : 'No circles live right now. Start the first one!')
+                    ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!' : 'No circles live right now. Start the first one!')
                     : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No circles match your filters.');
             }
             return;
@@ -3772,7 +3772,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMin: "8+ chars with letter, number & special character (!@#$ etc.)",
             pwHintMismatch: "Passwords do not match.",
             pwHintMatch: "✓ Passwords match.",
-        introDesc: `Some conversations change you.<br>Discover diverse perspectives.`,
+        introDesc: `Some conversations change you.<br>Where the most honest voices gather.`,
         introBtn: "Start listening",
         introHowBtn: "How it works",
         intro2Btn: "Shall We Pick a Topic?",
@@ -3897,7 +3897,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             pwHintMin: "영문+숫자+특수문자(!@#$ 등) 조합 8자 이상이어야 합니다.",
             pwHintMismatch: "비밀번호가 일치하지 않습니다.",
             pwHintMatch: "✓ 비밀번호가 일치합니다.",
-        introDesc: `어떤 대화는 당신을 변화시킵니다.<br>다채로운 관점을 발견해보세요.`,
+        introDesc: `어떤 대화는 당신을 변화시킵니다.<br>지금, 가장 솔직한 목소리들이 모이는 곳.`,
         introBtn: "시작하기",
         introHowBtn: "이용 방법",
         intro2Btn: "입장하기",
@@ -4084,7 +4084,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 database.ref('activeTopics').on('value', (snap) => {
     const data = snap.val() || {};
     const topics = [];
-    const STALE_MS = 3 * 60 * 1000; // 3분 이상 업데이트 없으면 유령 방으로 간주 (하트비트가 1분 간격이라 여유 있음)
+    const STALE_MS = 6 * 60 * 1000; // 6분 이상 업데이트 없으면 유령 방으로 간주 (화면 잠금 등으로 하트비트가 잠깐 지연되는 경우 대비 여유를 둠)
     const now = Date.now();
     const discoRoomsBuilt = [];
 
@@ -5400,6 +5400,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
     await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP, category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople });
     pendingRoomCategory = null;
     myTopicRef.onDisconnect().remove();
+    window._myTopicRef = myTopicRef;
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
     window._heartbeatInterval = setInterval(() => {
         if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
@@ -6354,6 +6355,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         subtitleMicStream._vadInterval = setInterval(() => {
             // subtitleMicStream이 null이면 stopSubtitleRecognition()이 이미 인터벌/트랙을 정리한 상태
             if (!subtitleMicStream) return;
+            // 통화 마이크를 음소거했으면 자막용 인식도 멈춰야 함 (별도의 getUserMedia 스트림이라 통화 음소거와 무관하게 계속 녹음되던 버그)
+            if (isMicMuted) {
+                if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+                if (isSpeaking) { isSpeaking = false; stopRecording(); }
+                return;
+            }
             const vol = getVolume();
             if (vol > VAD_THRESHOLD) {
                 if (!isSpeaking) {
@@ -6403,24 +6410,29 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
     }
 
+    async function handleSubtitleSnapshot(snap) {
+        const uid = snap.key;
+        const cu = auth.currentUser;
+        if (cu && uid === cu.uid) return;
+        const data = snap.val();
+        if (!data || !data.text) return;
+
+        // 원문 즉시 표시
+        displaySubtitle(uid, data.text, null, false);
+        // 번역 필요하면 완료 후 업데이트
+        if (data.lang !== targetSubtitleLang) {
+            const translated = await translateSubtitleText(data.text, data.lang, targetSubtitleLang);
+            updateSubtitleTranslation(uid, data.text, translated);
+        }
+    }
+
     function listenSubtitles() {
         if (!currentChannelName) return;
         subtitleFbRef = database.ref('subtitles/' + currentChannelName);
-        subtitleFbRef.on('child_changed', async (snap) => {
-            const uid = snap.key;
-            const cu = auth.currentUser;
-            if (cu && uid === cu.uid) return;
-            const data = snap.val();
-            if (!data || !data.text) return;
-
-            // 원문 즉시 표시
-            displaySubtitle(uid, data.text, null, false);
-            // 번역 필요하면 완료 후 업데이트
-            if (data.lang !== targetSubtitleLang) {
-                const translated = await translateSubtitleText(data.text, data.lang, targetSubtitleLang);
-                updateSubtitleTranslation(uid, data.text, translated);
-            }
-        });
+        // 상대방이 이번 세션에서 처음 말하면 새 노드가 생성되며 'child_added'가 발생하고,
+        // 그 다음부터는 같은 노드가 갱신되며 'child_changed'가 발생함 — 둘 다 들어야 첫 마디를 놓치지 않음
+        subtitleFbRef.on('child_added', handleSubtitleSnapshot);
+        subtitleFbRef.on('child_changed', handleSubtitleSnapshot);
     }
 
     function stopSubtitleListener() {
@@ -7287,6 +7299,14 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (isJoined && !hadPeer && waitlistTopic) showWaitlistBanner();
     });
 
+    // 화면 잠금/백그라운드 전환 시 하트비트(setInterval)가 지연되거나 멈출 수 있어,
+    // 다시 돌아오는 즉시 ts를 갱신해 "유령 방"으로 잘못 판정되는 것을 방지
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && isJoined && window._myTopicRef) {
+            window._myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+        }
+    });
+
     document.getElementById('leave-btn').onclick = async function() {
         const _shouldShowRadar = isJoined && !hadPeer && waitlistTopic;
         try {
@@ -7296,6 +7316,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             stopPPMode();
             stopRollingAudioRecorder();
             if (window._heartbeatInterval) { clearInterval(window._heartbeatInterval); window._heartbeatInterval = null; }
+            window._myTopicRef = null;
             if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
             // 배지 신호 리스너는 여기서 끄지 않음 — 나간 뒤 Conversation Report 화면에서
             // 상대방이 보내는 배지를 계속 수신해야 하므로 다음 입장 시(startSignalPolling)에 정리됨
