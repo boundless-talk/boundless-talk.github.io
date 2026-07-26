@@ -783,11 +783,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .badge-vote-btn {
             background: rgba(43,31,36,0.03); border-color: rgba(0,0,0,0.08); color: #2b1f24;
         }
+        html[data-cute-mode="cute"] .target-btn.selected {
+            background: rgba(var(--accent-rgb),0.15); border-color: var(--accent-color); color: var(--accent-color); font-weight: 600;
+        }
         html[data-cute-mode="cute"] .ai-summary-box { background: rgba(255,111,156,0.05); border-color: rgba(255,111,156,0.3); color: #2b1f24; }
         html[data-cute-mode="cute"] #summary-content { color: rgba(43,31,36,0.65) !important; }
         html[data-cute-mode="cute"] .summary-loading-text { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #inquiry-modal-desc,
         html[data-cute-mode="cute"] #join-nick-desc { color: rgba(43,31,36,0.55) !important; }
+        html[data-cute-mode="cute"] .nickname-modal-overlay { background: rgba(43,31,36,0.25) !important; }
         html[data-cute-mode="cute"] .nickname-modal-box {
             background: #fff !important; border-color: rgba(0,0,0,0.06) !important;
             box-shadow: 0 20px 60px rgba(255,111,156,0.2) !important; color: #2b1f24 !important;
@@ -808,12 +812,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .consent-item { color: rgba(43,31,36,0.75) !important; }
         html[data-cute-mode="cute"] .consent-item input[type="checkbox"] { border-color: rgba(0,0,0,0.2) !important; }
         /* ── 구독 상태 / 플랜 변경 / 환불 모달: 큐트 모드 ── */
-        html[data-cute-mode="cute"] #sub-modal-badge-row,
-        html[data-cute-mode="cute"] #sub-label-plan,
-        html[data-cute-mode="cute"] #sub-label-next { color: rgba(43,31,36,0.5) !important; }
+        html[data-cute-mode="cute"] #sub-label-next,
+        html[data-cute-mode="cute"] #sub-label-benefit,
+        html[data-cute-mode="cute"] #sub-label-period,
+        html[data-cute-mode="cute"] #sub-label-price { color: rgba(43,31,36,0.5) !important; }
         html[data-cute-mode="cute"] #sub-modal-title,
-        html[data-cute-mode="cute"] #sub-plan-value,
-        html[data-cute-mode="cute"] #sub-next-value { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #sub-next-value,
+        html[data-cute-mode="cute"] #sub-benefit-value,
+        html[data-cute-mode="cute"] #sub-period-value,
+        html[data-cute-mode="cute"] #sub-price-value { color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #sub-plan-box { background: rgba(0,0,0,0.03) !important; }
         html[data-cute-mode="cute"] #sub-change-plan-btn {
             background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(43,31,36,0.6) !important;
@@ -872,6 +879,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .subtitle-arrow { color: rgba(43,31,36,0.35); }
         html[data-cute-mode="cute"] .subtitle-item { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
         html[data-cute-mode="cute"] .subtitle-original { color: rgba(43,31,36,0.4); }
+        html[data-cute-mode="cute"] .subtitle-self-text { color: rgba(43,31,36,0.5); }
         html[data-cute-mode="cute"] .subtitle-translated { color: #2b1f24; }
 
         /* ── 핑퐁 통화 중 UI: 큐트 모드 ── */
@@ -1129,7 +1137,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; gap: 4px;
             pointer-events: none;
-            z-index: 0;
+            z-index: 2;
         }
         .room-body {
             width: 100%;
@@ -1736,6 +1744,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .main-battery-nub { background: rgba(43,31,36,0.4); }
         html[data-cute-mode="cute"] .main-battery-pct { color: rgba(43,31,36,0.6); }
 
+        /* 친구 목록의 미니 배터리 표시 */
+        .friend-battery-mini { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; }
+        .friend-battery-mini-body {
+            width: 16px; height: 9px; border: 1px solid rgba(255,255,255,0.4); border-radius: 2px;
+            padding: 1.5px; box-sizing: border-box;
+        }
+        .friend-battery-mini-fill { height: 100%; border-radius: 0.5px; background: #34c759; }
+        .friend-battery-mini-nub { width: 1.5px; height: 4px; background: rgba(255,255,255,0.4); border-radius: 0 1px 1px 0; margin-left: -2px; }
+        .friend-battery-mini-pct { font-size: 10px; color: rgba(255,255,255,0.45); }
+        html[data-cute-mode="cute"] .friend-battery-mini-body { border-color: rgba(43,31,36,0.35); }
+        html[data-cute-mode="cute"] .friend-battery-mini-nub { background: rgba(43,31,36,0.35); }
+        html[data-cute-mode="cute"] .friend-battery-mini-pct { color: rgba(43,31,36,0.5); }
+
         /* ══════════════════ Dark / Cute 테마 전환 (인트로 + Discover 화면 한정) ══════════════════ */
         .cute-mode-toggle {
             display: flex; align-items: center; gap: 2px;
@@ -1838,7 +1859,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-ring .ring-n.empty { border-color: rgba(0,0,0,.2); }
         html[data-cute-mode="cute"] .disco-search-input::placeholder { color: rgba(43,31,36,.35); }
         html[data-cute-mode="cute"] .disco-trending-tag { border: none; color: #ff6f9c; background: #ffe6ee; }
-        html[data-cute-mode="cute"] .disco-trending-tag.disco-trending-tag-alt { color: #8b7bff; background: #ece7ff; }
+        html[data-cute-mode="cute"] .disco-trending-tag.disco-trending-tag-alt { color: #7BC4A1; background: #DBF3E8; }
         html[data-cute-mode="cute"] .disco-modal-box {
             background: #fff8f4; border-color: rgba(0,0,0,.08); box-shadow: 0 20px 60px rgba(0,0,0,.15); border-radius: 16px;
         }
@@ -2150,7 +2171,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                 <div id="mycircles-recent-list"></div>
                 <div id="mycircles-subscription-panel" style="display:none;">
-                    <div class="settings-card" id="mycircles-sub-card" style="cursor:default;">
+                    <div class="settings-card" id="mycircles-sub-card" onclick="openMainPayModal()" style="cursor:pointer;">
                         <div class="settings-card-label" id="mycircles-sub-label">구독 현황</div>
                         <div class="settings-card-value" id="mycircles-sub-value" style="color:var(--accent-color);">--</div>
                     </div>
@@ -2158,14 +2179,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="mycircles-plan-row" id="mycircles-plan-monthly" onclick="openMainPayModal()">
                         <div>
                             <div class="mycircles-plan-name">Monthly</div>
-                            <div class="mycircles-plan-desc" id="mycircles-plan-monthly-desc">하루 2시간, 한 달간</div>
+                            <div class="mycircles-plan-desc" id="mycircles-plan-monthly-desc">세션당 10분 제한 없이 자유롭게 대화</div>
                         </div>
                         <div class="mycircles-plan-price">$4.99<span>/mo</span></div>
                     </div>
                     <div class="mycircles-plan-row" id="mycircles-plan-weekly" onclick="openMainPayModal()">
                         <div>
                             <div class="mycircles-plan-name">Weekly</div>
-                            <div class="mycircles-plan-desc" id="mycircles-plan-weekly-desc">하루 2시간, 일주일간</div>
+                            <div class="mycircles-plan-desc" id="mycircles-plan-weekly-desc">세션당 10분 제한 없이 자유롭게 대화</div>
                         </div>
                         <div class="mycircles-plan-price">$1.99<span>/wk</span></div>
                     </div>
@@ -2394,12 +2415,25 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 친구 추가 닉네임 입력 모달 -->
     <div class="nickname-modal-overlay" id="nickname-modal">
         <div class="nickname-modal-box">
-            <h3>친구 닉네임 설정</h3>
-            <p>이 친구를 어떤 이름으로 저장할까요?<br>나만 볼 수 있는 이름입니다.</p>
+            <h3 id="nickname-modal-title">친구 닉네임 설정</h3>
+            <p id="nickname-modal-desc">이 친구를 어떤 이름으로 저장할까요?<br>나만 볼 수 있는 이름입니다.</p>
             <input type="text" id="nickname-input" placeholder="닉네임 입력 (최대 12자)" maxlength="12">
             <div class="nickname-modal-actions">
-                <button class="nm-cancel-btn" onclick="closeNicknameModal()">취소</button>
-                <button class="nm-confirm-btn intro2-start-btn" onclick="confirmFriendRequest()">친구 요청 보내기</button>
+                <button class="nm-cancel-btn" id="nm-cancel-btn" onclick="closeNicknameModal()">취소</button>
+                <button class="nm-confirm-btn intro2-start-btn" id="nm-confirm-btn" onclick="confirmFriendRequest()">친구 요청 보내기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 친구 이름 변경 모달 -->
+    <div class="nickname-modal-overlay" id="rename-friend-modal">
+        <div class="nickname-modal-box">
+            <h3 id="rename-friend-modal-title">친구 닉네임 변경</h3>
+            <p id="rename-friend-modal-desc">이 친구를 어떤 이름으로 저장할까요?<br>나만 볼 수 있는 이름입니다.</p>
+            <input type="text" id="rename-friend-input" placeholder="닉네임 입력 (최대 12자)" maxlength="12">
+            <div class="nickname-modal-actions">
+                <button class="nm-cancel-btn" id="rename-friend-cancel-btn" onclick="closeRenameFriendModal()">취소</button>
+                <button class="nm-confirm-btn intro2-start-btn" id="rename-friend-confirm-btn" onclick="confirmRenameFriend()">저장</button>
             </div>
         </div>
     </div>
@@ -2636,7 +2670,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div>
                     <div id="pay-popular-badge" style="font-size:10px; background:rgba(var(--accent-rgb),0.15); color:var(--accent-color); border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:4px;">Popular</div>
                     <div id="pay-monthly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9);">Monthly Plan</div>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;" id="pay-monthly-desc">2 hrs/day for a month</div>
+                    <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;" id="pay-monthly-desc">No 10-min session limit — talk freely</div>
                     <div id="pay-event-badge" style="font-size:10px; color:#ffcc00; margin-top:5px;"></div>
                 </div>
                 <div style="text-align:right;">
@@ -2649,7 +2683,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div class="pay-plan-btn" id="pay-weekly" style="border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
                 <div>
                     <div id="pay-weekly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.88);">Weekly Plan</div>
-                    <div id="pay-weekly-desc" style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;">2 hrs/day for a week</div>
+                    <div id="pay-weekly-desc" style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit — talk freely</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:16px; font-weight:700; color:rgba(255,255,255,0.9);">$1.99</div>
@@ -2673,19 +2707,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="modal-content" style="max-width:340px;">
             <!-- 헤더 -->
             <div style="margin-bottom:4px;">
-                <div id="sub-modal-badge-row" style="font-size:13px; color:rgba(255,255,255,0.4); margin-bottom:6px;"><span id="sub-modal-badge">추천</span></div>
-                <div id="sub-modal-title" style="font-size:18px; font-weight:700; color:#fff; margin-bottom:4px;">You're already subscribed</div>
+                <div id="sub-modal-title" style="font-size:18px; font-weight:700; color:#fff; margin-bottom:4px;">You're subscribed</div>
                 <p id="sub-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:16px;"></p>
             </div>
             <!-- 플랜 정보 -->
             <div id="sub-plan-box" style="background:rgba(255,255,255,0.05); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
                 <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.07);">
-                    <span id="sub-label-plan" style="font-size:13px; color:rgba(255,255,255,0.45);">현재 플랜</span>
-                    <span id="sub-plan-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
+                    <span id="sub-label-benefit" style="font-size:13px; color:rgba(255,255,255,0.45);">혜택</span>
+                    <span id="sub-benefit-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9); text-align:right; max-width:180px;"></span>
                 </div>
-                <div style="display:flex; justify-content:space-between; padding:6px 0;">
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.07);">
+                    <span id="sub-label-period" style="font-size:13px; color:rgba(255,255,255,0.45);">이용 기간</span>
+                    <span id="sub-period-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9); text-align:right;"></span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.07);">
                     <span id="sub-label-next" style="font-size:13px; color:rgba(255,255,255,0.45);">다음 결제일</span>
                     <span id="sub-next-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
+                </div>
+                <div style="display:flex; justify-content:space-between; padding:6px 0;">
+                    <span id="sub-label-price" style="font-size:13px; color:rgba(255,255,255,0.45);">가격</span>
+                    <span id="sub-price-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
                 </div>
             </div>
             <!-- 플랜 변경 -->
@@ -2832,7 +2873,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         try {
             const perm = await Notification.requestPermission();
             if (perm !== 'granted') {
-                alert(currentLang === 'ko' ? '알림 권한을 허용해 주세요.' : 'Please allow notifications.');
+                showBadgeToast(currentLang === 'ko' ? '알림 권한을 허용해 주세요.' : 'Please allow notifications.');
                 if (btn) { btn.disabled = false; btn.textContent = '📡 인연의 신호 켜두기'; }
                 return;
             }
@@ -2852,10 +2893,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const msg = currentLang === 'ko'
                 ? '✅ 24시간 레이더가 켜졌어요! 누군가 오면 바로 알려드릴게요.'
                 : '✅ Radar is on! We\'ll notify you when someone matches.';
-            alert(msg);
+            showBadgeToast(msg);
         } catch (e) {
             console.error('subscribeWaitlist error:', e);
-            alert(currentLang === 'ko' ? '알림 설정에 실패했어요: ' + e.message : 'Failed: ' + e.message);
+            showBadgeToast(currentLang === 'ko' ? '알림 설정에 실패했어요: ' + e.message : 'Failed: ' + e.message);
             if (btn) { btn.disabled = false; btn.textContent = '📡 인연의 신호 켜두기'; }
         }
     }
@@ -3289,11 +3330,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('disco-create-mode-label', '모드', 'Mode');
         setText('disco-pp-row-label', '핑퐁 모드 (순서대로 1분 30초씩 발언)', 'Ping Pong mode (take 90s turns speaking in order)');
         setText('disco-create-submit-btn', '방 만들고 시작하기', 'Create and start');
+        setText('mycircles-subtext', '익명 기반 — 대화 기록은 이 기기에만 저장돼요.', 'Anonymous by design — your history lives only on this device.');
+        setText('subtab-recent', '최근 참여', 'Recently joined');
+        setText('subtab-subscription', '구독', 'Subscription');
+        setText('subtab-friends', '친구', 'Friends');
         setText('mycircles-sub-label', '구독 현황', 'Subscription');
         setText('mycircles-withdrawal-link', '회원탈퇴', 'Delete account');
         setText('mycircles-plans-label', '전환 가능한 플랜', 'Available plans');
-        setText('mycircles-plan-monthly-desc', '하루 2시간, 한 달간', '2 hrs/day for a month');
-        setText('mycircles-plan-weekly-desc', '하루 2시간, 일주일간', '2 hrs/day for a week');
+        setText('mycircles-plan-monthly-desc', '세션당 10분 제한 없이 자유롭게 대화', 'No 10-min session limit — talk freely');
+        setText('mycircles-plan-weekly-desc', '세션당 10분 제한 없이 자유롭게 대화', 'No 10-min session limit — talk freely');
         setText('trending-col-topic', '카테고리', 'Category');
         setText('trending-col-circles', '방 개수', 'Circles');
         setText('trending-col-voices', '대화 인원', 'Voices');
@@ -3620,10 +3665,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payModalClose: "Close",
         payPopular: "Popular",
         payMonthlyTitle: "Monthly Plan  +  Real-time Translation",
-        payMonthlyDesc: "2 hrs/day for a month",
+        payMonthlyDesc: "No 10-min session limit — talk freely",
         payMonthlyPeriod: "/ mo",
         payWeeklyTitle: "Weekly Plan  +  Real-time Translation",
-        payWeeklyDesc: "2 hrs/day for a week",
+        payWeeklyDesc: "No 10-min session limit — talk freely",
         payWeeklyPeriod: "/ wk",
         payLeave: "End conversation",
         payCountdown: "Call ends in",
@@ -3745,10 +3790,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payModalClose: "닫기",
         payPopular: "인기",
         payMonthlyTitle: "월간 구독권  +  실시간번역 포함",
-        payMonthlyDesc: "매일 2시간 통화 (한 달간)",
+        payMonthlyDesc: "세션당 10분 제한 없이 자유롭게 대화",
         payMonthlyPeriod: "/ 월",
         payWeeklyTitle: "주간 구독권  +  실시간번역 포함",
-        payWeeklyDesc: "매일 2시간 통화 (7일간)",
+        payWeeklyDesc: "세션당 10분 제한 없이 자유롭게 대화",
         payWeeklyPeriod: "/ 주",
         payLeave: "대화 종료",
         payCountdown: "통화 종료까지",
@@ -3828,7 +3873,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 const titleBlock = document.getElementById('title-block');
                 if (titleBlock) titleBlock.style.display = 'none';
                 const mainContainer = document.getElementById('main-container');
-                if (mainContainer) mainContainer.style.justifyContent = 'flex-start';
+                if (mainContainer) { mainContainer.style.justifyContent = 'flex-start'; mainContainer.style.paddingTop = '32px'; }
                 const langContainerEl = document.getElementById('lang-container');
                 if (langContainerEl) langContainerEl.style.position = 'absolute';
                 const mainBattery = document.getElementById("main-battery");
@@ -4303,8 +4348,32 @@ function updateUI() {
         if (inqText) inqText.placeholder = currentLang === 'ko' ? '문의 내용을 입력해주세요...' : 'Enter your message...';
         if (inqSubmit) inqSubmit.textContent = currentLang === 'ko' ? '보내기' : 'Send';
 
-        
-        
+        // 친구 추가 닉네임 입력 모달 다국어
+        const nmTitle = document.getElementById('nickname-modal-title');
+        const nmDesc = document.getElementById('nickname-modal-desc');
+        const nmInput = document.getElementById('nickname-input');
+        const nmCancelBtn = document.getElementById('nm-cancel-btn');
+        const nmConfirmBtn = document.getElementById('nm-confirm-btn');
+        if (nmTitle) nmTitle.textContent = currentLang === 'ko' ? '친구 닉네임 설정' : 'Set Friend Nickname';
+        if (nmDesc) nmDesc.innerHTML = currentLang === 'ko' ? '이 친구를 어떤 이름으로 저장할까요?<br>나만 볼 수 있는 이름입니다.' : "What would you like to save this friend as?<br>Only you can see this name.";
+        if (nmInput) nmInput.placeholder = currentLang === 'ko' ? '닉네임 입력 (최대 12자)' : 'Enter nickname (max 12 chars)';
+        if (nmCancelBtn) nmCancelBtn.textContent = currentLang === 'ko' ? '취소' : 'Cancel';
+        if (nmConfirmBtn) nmConfirmBtn.textContent = currentLang === 'ko' ? '친구 요청 보내기' : 'Send Friend Request';
+
+        // 친구 이름 변경 모달 다국어
+        const rnTitle = document.getElementById('rename-friend-modal-title');
+        const rnDesc = document.getElementById('rename-friend-modal-desc');
+        const rnInput = document.getElementById('rename-friend-input');
+        const rnCancelBtn = document.getElementById('rename-friend-cancel-btn');
+        const rnConfirmBtn = document.getElementById('rename-friend-confirm-btn');
+        if (rnTitle) rnTitle.textContent = currentLang === 'ko' ? '친구 닉네임 변경' : 'Rename Friend';
+        if (rnDesc) rnDesc.innerHTML = currentLang === 'ko' ? '이 친구를 어떤 이름으로 저장할까요?<br>나만 볼 수 있는 이름입니다.' : "What would you like to save this friend as?<br>Only you can see this name.";
+        if (rnInput) rnInput.placeholder = currentLang === 'ko' ? '닉네임 입력 (최대 12자)' : 'Enter nickname (max 12 chars)';
+        if (rnCancelBtn) rnCancelBtn.textContent = currentLang === 'ko' ? '취소' : 'Cancel';
+        if (rnConfirmBtn) rnConfirmBtn.textContent = currentLang === 'ko' ? '저장' : 'Save';
+
+
+
         const repTitleEl = document.getElementById('rep-title'); if (repTitleEl) repTitleEl.innerText = lang.repTitle;
         document.getElementById('modal-title').innerText = lang.mTitle;
         document.getElementById('modal-desc').innerText = lang.mDesc;
@@ -4857,6 +4926,10 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         updateUI();
         if (isJoined) {
             renderParticipantsUI();
+            const topicStyleBadge = document.getElementById('room-topic-style-badge');
+            if (topicStyleBadge && selectedSpeechStyle) {
+                topicStyleBadge.textContent = textData[currentLang]['speechStyleBadge' + (selectedSpeechStyle === 'casual' ? 'Casual' : 'Polite')];
+            }
             const list = ICEBREAKERS[currentLang] || ICEBREAKERS.ko;
             const pick = list[Math.floor(Math.random() * list.length)];
             document.getElementById('icebreaker-emoji').textContent = pick.emoji;
@@ -6913,17 +6986,26 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date()) {
             // 구독 중 → 상태 모달 표시
             const isKo = currentLang === 'ko';
-            const planLabel = sub.plan === 'monthly'
-                ? (isKo ? 'Monthly · $4.99' : 'Monthly · $4.99')
-                : (isKo ? 'Weekly · $1.99' : 'Weekly · $1.99');
             const planName = sub.plan === 'monthly' ? 'Monthly' : 'Weekly';
-            document.getElementById('sub-modal-title').textContent = isKo ? `이미 ${planName} Plan을 이용 중입니다 ✨` : `You're already on the ${planName} Plan ✨`;
+            const priceLabel = sub.plan === 'monthly' ? (isKo ? '$4.99 / 월' : '$4.99 / mo') : (isKo ? '$1.99 / 주' : '$1.99 / wk');
+            const fmtDot = (d) => `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`;
+            const expiresDate = new Date(sub.expiresAt);
+            const daysInPlan = sub.plan === 'weekly' ? 7 : 30;
+            const startedDate = new Date(expiresDate.getTime() - daysInPlan * 86400000);
+            const validDates = !isNaN(expiresDate) && !isNaN(startedDate);
+
+            document.getElementById('sub-modal-title').textContent = isKo ? `${planName} Plan을 이용 중입니다 ✨` : `You're on the ${planName} Plan ✨`;
             document.getElementById('sub-modal-desc').textContent = isKo ? '플랜을 변경하시겠어요?' : 'Would you like to change your plan?';
-            document.getElementById('sub-modal-badge').textContent = isKo ? '추천' : 'Active';
-            document.getElementById('sub-plan-value').textContent = planLabel;
-            document.getElementById('sub-next-value').textContent = sub.expiresAt;
-            document.getElementById('sub-label-plan').textContent = isKo ? '현재 플랜' : 'Current plan';
+            document.getElementById('sub-label-benefit').textContent = isKo ? '혜택' : 'Benefits';
+            document.getElementById('sub-benefit-value').textContent = isKo ? '세션당 10분 제한 없이 대화 + 실시간 번역' : 'No 10-min session limit + real-time translation';
+            document.getElementById('sub-label-period').textContent = isKo ? '이용 기간' : 'Active period';
+            document.getElementById('sub-period-value').textContent = validDates
+                ? `${fmtDot(startedDate)} ~ ${fmtDot(expiresDate)}`
+                : '-';
             document.getElementById('sub-label-next').textContent = isKo ? '다음 결제일' : 'Next billing';
+            document.getElementById('sub-next-value').textContent = validDates ? fmtDot(expiresDate) : sub.expiresAt;
+            document.getElementById('sub-label-price').textContent = isKo ? '가격' : 'Price';
+            document.getElementById('sub-price-value').textContent = priceLabel;
             document.getElementById('sub-btn-change').textContent = isKo ? '플랜 변경하기' : 'Change plan';
             document.getElementById('subscription-modal').classList.add('active');
             return;
@@ -7263,7 +7345,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
         } catch (err) {
             console.error("Firebase transaction processing failure:", err);
-            showBadgeToast(currentLang === 'ko' ? '번개 전송에 실패했습니다.' : 'Failed to send lightning.');
+            const reason = (err && err.code) ? ` (${err.code})` : '';
+            showBadgeToast((currentLang === 'ko' ? '번개 전송에 실패했습니다.' : 'Failed to send lightning.') + reason);
             removeVoteTarget(selectedVoteTarget);
         }
     }
@@ -7371,7 +7454,7 @@ async function confirmFriendRequest() {
             timestamp: now
         });
 
-        alert(currentLang === 'ko' ? "✅ 친구 요청을 보냈습니다! 상대방이 수락하면 친구가 됩니다." : "✅ Friend request sent!");
+        showBadgeToast(currentLang === 'ko' ? "✅ 친구 요청을 보냈습니다! 상대방이 수락하면 친구가 됩니다." : "✅ Friend request sent!");
         closeNicknameModal();
     } catch(e) {
         console.error("Friend request failed:", e);
@@ -7453,11 +7536,24 @@ async function rejectFriendRequest() {
 }
 
 // 6. 친구 닉네임 편집
-async function editFriendNickname(friendUid) {
-    const newName = prompt(currentLang === 'ko' ? "새 닉네임을 입력하세요 (나만 보임):" : "Enter new nickname (only you can see):");
-    if (!newName || !newName.trim()) return;
+let renameFriendTargetUid = null;
+function editFriendNickname(friendUid, currentNickname) {
+    renameFriendTargetUid = friendUid;
+    const input = document.getElementById('rename-friend-input');
+    input.value = currentNickname || '';
+    document.getElementById('rename-friend-modal').classList.add('active');
+    input.focus();
+}
+function closeRenameFriendModal() {
+    document.getElementById('rename-friend-modal').classList.remove('active');
+    renameFriendTargetUid = null;
+}
+async function confirmRenameFriend() {
+    const newName = document.getElementById('rename-friend-input').value.trim();
+    if (!newName || !renameFriendTargetUid) return;
     const myUid = auth.currentUser.uid;
-    await database.ref(`users/${myUid}/friends/${friendUid}`).update({ nickname: newName.trim() });
+    await database.ref(`users/${myUid}/friends/${renameFriendTargetUid}`).update({ nickname: newName });
+    closeRenameFriendModal();
     // 목록 새로고침
     loadFriendsList();
 }
@@ -7518,12 +7614,31 @@ function loadFriendsList() {
             statusDot.textContent = '⚫';
 
             friendNameSpan.appendChild(statusDot);
-            const rankNode = document.createElement('span');
-            rankNode.textContent = ' 🔋 ';
-            friendNameSpan.appendChild(rankNode);
-            database.ref('users/' + friendUid + '/energy').once('value').then(es => {
-                rankNode.textContent = ' ' + getBatteryEmoji((es.val() || {}).pct || 0) + ' ';
-            }).catch(() => {});
+            const battMini = document.createElement('span');
+            battMini.className = 'friend-battery-mini';
+            const battBody = document.createElement('span');
+            battBody.className = 'friend-battery-mini-body';
+            const battFill = document.createElement('span');
+            battFill.className = 'friend-battery-mini-fill';
+            battFill.style.width = '0%';
+            battBody.appendChild(battFill);
+            const battNub = document.createElement('span');
+            battNub.className = 'friend-battery-mini-nub';
+            const battPct = document.createElement('span');
+            battPct.className = 'friend-battery-mini-pct';
+            battPct.textContent = '0%';
+            battMini.appendChild(battBody);
+            battMini.appendChild(battNub);
+            battMini.appendChild(battPct);
+            friendNameSpan.appendChild(battMini);
+            const energyRef = database.ref('users/' + friendUid + '/energy');
+            activePresenceRefs.push(energyRef);
+            energyRef.on('value', (es) => {
+                const pct = Math.max(0, Math.min(100, (es.val() || {}).pct || 0));
+                battFill.style.width = pct + '%';
+                battFill.style.background = pct <= 20 ? '#ff453a' : (pct <= 50 ? '#ffd60a' : '#34c759');
+                battPct.textContent = pct + '%';
+            });
             const nameNode = document.createElement('span');
             nameNode.textContent = displayName;
             friendNameSpan.appendChild(nameNode);
@@ -7532,7 +7647,7 @@ function loadFriendsList() {
             editBtn.className = 'friend-edit-icon-btn';
             editBtn.textContent = '✏️';
             editBtn.title = textData[currentLang].editNickname;
-            editBtn.onclick = () => editFriendNickname(friendUid);
+            editBtn.onclick = () => editFriendNickname(friendUid, displayName);
             friendNameSpan.appendChild(editBtn);
 
             const dateSpan = document.createElement('span');
@@ -7575,10 +7690,10 @@ function loadFriendsList() {
                 if (statusDot) {
                     if (isOnline) {
                         statusDot.innerText = '●';
-                        statusDot.style.color = 'var(--accent-color)';
+                        statusDot.style.color = '#ff6f9c';
                     } else {
                         statusDot.innerText = '●';
-                        statusDot.style.color = 'rgba(255,255,255,0.2)';
+                        statusDot.style.color = '#8e8e93';
                     }
                 }
             });

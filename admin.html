@@ -621,6 +621,11 @@
                 <div class="section-title">전체 회원</div>
                 <div class="section-count" id="users-count"></div>
             </div>
+            <div class="tabs">
+                <div class="tab active" id="users-filter-all" onclick="setUserFilter('all')">전체</div>
+                <div class="tab" id="users-filter-member" onclick="setUserFilter('member')">👤 회원</div>
+                <div class="tab" id="users-filter-guest" onclick="setUserFilter('guest')">👻 게스트</div>
+            </div>
             <div class="table-wrap">
                 <table>
                     <thead><tr>
@@ -1024,11 +1029,21 @@
             : '<div style="color:var(--text-dim);font-size:13px;padding:12px 0;">미처리 이의신청 없음</div>';
     }
 
+    let currentUserFilter = 'all';
+    function setUserFilter(filter) {
+        currentUserFilter = filter;
+        document.querySelectorAll('#page-users .tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('users-filter-' + filter).classList.add('active');
+        renderUserList();
+    }
+
     function renderUserList() {
         const query = document.getElementById('search-input').value.toLowerCase();
-        const entries = Object.entries(allUsers).filter(([uid, u]) =>
+        let entries = Object.entries(allUsers).filter(([uid, u]) =>
             !query || uid.toLowerCase().includes(query) || (u.email||'').toLowerCase().includes(query)
         );
+        if (currentUserFilter === 'member') entries = entries.filter(([, u]) => !!u.email);
+        if (currentUserFilter === 'guest') entries = entries.filter(([, u]) => !u.email);
         document.getElementById('users-count').textContent = `${entries.length}명`;
         const tbody = document.getElementById('user-list');
         tbody.innerHTML = entries.length
@@ -1295,16 +1310,28 @@
     window.playReportAudio = playReportAudio;
 
     function playReportAudio(url) {
-        const existing = document.getElementById('report-audio-player');
-        if (existing) existing.remove();
-        const audio = document.createElement('audio');
-        audio.id = 'report-audio-player';
-        audio.controls = true;
-        audio.autoplay = true;
-        audio.src = url;
-        audio.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4);background:#1e1e2e;';
-        document.body.appendChild(audio);
-        audio.onended = () => audio.remove();
+        let wrap = document.getElementById('report-audio-wrap');
+        let audio;
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.id = 'report-audio-wrap';
+            wrap.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:8px;background:#1e1e2e;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.4);padding:6px;';
+            audio = document.createElement('audio');
+            audio.id = 'report-audio-player';
+            audio.controls = true;
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '✕';
+            closeBtn.style.cssText = 'background:none;border:none;color:var(--text-dim);font-size:14px;cursor:pointer;padding:4px;';
+            closeBtn.onclick = () => { audio.pause(); wrap.remove(); };
+            wrap.appendChild(audio);
+            wrap.appendChild(closeBtn);
+            document.body.appendChild(wrap);
+        } else {
+            audio = document.getElementById('report-audio-player');
+        }
+        if (audio.src !== url) audio.src = url;
+        audio.currentTime = 0;
+        audio.play().catch(err => console.error('Audio playback failed:', err));
     }
 
     async function acceptAppeal(uid, type) {
