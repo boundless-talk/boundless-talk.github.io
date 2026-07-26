@@ -1110,6 +1110,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             transform: translateY(30px);
             pointer-events: none;
             transition: opacity 0.4s ease, transform 0.4s ease;
+            padding-top: env(safe-area-inset-top, 0px);
         }
         #room-screen.active {
             opacity: 1;
@@ -1260,6 +1261,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .room-seat.speaking .speaking-bar { opacity: 1; }
         .room-seat.speaking .animal-avatar { display: none; }
+        .animal-avatar.guest-avatar-text { font-size: 11px; font-weight: 700; letter-spacing: 0.2px; color: rgba(255,255,255,0.55); }
+        html[data-cute-mode="cute"] .animal-avatar.guest-avatar-text { color: rgba(43,31,36,0.5); }
         .room-seat-name {
             font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,0.75);
             text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -1506,11 +1509,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         @keyframes discoWave4 { 0%,100%{height:17px} 50%{height:7px} }
         .disco-navbar {
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
-            padding: 12px 4px 16px; margin: -2px -4px 4px; border-bottom: 1px solid var(--dbord);
+            padding: 12px 4px 16px; margin: 20px -4px 4px; border-bottom: 1px solid var(--dbord);
             flex-wrap: wrap; row-gap: 10px;
             position: sticky; top: 0; z-index: 30; background: #0b0b0c;
         }
-        .disco-navbar-brand { display: flex; align-items: center; gap: 8px; flex: none; }
+        /* 로고+워드마크 — guest/배터리/설정과 같은 줄, 같은 높이. lang-container처럼 absolute라
+           페이지와 함께 스크롤되어 사라짐 (아래 disco-navbar가 sticky로 대신 남음) */
+        .disco-brand-fixed {
+            position: absolute; top: calc(20px + env(safe-area-inset-top, 0px)); left: calc(20px + env(safe-area-inset-left, 0px));
+            height: 40px; z-index: 9000; display: flex; align-items: center; gap: 8px;
+        }
         .disco-navbar-logo { width: 22px; height: 22px; flex: none; object-fit: contain; display: block; }
         .disco-navbar-word { font-weight: 700; font-size: 14px; letter-spacing: -0.02em; color: #f5f4f2; }
         .disco-navbar-links { display: flex; gap: 18px; font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.5); flex: 1 1 auto; }
@@ -1714,6 +1722,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             body { padding: 12px; }
             .lang-container { top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
             #login-back-btn { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
+            .disco-brand-fixed { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
 
             .intro-title { font-size: 24px; letter-spacing: 4px; }
             h2 { font-size: 22px; letter-spacing: 4px; }
@@ -1738,12 +1747,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             #auth-section { max-width: 420px; }
             .disco-grid { gap: 20px; }
             .disco-navbar { padding-bottom: 20px; }
-        }
-
-        /* 로그인 후 우측 상단 GUEST 배지/배터리/설정 아이콘이 절대좌표로 떠 있어서,
-           좁은 화면에서는 Discover 네브바 전체를 그 아래로 내려서 겹치지 않게 함 */
-        @media (max-width: 899px) {
-            .disco-navbar { margin-top: 40px; }
         }
 
         /* ══════════════════ 배터리(⚡ 번개) 표시 — 진짜 폰/노트북 배터리 아이콘처럼 (로그인 후에만) ══════════════════ */
@@ -2131,12 +2134,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         <!-- ── Discover: 라이브 방 둘러보기 ── -->
         <div id="discover-screen">
+            <div class="disco-brand-fixed" id="disco-brand-fixed">
+                <img class="disco-navbar-logo app-logo-dark" src="logoboundlesstalk.png" alt="Boundless Talk">
+                <img class="disco-navbar-logo app-logo-cute" src="logoboundlesstalkcute.png" alt="Boundless Talk">
+                <span class="disco-navbar-word">boundless talk</span>
+            </div>
             <div class="disco-navbar">
-                <div class="disco-navbar-brand">
-                    <img class="disco-navbar-logo app-logo-dark" src="logoboundlesstalk.png" alt="Boundless Talk">
-                    <img class="disco-navbar-logo app-logo-cute" src="logoboundlesstalkcute.png" alt="Boundless Talk">
-                    <span class="disco-navbar-word">boundless talk</span>
-                </div>
                 <div class="disco-navbar-links">
                     <a class="active" id="nav-tab-discover" onclick="switchDiscoTab('discover')">Discover</a><a id="nav-tab-trending" onclick="switchDiscoTab('trending')">Trending</a><a id="nav-tab-mycircles" onclick="switchDiscoTab('mycircles')">My Circles</a>
                 </div>
@@ -2862,6 +2865,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 const reg = await navigator.serviceWorker.register('/sw.js');
                 messaging = firebase.messaging();
                 await messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
+                // 앱이 열려있는(포그라운드) 상태에서는 sw.js의 onBackgroundMessage가 동작하지 않으므로,
+                // 여기서 직접 받아서 화면 안 토스트로만 띄워줌. (여기서도 system Notification을
+                // 띄우면, 백그라운드 핸들러와 겹쳐서 같은 알림이 두 번 뜨는 경우가 있어 토스트만 사용)
+                messaging.onMessage(payload => {
+                    const title = (payload.notification && payload.notification.title) || '';
+                    const body = (payload.notification && payload.notification.body) || '';
+                    if (title || body) showBadgeToast([title, body].filter(Boolean).join(': '));
+                });
             }
         } catch (e) {
             console.warn('FCM init failed:', e.message);
@@ -2877,9 +2888,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 showBadgeToast(isKo ? '이 브라우저는 알림을 지원하지 않아요 (아이폰은 홈 화면에 추가 후 접속해야 알림이 가능해요)' : 'This browser doesn\'t support notifications (on iPhone, add to Home Screen first)');
                 return;
             }
+            const before = Notification.permission;
             const perm = await Notification.requestPermission();
             if (perm !== 'granted') {
-                showBadgeToast(isKo ? '알림 권한이 허용되지 않아 로그인 알림을 받을 수 없어요' : 'Notification permission was not granted');
+                // before가 이미 'denied'였다면 브라우저가 팝업 자체를 안 띄우고 즉시 거절 처리한 것 —
+                // 기기 설정에서 알림 권한을 직접 켜줘야 함 (앱을 지우고 다시 깔아도 초기화 안 될 수 있음)
+                showBadgeToast(isKo ? `알림 권한이 허용되지 않았어요 (상태: ${before}→${perm})` : `Notification permission not granted (state: ${before}→${perm})`);
                 return;
             }
             await initMessaging();
@@ -3150,8 +3164,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const n = Math.max(1, Math.min(maxPeople || 4, 8));
         for (let i = 0; i < n; i++) {
             const angle = (-90 + (360 / n) * i) * Math.PI / 180;
-            const x = 28 + 24.5 * Math.cos(angle) - 3.5;
-            const y = 28 + 24.5 * Math.sin(angle) - 3.5;
+            const x = 28 + 27.5 * Math.cos(angle) - 3.5;
+            const y = 28 + 27.5 * Math.sin(angle) - 3.5;
             const node = document.createElement('div');
             node.className = 'ring-n ' + (i < occupancy ? 'filled' : 'empty');
             node.style.left = x + 'px';
@@ -6465,8 +6479,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             meEl.id = 'room-part-me';
             const meLabel = currentLang === 'ko' ? '(나)' : '(You)';
             const displayName = myNickname || 'Me';
+            const meAvatarInner = isGuest ? `<span class="animal-avatar guest-avatar-text">guest</span>` : `<span class="animal-avatar">${myBatteryEmoji}</span>`;
             meEl.innerHTML = `
-                <div class="room-seat-avatar"><span class="animal-avatar">${myBatteryEmoji}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
+                <div class="room-seat-avatar">${meAvatarInner}<span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
                 <div class="room-seat-name">${displayName} ${meLabel}</div>
                 <div class="pp-seat-timer" id="pp-seat-timer-me"></div>`;
             list.appendChild(meEl);
@@ -6479,11 +6494,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const fbUid = agoraToFirebaseUid[uid] || uid;
             const nickname = uidToNickname[fbUid] || uidToNickname[uid] || `User ${index + 1}`;
             const guestFlag = uidToIsGuest[fbUid] || uidToIsGuest[uid];
-            const guestBadge = guestFlag ? `<span class="room-guest-tag">Guest</span>` : '';
             const energyEmoji = uidToBatteryEmoji[fbUid] || '👋';
+            const avatarInner = guestFlag ? `<span class="animal-avatar guest-avatar-text">guest</span>` : `<span class="animal-avatar">${energyEmoji}</span>`;
             el.innerHTML = `
-                <div class="room-seat-avatar"><span class="animal-avatar">${energyEmoji}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
-                <div class="room-seat-name">${nickname}${guestBadge}</div>
+                <div class="room-seat-avatar">${avatarInner}<span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
+                <div class="room-seat-name">${nickname}</div>
                 <div class="pp-seat-timer" id="pp-seat-timer-${uid}"></div>
                 <div class="room-seat-icons">
                     <span class="room-seat-icon" title="${currentLang === 'ko' ? '친구 추가' : 'Add friend'}" onclick="addFriendMidCall('${fbUid}')">＋</span>
