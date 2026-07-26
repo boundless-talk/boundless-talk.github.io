@@ -857,7 +857,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         html[data-cute-mode="cute"] #cp-monthly-price { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] #cp-monthly-desc { color: rgba(43,31,36,0.35) !important; }
-        html[data-cute-mode="cute"] #logout-btn {
+        html[data-cute-mode="cute"] #logout-btn,
+        html[data-cute-mode="cute"] #admin-push-btn {
             background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.12) !important; color: rgba(43,31,36,0.6) !important;
         }
         html[data-cute-mode="cute"] #guest-badge {
@@ -2060,6 +2061,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
             </div>
 
+            <button id="admin-push-btn" onclick="registerAdminPushToken()" style="display:none; width:100%; margin-top:0; margin-bottom:8px; padding:11px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; cursor:pointer;">🔔 이 기기로 로그인 알림 받기</button>
             <div class="settings-section-label" id="settings-account-label">Account</div>
             <button id="logout-btn" style="display:none; width:100%; margin-top:0;">LOGOUT</button>
         </div>
@@ -3942,12 +3944,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (user) {
             isGuest = user.isAnonymous;
 
-            // 로그인 알림: 운영자 본인이면 이 기기를 알림 수신용으로 등록, 아니면(게스트 포함) 운영자에게 알림 전송
+            // 로그인 알림: 운영자가 아니면(게스트 포함) 운영자에게 알림 전송.
+            // 운영자 본인의 알림 수신 등록은 브라우저가 사용자 제스처 없는 알림 권한 요청을
+            // 막는 경우가 있어(특히 iOS), 설정 화면의 버튼을 직접 눌러야 등록되도록 함
             if (!loginNotifiedThisSession) {
                 loginNotifiedThisSession = true;
-                if (user.uid === ADMIN_UID || user.email === ADMIN_EMAIL) {
-                    registerAdminPushToken();
-                } else {
+                if (!(user.uid === ADMIN_UID || user.email === ADMIN_EMAIL)) {
                     notifyAdminOfLogin(user, isGuest);
                 }
             }
@@ -7859,6 +7861,10 @@ function openSettingsModal() {
     overlay.classList.add('open');
     updateSettingsModalLang();
     loadSettingsMyPage();
+    const adminBtn = document.getElementById('admin-push-btn');
+    const user = auth.currentUser;
+    const isAdminUser = !!user && (user.uid === ADMIN_UID || user.email === ADMIN_EMAIL);
+    if (adminBtn) adminBtn.style.display = isAdminUser ? 'block' : 'none';
 }
 function closeSettingsModal() {
     document.getElementById('settings-modal-overlay').classList.remove('open');
