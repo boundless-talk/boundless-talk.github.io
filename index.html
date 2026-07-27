@@ -3560,6 +3560,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         return card;
     }
+    // 인스타그램 등 인앱 브라우저는 Notification API 자체를 지원 안 하는 경우가 많아서,
+    // 알림 등록이 안 돼도 예약 자체는 되게 하고 fcmToken만 없이 보냄 (10시 알림만 못 받음)
+    async function tryGetFcmToken() {
+        try {
+            if (!('Notification' in window)) return null;
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') return null;
+            await initMessaging();
+            const reg = await navigator.serviceWorker.ready;
+            return await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg }) || null;
+        } catch (e) {
+            console.warn('tryGetFcmToken failed:', e.message);
+            return null;
+        }
+    }
     async function toggleScheduledSeat(roomId, alreadyJoined) {
         const isKo = currentLang === 'ko';
         if (!auth.currentUser) { promptGuestLogin(); return; }
@@ -3575,19 +3590,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 if (!data.success) throw new Error(data.error || 'unknown');
                 showBadgeToast(isKo ? '예약을 취소했어요.' : 'Reservation cancelled.');
             } else {
-                if (!('Notification' in window)) {
-                    showBadgeToast(isKo ? '이 브라우저는 알림을 지원하지 않아요.' : 'This browser doesn\'t support notifications.');
-                    return;
-                }
-                const perm = await Notification.requestPermission();
-                if (perm !== 'granted') {
-                    showBadgeToast(isKo ? '알림 권한을 허용해 주세요.' : 'Please allow notifications.');
-                    return;
-                }
-                await initMessaging();
-                const reg = await navigator.serviceWorker.ready;
-                const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
-                if (!token) throw new Error('FCM token empty');
+                const token = await tryGetFcmToken();
                 const res = await fetch(TOKEN_SERVER_URL + '/join-scheduled-room', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -3598,8 +3601,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     showBadgeToast(isKo ? '이미 자리가 다 찼어요.' : 'This circle is already full.');
                 } else if (!data.success) {
                     throw new Error(data.error || 'unknown');
-                } else {
+                } else if (token) {
                     showBadgeToast(isKo ? '✅ 자리를 예약했어요! 밤 10시에 알려드릴게요.' : '✅ Seat reserved! We\'ll notify you at 10 PM.');
+                } else {
+                    showBadgeToast(isKo ? '✅ 자리를 예약했어요! 이 브라우저는 알림을 지원하지 않아서, 밤 10시에 직접 앱에 들어와 확인해주세요.' : '✅ Seat reserved! This browser can\'t send notifications — please check back at 10 PM.');
                 }
             }
         } catch (e) {
@@ -3643,19 +3648,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const btn = document.getElementById('schedule-create-submit-btn');
         if (btn) btn.disabled = true;
         try {
-            if (!('Notification' in window)) {
-                showBadgeToast(isKo ? '이 브라우저는 알림을 지원하지 않아요.' : 'This browser doesn\'t support notifications.');
-                return;
-            }
-            const perm = await Notification.requestPermission();
-            if (perm !== 'granted') {
-                showBadgeToast(isKo ? '알림 권한을 허용해 주세요.' : 'Please allow notifications.');
-                return;
-            }
-            await initMessaging();
-            const reg = await navigator.serviceWorker.ready;
-            const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
-            if (!token) throw new Error('FCM token empty');
+            const token = await tryGetFcmToken();
             const idToken = await auth.currentUser.getIdToken();
             const res = await fetch(TOKEN_SERVER_URL + '/create-scheduled-room', {
                 method: 'POST',
@@ -3665,7 +3658,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const data = await res.json();
             if (!data.success) throw new Error(data.error || 'unknown');
             closeScheduleCreateModal();
-            showBadgeToast(isKo ? '✅ 예약 완료! 밤 10시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 10 PM.');
+            showBadgeToast(token
+                ? (isKo ? '✅ 예약 완료! 밤 10시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 10 PM.')
+                : (isKo ? '✅ 예약 완료! 이 브라우저는 알림을 지원하지 않아서, 밤 10시에 직접 앱에 들어와 확인해주세요.' : '✅ Reserved! This browser can\'t send notifications — please check back at 10 PM.'));
             switchDiscoTab('scheduled');
         } catch (e) {
             console.warn('submitScheduledRoomCreate failed:', e.message);

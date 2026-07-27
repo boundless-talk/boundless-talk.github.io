@@ -234,7 +234,7 @@ app.post('/claim-early-access', async (req, res) => {
 app.post('/create-scheduled-room', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
     const { idToken, title, category, fcmToken } = req.body;
-    if (!idToken || !title || !fcmToken) return res.status(400).json({ error: 'idToken, title, fcmToken required' });
+    if (!idToken || !title) return res.status(400).json({ error: 'idToken, title required' });
 
     let uid;
     try {
@@ -252,7 +252,7 @@ app.post('/create-scheduled-room', async (req, res) => {
             title: String(title).slice(0, 200),
             category: String(category || 'general').slice(0, 32),
             createdAt: Date.now(),
-            seats: { [uid]: { fcmToken, joinedAt: Date.now() } }
+            seats: { [uid]: { fcmToken: fcmToken || null, joinedAt: Date.now() } }
         });
         res.json({ success: true, roomId });
     } catch (e) {
@@ -265,7 +265,7 @@ app.post('/create-scheduled-room', async (req, res) => {
 app.post('/join-scheduled-room', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
     const { idToken, roomId, fcmToken } = req.body;
-    if (!idToken || !roomId || !fcmToken) return res.status(400).json({ error: 'idToken, roomId, fcmToken required' });
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
 
     let uid;
     try {
@@ -288,7 +288,7 @@ app.post('/join-scheduled-room', async (req, res) => {
             if (seats[uid]) { outcome = 'already'; return seats; }
             if (Object.keys(seats).length >= 4) { outcome = 'full'; return seats; }
             outcome = 'joined';
-            return { ...seats, [uid]: { fcmToken, joinedAt: Date.now() } };
+            return { ...seats, [uid]: { fcmToken: fcmToken || null, joinedAt: Date.now() } };
         });
 
         res.json({ success: outcome !== 'full', full: outcome === 'full' });
