@@ -593,6 +593,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             font-size: 11px;
             color: rgba(255,255,255,0.35);
             letter-spacing: 0.5px;
+            margin-top: -8px;
             margin-bottom: 8px;
         }
         .step-dot {
@@ -601,7 +602,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(255,255,255,0.15);
             transition: background 0.3s;
         }
-        .step-dot.active { background: var(--accent-color); }
+        .step-dot.active { background: var(--accent-color); animation: step-dot-blink 1.6s ease-in-out infinite; }
+        @keyframes step-dot-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.35; }
+        }
 
         /* 비밀번호 찾기 버튼 스타일 */
 #find-pw-btn {
@@ -833,9 +838,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #sub-period-value,
         html[data-cute-mode="cute"] #sub-price-value { color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #sub-plan-box { background: rgba(0,0,0,0.03) !important; }
-        html[data-cute-mode="cute"] #sub-change-plan-btn {
-            background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(43,31,36,0.6) !important;
-        }
         html[data-cute-mode="cute"] #sub-btn-refund { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] #sub-refund-note { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #refund-modal-title { color: #2b1f24 !important; }
@@ -1663,6 +1665,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(255,255,255,0.03); transition: border-color 0.15s;
         }
         .mycircles-plan-row:hover { border-color: rgba(var(--accent-rgb),0.4); }
+        .mycircles-plan-row-disabled { cursor: default; opacity: 0.4; }
+        .mycircles-plan-row-disabled:hover { border-color: rgba(255,255,255,0.09); }
         .mycircles-plan-name { font-size: 13.5px; font-weight: 700; color: #f5f4f2; }
         .mycircles-plan-desc { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
         .mycircles-plan-price { font-size: 14px; font-weight: 700; color: var(--accent-color); }
@@ -1919,6 +1923,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .mycircles-rejoin-btn:hover { border-color: #ff6f9c; color: #ff6f9c; }
         html[data-cute-mode="cute"] .mycircles-plan-row { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
         html[data-cute-mode="cute"] .mycircles-plan-row:hover { border-color: #ff6f9c; }
+        html[data-cute-mode="cute"] .mycircles-plan-row-disabled:hover { border-color: rgba(0,0,0,.08); }
         html[data-cute-mode="cute"] .mycircles-plan-name { color: #2b1f24; }
         html[data-cute-mode="cute"] .mycircles-plan-desc { color: rgba(43,31,36,.45); }
         html[data-cute-mode="cute"] .mycircles-plan-price { color: #ff6f9c; }
@@ -2215,14 +2220,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                         <div class="settings-card-value" id="mycircles-sub-value" style="color:var(--accent-color);">--</div>
                     </div>
                     <div class="settings-section-label" id="mycircles-plans-label" style="margin-top:18px;">전환 가능한 플랜</div>
-                    <div class="mycircles-plan-row" id="mycircles-plan-monthly" onclick="openMainPayModal()">
+                    <div class="mycircles-plan-row" id="mycircles-plan-monthly" onclick="openChangePlanModal('monthly')">
                         <div>
                             <div class="mycircles-plan-name">Monthly</div>
                             <div class="mycircles-plan-desc" id="mycircles-plan-monthly-desc">세션당 10분 제한 없이 자유롭게 대화</div>
                         </div>
                         <div class="mycircles-plan-price">$4.99<span>/mo</span></div>
                     </div>
-                    <div class="mycircles-plan-row" id="mycircles-plan-weekly" onclick="openMainPayModal()">
+                    <div class="mycircles-plan-row" id="mycircles-plan-weekly" onclick="openChangePlanModal('weekly')">
                         <div>
                             <div class="mycircles-plan-name">Weekly</div>
                             <div class="mycircles-plan-desc" id="mycircles-plan-weekly-desc">세션당 10분 제한 없이 자유롭게 대화</div>
@@ -2628,7 +2633,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <!-- 약관 동의 모달 -->
     <!-- 생년월일 확인 모달 -->
-    <div class="modal-overlay" id="dob-modal">
+    <div class="modal-overlay" id="dob-modal" onclick="if(event.target===this) cancelDob()">
         <div class="modal-content" style="max-width:340px; text-align:center;">
             <h3 id="dob-title" style="font-size:17px; margin-bottom:6px; letter-spacing:0.5px;">Enter your date of birth</h3>
             <p id="dob-subtitle" style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:22px;">B-TALK is for users 18 and older.</p>
@@ -2637,8 +2642,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <select id="dob-month" style="flex:1.5; padding:12px 8px; background:#1a1d26; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer; color-scheme:dark;"></select>
                 <select id="dob-day" style="flex:1.5; padding:12px 8px; background:#1a1d26; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer; color-scheme:dark;"></select>
             </div>
-            <button id="dob-confirm-btn" class="intro2-start-btn" onclick="confirmDob()" style="margin-bottom:10px;">Confirm</button>
-            <button onclick="cancelDob()" style="width:100%; padding:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer;" id="dob-cancel-btn">Cancel</button>
+            <button id="dob-confirm-btn" class="intro2-start-btn" onclick="confirmDob()">Confirm</button>
         </div>
     </div>
 
@@ -2775,8 +2779,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <span id="sub-price-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
                 </div>
             </div>
-            <!-- 플랜 변경 -->
-            <button id="sub-change-plan-btn" onclick="openChangePlanModal()" style="width:100%; padding:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.6); font-size:14px; cursor:pointer; margin-bottom:8px;"><span id="sub-btn-change">플랜 변경하기</span></button>
             <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:2px; text-decoration:underline;" id="sub-btn-refund">구독 취소하기</button>
             <p id="sub-refund-note" style="font-size:10.5px; color:rgba(255,255,255,0.25); text-align:center; margin:10px 0 0; line-height:1.5;"></p>
         </div>
@@ -3488,8 +3490,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const uid = auth.currentUser ? auth.currentUser.uid : null;
         const isKo = currentLang === 'ko';
         const valueEl = document.getElementById('mycircles-sub-value');
+        const monthlyRow = document.getElementById('mycircles-plan-monthly');
+        const weeklyRow = document.getElementById('mycircles-plan-weekly');
+        function setPlanRowState(currentPlan) {
+            [['monthly', monthlyRow], ['weekly', weeklyRow]].forEach(([plan, row]) => {
+                if (!row) return;
+                const isCurrent = currentPlan === plan;
+                row.classList.toggle('mycircles-plan-row-disabled', isCurrent);
+                row.style.pointerEvents = isCurrent ? 'none' : '';
+            });
+        }
         if (!valueEl) return;
-        if (!uid) { valueEl.textContent = isKo ? '로그인 필요' : 'Login required'; return; }
+        if (!uid) { valueEl.textContent = isKo ? '로그인 필요' : 'Login required'; setPlanRowState(null); return; }
         try {
             const subSnap = await database.ref('users/' + uid + '/subscription').once('value');
             const sub = subSnap.val();
@@ -3503,10 +3515,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 }
                 valueEl.classList.remove('dim');
                 valueEl.style.color = 'var(--accent-color)';
+                setPlanRowState(sub.plan === 'early50' ? null : sub.plan);
             } else {
                 valueEl.textContent = isKo ? '미구독 · 눌러서 구독하기' : 'Not subscribed · Tap to subscribe';
                 valueEl.classList.add('dim');
                 valueEl.style.color = '';
+                setPlanRowState(null);
             }
         } catch(e) { console.warn('mycircles sub status load failed:', e); }
     }
@@ -7147,7 +7161,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             : 'Check your billing email to manage your subscription.');
     }
 
-    function openChangePlanModal() {
+    // preselect: 'monthly' | 'weekly' | undefined — My Circles의 "전환 가능한 플랜"에서 어떤 걸 눌렀는지
+    // (이미 유료 구독 중이면 어차피 반대쪽 플랜만 선택 가능하므로 preselect는 아직 구독이 없을 때만 강조 표시에 사용됨)
+    function openChangePlanModal(preselect) {
         const isKo = currentLang === 'ko';
         document.getElementById('subscription-modal').classList.remove('active');
         // 현재 플랜 확인해서 변경 가능한 플랜만 활성화 (early50 프로모션은 유료 플랜이 아니므로 둘 다 선택 가능)
@@ -7164,29 +7180,31 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             document.getElementById('cp-weekly-price').textContent = isKo ? '$1.99 / 주' : '$1.99/week';
             document.getElementById('cp-monthly-price').textContent = isKo ? '$4.99 / 월' : '$4.99/month';
 
-            function setEnabled(btn, labelId, text) {
+            function setEnabled(btn, labelId, text, highlight) {
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.style.cursor = 'pointer';
+                btn.style.borderColor = highlight ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)';
                 document.getElementById(labelId).textContent = text;
             }
             function setCurrent(btn, labelId, text) {
                 btn.disabled = true;
                 btn.style.opacity = '0.4';
                 btn.style.cursor = 'default';
+                btn.style.borderColor = 'rgba(255,255,255,0.06)';
                 document.getElementById(labelId).textContent = text;
             }
 
             if (currentPlan === 'monthly') {
-                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan으로 변경' : 'Switch to Weekly Plan');
+                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan으로 변경' : 'Switch to Weekly Plan', false);
                 setCurrent(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan 유지' : 'Keep Monthly Plan');
             } else if (currentPlan === 'weekly') {
-                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan으로 변경' : 'Switch to Monthly Plan');
+                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan으로 변경' : 'Switch to Monthly Plan', false);
                 setCurrent(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan 유지' : 'Keep Weekly Plan');
             } else {
-                // early50 프로모션 등 — 아직 유료 구독 중이 아니므로 두 플랜 모두 선택 가능
-                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan 시작하기' : 'Start Weekly Plan');
-                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan 시작하기' : 'Start Monthly Plan');
+                // early50 프로모션 등 — 아직 유료 구독 중이 아니므로 두 플랜 모두 선택 가능. 클릭해서 들어온 쪽을 강조 표시
+                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan 시작하기' : 'Start Weekly Plan', preselect === 'weekly');
+                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan 시작하기' : 'Start Monthly Plan', preselect === 'monthly');
             }
             document.getElementById('change-plan-modal').classList.add('active');
         });
@@ -7249,7 +7267,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             document.getElementById('sub-next-value').textContent = isEarly50 ? '' : (validDates ? fmtDot(expiresDate) : sub.expiresAt);
             document.getElementById('sub-label-price').textContent = isKo ? '가격' : 'Price';
             document.getElementById('sub-price-value').textContent = priceLabel;
-            document.getElementById('sub-btn-change').textContent = isKo ? '플랜 변경하기' : 'Change plan';
             document.getElementById('sub-refund-note').textContent = isKo
                 ? '구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.'
                 : 'Request a refund within 14 days of subscribing for a full refund and immediate cancellation.';
@@ -8033,7 +8050,7 @@ function renderSettingsBattery() {
     if (!_settingsEnergyData) return;
     const isKo = currentLang === 'ko';
     if (isGuest) {
-        document.getElementById('settings-rank-name').textContent = isKo ? '회원전용' : 'Members only';
+        document.getElementById('settings-rank-name').textContent = isKo ? '로그인필요' : 'Login required';
         const subEl = document.getElementById('settings-rank-sub');
         if (subEl) subEl.textContent = '';
         return;
@@ -8047,7 +8064,7 @@ function renderSettingsDailyEnergy() {
     if (_settingsDailyEnergyData == null) return;
     const isKo = currentLang === 'ko';
     if (isGuest) {
-        document.getElementById('settings-badge-count').textContent = isKo ? '회원전용' : 'Members only';
+        document.getElementById('settings-badge-count').textContent = isKo ? '로그인필요' : 'Login required';
         document.getElementById('settings-badge-chips').innerHTML = '';
         return;
     }
@@ -8822,8 +8839,15 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         intro.style.display = 'flex';
         document.body.classList.add('intro-open');
         // 다시 1번 화면으로 돌아왔을 때 영상을 처음부터 재생
+        // (스와이프로 넘어갔던 경우 카드가 화면 밖으로 밀려나 투명해진 상태로 남아있으므로 원상복구)
         const splashVideo = document.getElementById('intro-splash-video');
-        if (splashVideo) { splashVideo.currentTime = 0; splashVideo.play().catch(() => {}); }
+        if (splashVideo) {
+            splashVideo.style.transition = 'none';
+            splashVideo.style.transform = '';
+            splashVideo.style.opacity = '';
+            splashVideo.currentTime = 0;
+            splashVideo.play().catch(() => {});
+        }
     }
 
     // 1번 화면의 영상 카드를 손가락/마우스로 잡고 옆으로 슥 밀면 2번 화면(로그인)으로 넘어감
