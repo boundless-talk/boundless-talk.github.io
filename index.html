@@ -2002,7 +2002,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <span class="intro-pulse"></span>
         </div>
         -->
-        <video id="intro-splash-video" src="splash.mp4" autoplay muted playsinline webkit-playsinline
+        <!-- src는 다크/큐트 테마에 따라 스크립트에서 splash-dark.mp4 / splash-cute.mp4 중 하나로 설정됨 -->
+        <video id="intro-splash-video" autoplay muted playsinline webkit-playsinline
                style="width:min(320px, 84vw); border-radius:20px; box-shadow:0 12px 40px rgba(0,0,0,0.35);"
                onended="startFromIntro()" onerror="startFromIntro()"></video>
         <div id="intro-footer">
@@ -7012,11 +7013,16 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         document.getElementById('refund-modal').classList.add('active');
     }
 
-    // 인트로 화면 즉시 표시 (스플래시 영상 제거됨)
+    // 인트로 화면 즉시 표시 — 스플래시 영상은 다크/큐트 테마에 맞는 버전으로 재생
     (function() {
         const intro = document.getElementById('intro-screen');
         intro.style.display = 'flex';
         document.body.classList.add('intro-open');
+        const splashVideo = document.getElementById('intro-splash-video');
+        if (splashVideo) {
+            const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
+            splashVideo.src = isCute ? 'splash-cute.mp4' : 'splash-dark.mp4';
+        }
     })();
 
     // Render 서버 콜드스타트 방지 핑 (10분마다)
