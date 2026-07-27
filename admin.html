@@ -1450,7 +1450,16 @@
     }
 
     function markRefundDone(id) {
-        db.ref('refundRequests/' + id + '/status').set('done').then(() => loadRefunds());
+        // 처리완료 표시 시 해당 유저의 구독(유료 결제든 첫 50명 프로모션이든)도 함께 해지해야
+        // 앱에서 계속 구독 회원으로 남아있는 문제가 없음
+        db.ref('refundRequests/' + id).once('value').then(snap => {
+            const req = snap.val();
+            const tasks = [db.ref('refundRequests/' + id + '/status').set('done')];
+            if (req && req.uid) {
+                tasks.push(db.ref('users/' + req.uid + '/subscription').remove());
+            }
+            return Promise.all(tasks);
+        }).then(() => loadRefunds());
     }
 
     function loadSubscriptions() {
