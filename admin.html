@@ -521,6 +521,10 @@
         <span class="icon">🟢</span> 현재 접속자
         <span class="nav-badge" id="online-badge" style="display:none;background:var(--green)">0</span>
     </div>
+    <div class="nav-item" onclick="navigate('scheduled')">
+        <span class="icon">🌙</span> 예약방
+        <span class="nav-badge" id="scheduled-badge" style="display:none">0</span>
+    </div>
 
     <div class="nav-section">구독</div>
     <div class="nav-item" onclick="navigate('subscriptions')">
@@ -719,6 +723,15 @@
             </div>
         </div>
 
+        <!-- 예약방 (오늘 밤 10시 예약) -->
+        <div class="page" id="page-scheduled">
+            <div class="section-header">
+                <div class="section-title">오늘 예약된 방</div>
+                <div class="section-count" id="scheduled-count"></div>
+            </div>
+            <div id="scheduled-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
+        </div>
+
         <!-- 이의신청 -->
         <div class="page" id="page-appeals">
             <div class="section-header">
@@ -840,6 +853,7 @@
     const ADMIN_EMAILS = new Set([
          'freesia9353@gmail.com'
     ]);
+    const TOKEN_SERVER_URL = 'https://b-talk-0gi0.onrender.com';
 
     let allUsers = {};
     let allReports = {};
@@ -1146,7 +1160,8 @@
         if (page === 'withdrawals') loadWithdrawals();
         if (page === 'refunds') loadRefunds();
         if (page === 'subscriptions') loadSubscriptions();
-        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', withdrawals:'탈퇴 사유', refunds:'환불 요청', subscriptions:'구독 현황' };
+        if (page === 'scheduled') loadScheduledRooms();
+        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', withdrawals:'탈퇴 사유', refunds:'환불 요청', subscriptions:'구독 현황', scheduled:'예약방' };
         document.getElementById('page-title').textContent = titles[page] || page;
         closeSidebar();
     }
@@ -1452,6 +1467,63 @@
             document.getElementById('refunds-list').innerHTML =
                 `<div style="text-align:center;padding:40px;color:var(--danger);font-size:13px;">환불 목록을 불러오지 못했습니다: ${err.message}</div>`;
         });
+    }
+
+    const SCHEDULED_CAT_LABELS = { debate:'토론', tech:'테크', latenight:'심야', music:'음악', life:'일상', gaming:'게임', general:'일반' };
+
+    async function loadScheduledRooms() {
+        const list = document.getElementById('scheduled-list');
+        try {
+            const idToken = await auth.currentUser.getIdToken();
+            const res = await fetch(TOKEN_SERVER_URL + '/scheduled-rooms-today', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+            });
+            const data = await res.json();
+            const rooms = data.rooms || [];
+            document.getElementById('scheduled-count').textContent = `총 ${rooms.length}건`;
+            document.getElementById('scheduled-badge').style.display = rooms.length > 0 ? 'inline-block' : 'none';
+            document.getElementById('scheduled-badge').textContent = rooms.length;
+            if (rooms.length === 0) {
+                list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">오늘 예약된 방이 없습니다.</div>';
+                return;
+            }
+            list.innerHTML = rooms.map(r => {
+                const full = r.seatCount >= r.maxPeople;
+                return `
+                <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                        <span style="font-size:12px;color:var(--text-dim);">${SCHEDULED_CAT_LABELS[r.category] || r.category} · ${r.style === 'polite' ? '정중하게' : '친구처럼'}${r.pingpong ? ' · 🏓 핑퐁' : ''}</span>
+                        <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:${full ? 'var(--danger-dim)' : 'var(--surface2)'};color:${full ? 'var(--danger)' : 'var(--text-dim)'};">${r.seatCount}/${r.maxPeople}명 ${full ? '· 가득참' : '예약'}</span>
+                    </div>
+                    <div style="font-size:14px;color:var(--text);margin-bottom:12px;">${r.title}</div>
+                    <button onclick="deleteScheduledRoom('${r.id}', this)" style="padding:6px 14px;font-size:12px;background:var(--danger-dim);border:1px solid rgba(255,77,77,0.3);color:var(--danger);border-radius:6px;cursor:pointer;">🗑 예약 삭제</button>
+                </div>`;
+            }).join('');
+        } catch (e) {
+            console.error('[loadScheduledRooms] failed:', e);
+            list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);font-size:13px;">예약방 목록을 불러오지 못했습니다: ${e.message}</div>`;
+        }
+    }
+
+    async function deleteScheduledRoom(roomId, btn) {
+        if (!confirm('이 예약방을 삭제하시겠습니까?\n예약한 사람들의 좌석 기록도 함께 삭제되며, 되돌릴 수 없습니다.')) return;
+        if (btn) { btn.disabled = true; btn.textContent = '삭제 중...'; }
+        try {
+            const idToken = await auth.currentUser.getIdToken();
+            const res = await fetch(TOKEN_SERVER_URL + '/admin/delete-scheduled-room', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, roomId })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'unknown');
+            await loadScheduledRooms();
+        } catch (e) {
+            alert('삭제 실패: ' + e.message);
+            if (btn) { btn.disabled = false; btn.textContent = '🗑 예약 삭제'; }
+        }
     }
 
     function markRefundDone(id) {

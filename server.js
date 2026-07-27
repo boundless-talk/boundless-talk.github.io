@@ -6,6 +6,10 @@ const OpenAI = require('openai');
 const nodemailer = require('nodemailer');
 const admin = require('firebase-admin');
 
+// admin.html과 동일한 관리자 목록 — 여기 없는 계정은 예약방 삭제 등 관리자 전용 엔드포인트를 쓸 수 없음
+const ADMIN_UIDS = new Set(['Gtm5D4E4eOXuUbYWnT94QV9dXRq2']);
+const ADMIN_EMAILS = new Set(['freesia9353@gmail.com']);
+
 // Gmail SMTP (Resend 샌드박스는 계정 소유자 본인 메일로만 발송 가능해서, 임의 수신자에게 보내려면 이쪽을 씀)
 const gmailTransporter = (process.env.GMAIL_USER && process.env.GMAIL_PASS)
     ? nodemailer.createTransport({
@@ -364,6 +368,33 @@ app.post('/scheduled-rooms-today', async (req, res) => {
     } catch (e) {
         console.error('[scheduled-rooms-today] error:', e.message);
         res.json({ rooms: [] });
+    }
+});
+
+// 관리자 패널에서 오늘 예약된 방을 강제로 삭제 — 예약자 전원의 좌석 기록도 함께 지워짐
+app.post('/admin/delete-scheduled-room', async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId } = req.body;
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+
+    let decoded;
+    try {
+        decoded = await admin.auth().verifyIdToken(idToken);
+    } catch (e) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+    if (!ADMIN_UIDS.has(decoded.uid) && !ADMIN_EMAILS.has(decoded.email)) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const today = kst.toISOString().slice(0, 10);
+        await admin.database().ref(`scheduledRooms/${today}/${roomId}`).remove();
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[admin/delete-scheduled-room] error:', e.message);
+        res.status(500).json({ error: e.message });
     }
 });
 
