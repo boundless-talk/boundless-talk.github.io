@@ -5788,7 +5788,8 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             // 시간대별 접속 통계 (히트맵용, KST 기준)
             try {
                 const kstHour = new Date(Date.now() + 9 * 60 * 60 * 1000).getUTCHours();
-                database.ref('stats/hourlyJoins/' + kstHour).transaction(cur => (cur || 0) + 1);
+                database.ref('stats/hourlyJoins/' + kstHour).transaction(cur => (cur || 0) + 1)
+                    .catch(e => console.warn('hourlyJoins write failed:', e.message));
             } catch(e) { console.warn('hourlyJoins write failed:', e.message); }
             // 대화 시작 → 대기자 목록에서 제거
             if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).remove();
@@ -5938,7 +5939,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             isJoining = false;
             myUid = null;
             // 연결 해제 → 다시 대기자로 등록
-            if (firebaseUser) database.ref('waiting/' + firebaseUser.uid).set(true);
+            // (firebaseUser는 위쪽 try 블록 안에서만 선언된 변수라 catch 블록에선 안 보임 —
+            // 여기서 다시 auth.currentUser를 읽어야 함. 안 그러면 ReferenceError가 나서
+            // 이 아래의 버튼 상태 복구 코드가 전부 실행되지 않고 조용히 멈춰버림)
+            if (auth.currentUser) database.ref('waiting/' + auth.currentUser.uid).set(true);
             setSubtitleRequestSignal(false);
             stopListenSubtitleRequesters();
             stopSubtitleRecognition();
