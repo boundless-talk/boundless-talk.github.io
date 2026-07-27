@@ -8821,7 +8821,83 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         intro.classList.remove('hide');
         intro.style.display = 'flex';
         document.body.classList.add('intro-open');
+        // 다시 1번 화면으로 돌아왔을 때 영상을 처음부터 재생
+        const splashVideo = document.getElementById('intro-splash-video');
+        if (splashVideo) { splashVideo.currentTime = 0; splashVideo.play().catch(() => {}); }
     }
+
+    // 1번 화면의 영상 카드를 손가락/마우스로 잡고 옆으로 슥 밀면 2번 화면(로그인)으로 넘어감
+    (function setupIntroCardSwipe() {
+        const card = document.getElementById('intro-splash-video');
+        if (!card) return;
+        const THRESHOLD = 90;
+        const MAX_ROTATE = 12;
+        let dragging = false, startX = 0, startY = 0, dx = 0;
+
+        function resetCard(animate) {
+            card.style.transition = animate ? 'transform 0.3s ease, opacity 0.3s ease' : 'none';
+            card.style.transform = '';
+            card.style.opacity = '';
+        }
+        function onStart(x, y) {
+            dragging = true; startX = x; startY = y; dx = 0;
+            card.style.transition = 'none';
+        }
+        function onMove(x, y) {
+            if (!dragging) return;
+            dx = x - startX;
+            const dy = y - startY;
+            if (Math.abs(dy) > 70 && Math.abs(dy) > Math.abs(dx)) { dragging = false; resetCard(true); return; }
+            const rotate = Math.max(-MAX_ROTATE, Math.min(MAX_ROTATE, dx / 12));
+            card.style.transform = `translateX(${dx}px) rotate(${rotate}deg)`;
+            card.style.opacity = String(Math.max(0.35, 1 - Math.abs(dx) / 380));
+        }
+        function onEnd() {
+            if (!dragging) return;
+            dragging = false;
+            if (Math.abs(dx) > THRESHOLD) {
+                const dir = dx > 0 ? 1 : -1;
+                card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                card.style.transform = `translateX(${dir * 520}px) rotate(${dir * MAX_ROTATE}deg)`;
+                card.style.opacity = '0';
+                setTimeout(() => startFromIntro(), 200);
+            } else {
+                resetCard(true);
+            }
+        }
+
+        card.style.touchAction = 'pan-y';
+        card.addEventListener('touchstart', (e) => { if (e.touches.length === 1) onStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+        card.addEventListener('touchmove', (e) => { if (e.touches.length === 1) onMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+        card.addEventListener('touchend', onEnd, { passive: true });
+        card.addEventListener('mousedown', (e) => onStart(e.clientX, e.clientY));
+        document.addEventListener('mousemove', (e) => { if (dragging) onMove(e.clientX, e.clientY); });
+        document.addEventListener('mouseup', onEnd);
+    })();
+
+    // 2번 화면(로그인)에서는 오른쪽으로 슥 밀면 다시 1번 화면(인트로)으로 돌아감
+    (function setupLoginBackSwipe() {
+        let startX = 0, startY = 0, startTime = 0;
+        const THRESHOLD = 70, MAX_VERTICAL = 60, MAX_TIME = 600;
+        document.addEventListener('touchstart', (e) => {
+            const authSection = document.getElementById('auth-section');
+            if (!authSection || authSection.style.display === 'none') return;
+            if (e.touches.length !== 1) return;
+            startX = e.touches[0].clientX; startY = e.touches[0].clientY; startTime = Date.now();
+        }, { passive: true });
+        document.addEventListener('touchend', (e) => {
+            if (!startTime) return;
+            const authSection = document.getElementById('auth-section');
+            const wasVisible = authSection && authSection.style.display !== 'none';
+            const dt = Date.now() - startTime;
+            startTime = 0;
+            if (!wasVisible || dt > MAX_TIME) return;
+            const touch = e.changedTouches[0];
+            const dx = touch.clientX - startX;
+            const dy = touch.clientY - startY;
+            if (dx > THRESHOLD && Math.abs(dy) < MAX_VERTICAL) backToIntroFromLogin();
+        }, { passive: true });
+    })();
 
 // ── 영구정지 이의신청 제출 ──
 async function submitAppeal() {
