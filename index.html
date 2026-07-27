@@ -6654,8 +6654,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     function setSubtitleRequestSignal(active) {
         const cu = auth.currentUser;
-        if (!cu || !currentChannelName) return;
-        const ref = database.ref('subtitleRequesters/' + currentChannelName + '/' + cu.uid);
+        if (!cu || !safeAgoraChannelId) return;
+        const ref = database.ref('subtitleRequesters/' + safeAgoraChannelId + '/' + cu.uid);
         if (active) {
             ref.set(true);
             ref.onDisconnect().remove();
@@ -6666,8 +6666,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function listenSubtitleRequesters() {
-        if (!currentChannelName) return;
-        subtitleRequestersRef = database.ref('subtitleRequesters/' + currentChannelName);
+        if (!safeAgoraChannelId) return;
+        subtitleRequestersRef = database.ref('subtitleRequesters/' + safeAgoraChannelId);
         subtitleRequestersRef.on('value', (snap) => {
             const data = snap.val() || {};
             const cu = auth.currentUser;
@@ -6807,7 +6807,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     async function sendToWhisper(blob, mimeType) {
         const cu = auth.currentUser;
-        if (!cu || !currentChannelName) return;
+        if (!cu || !safeAgoraChannelId) return;
         const ext = mimeType.includes('mp4') ? 'm4a' : 'webm';
         const formData = new FormData();
         formData.append('audio', blob, 'audio.' + ext);
@@ -6818,7 +6818,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const data = await res.json();
             const text = (data.text || '').trim();
             if (!text) return;
-            await database.ref('subtitles/' + currentChannelName + '/' + cu.uid).set({
+            await database.ref('subtitles/' + safeAgoraChannelId + '/' + cu.uid).set({
                 text, lang: document.getElementById('my-lang-select').value, ts: Date.now()
             });
             displaySubtitle(cu.uid, text, null, true);
@@ -6851,8 +6851,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function listenSubtitles() {
-        if (!currentChannelName) return;
-        subtitleFbRef = database.ref('subtitles/' + currentChannelName);
+        if (!safeAgoraChannelId) return;
+        subtitleFbRef = database.ref('subtitles/' + safeAgoraChannelId);
         // 상대방이 이번 세션에서 처음 말하면 새 노드가 생성되며 'child_added'가 발생하고,
         // 그 다음부터는 같은 노드가 갱신되며 'child_changed'가 발생함 — 둘 다 들어야 첫 마디를 놓치지 않음
         subtitleFbRef.on('child_added', handleSubtitleSnapshot);
@@ -6862,8 +6862,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function stopSubtitleListener() {
         if (subtitleFbRef) { subtitleFbRef.off(); subtitleFbRef = null; }
         const cu = auth.currentUser;
-        if (cu && currentChannelName) {
-            database.ref('subtitles/' + currentChannelName + '/' + cu.uid).remove();
+        if (cu && safeAgoraChannelId) {
+            database.ref('subtitles/' + safeAgoraChannelId + '/' + cu.uid).remove();
         }
     }
 
