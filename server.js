@@ -60,7 +60,11 @@ setInterval(async () => {
                         title: '🌙 대화의 문이 열렸어요',
                         body: `예약하신 "${room.title}" 방을 시작해보세요!`
                     },
-                    data: { topic: String(room.title) }
+                    data: {
+                    topic: String(room.title),
+                    style: room.style === 'polite' ? 'polite' : 'casual',
+                    pp: room.pingpong ? '1' : '0'
+                }
                 }));
             });
         });
@@ -233,7 +237,7 @@ app.post('/claim-early-access', async (req, res) => {
 // 운영시간 외 "밤 10시 대화방 예약(Scheduled)" — Admin SDK로 대신 써서 클라이언트 DB 규칙에 안 걸리게 함
 app.post('/create-scheduled-room', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
-    const { idToken, title, category, fcmToken } = req.body;
+    const { idToken, title, category, style, pingpong, fcmToken } = req.body;
     if (!idToken || !title) return res.status(400).json({ error: 'idToken, title required' });
 
     let uid;
@@ -251,6 +255,8 @@ app.post('/create-scheduled-room', async (req, res) => {
         await roomRef.set({
             title: String(title).slice(0, 200),
             category: String(category || 'general').slice(0, 32),
+            style: style === 'polite' ? 'polite' : 'casual',
+            pingpong: !!pingpong,
             createdAt: Date.now(),
             seats: { [uid]: { fcmToken: fcmToken || null, joinedAt: Date.now() } }
         });
@@ -347,6 +353,8 @@ app.post('/scheduled-rooms-today', async (req, res) => {
                 id,
                 title: r.title,
                 category: r.category || 'general',
+                style: r.style === 'polite' ? 'polite' : 'casual',
+                pingpong: !!r.pingpong,
                 seatCount: Object.keys(seats).length,
                 maxPeople: 4,
                 joined: uid ? !!seats[uid] : false

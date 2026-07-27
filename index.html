@@ -857,6 +857,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #sub-period-value,
         html[data-cute-mode="cute"] #sub-price-value { color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #sub-plan-box { background: rgba(0,0,0,0.03) !important; }
+        html[data-cute-mode="cute"] #sub-btn-change-plan { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #sub-btn-refund { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] #sub-refund-note { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #refund-modal-title { color: #2b1f24 !important; }
@@ -1697,18 +1698,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .mycircles-rejoin-btn:hover { border-color: var(--dr); color: var(--dr); }
         .mycircles-empty { padding: 28px 4px; text-align: center; color: rgba(255,255,255,0.35); font-size: 13px; }
-        .mycircles-plan-row {
-            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
-            padding: 12px 14px; border: 1px solid rgba(255,255,255,0.09); border-radius: 10px; margin-bottom: 8px;
-            background: rgba(255,255,255,0.03); transition: border-color 0.15s;
-        }
-        .mycircles-plan-row:hover { border-color: rgba(var(--accent-rgb),0.4); }
-        .mycircles-plan-row-disabled { cursor: default; opacity: 0.4; }
-        .mycircles-plan-row-disabled:hover { border-color: rgba(255,255,255,0.09); }
-        .mycircles-plan-name { font-size: 13.5px; font-weight: 700; color: #f5f4f2; }
-        .mycircles-plan-desc { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
-        .mycircles-plan-price { font-size: 14px; font-weight: 700; color: var(--accent-color); }
-        .mycircles-plan-price span { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.35); }
 
         /* ── 방 만들기 모달 (같은 레드 액센트) ── */
         .disco-modal-box {
@@ -1959,13 +1948,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .mycircles-empty { color: rgba(43,31,36,.5); }
         html[data-cute-mode="cute"] .mycircles-rejoin-btn { color: rgba(43,31,36,.5); border-color: rgba(0,0,0,.1); }
         html[data-cute-mode="cute"] .mycircles-rejoin-btn:hover { border-color: #ff6f9c; color: #ff6f9c; }
-        html[data-cute-mode="cute"] .mycircles-plan-row { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
-        html[data-cute-mode="cute"] .mycircles-plan-row:hover { border-color: #ff6f9c; }
-        html[data-cute-mode="cute"] .mycircles-plan-row-disabled:hover { border-color: rgba(0,0,0,.08); }
-        html[data-cute-mode="cute"] .mycircles-plan-name { color: #2b1f24; }
-        html[data-cute-mode="cute"] .mycircles-plan-desc { color: rgba(43,31,36,.45); }
-        html[data-cute-mode="cute"] .mycircles-plan-price { color: #ff6f9c; }
-        html[data-cute-mode="cute"] .mycircles-plan-price span { color: rgba(43,31,36,.35); }
     </style>
 </head>
 <body class="intro-open">
@@ -2291,21 +2273,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                         <div class="settings-card-label" id="mycircles-sub-label">구독 현황</div>
                         <div class="settings-card-value" id="mycircles-sub-value" style="color:var(--accent-color);">--</div>
                     </div>
-                    <div class="settings-section-label" id="mycircles-plans-label" style="margin-top:18px;">전환 가능한 플랜</div>
-                    <div class="mycircles-plan-row" id="mycircles-plan-monthly" onclick="openChangePlanModal('monthly')">
-                        <div>
-                            <div class="mycircles-plan-name">Monthly</div>
-                            <div class="mycircles-plan-desc" id="mycircles-plan-monthly-desc">세션당 10분 제한 없이 자유롭게 대화</div>
-                        </div>
-                        <div class="mycircles-plan-price">$4.99<span>/mo</span></div>
-                    </div>
-                    <div class="mycircles-plan-row" id="mycircles-plan-weekly" onclick="openChangePlanModal('weekly')">
-                        <div>
-                            <div class="mycircles-plan-name">Weekly</div>
-                            <div class="mycircles-plan-desc" id="mycircles-plan-weekly-desc">세션당 10분 제한 없이 자유롭게 대화</div>
-                        </div>
-                        <div class="mycircles-plan-price">$1.99<span>/wk</span></div>
-                    </div>
                     <div style="text-align:center; margin-top:16px;">
                         <span id="mycircles-withdrawal-link" onclick="openWithdrawalModal()" style="font-size:10px; color:rgba(255,255,255,0.18); text-decoration:underline; cursor:pointer;">회원탈퇴</span>
                     </div>
@@ -2355,6 +2322,25 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <input type="text" id="schedule-create-topic-input" placeholder="예: 오늘 하루 고생한 나에게 한마디...">
                 <div class="disco-modal-label" id="schedule-create-cat-label">카테고리</div>
                 <div class="disco-cat-grid" id="schedule-create-cat-grid"></div>
+
+                <div class="disco-modal-label" id="schedule-create-style-label">말투</div>
+                <div class="disco-pp-row">
+                    <span class="disco-pp-row-label" id="schedule-style-row-label">이 방의 말투</span>
+                    <div id="schedule-create-style-toggle" class="disco-seg-toggle" onclick="toggleScheduleCreateStyle()">
+                        <div id="schedule-create-style-casual" class="disco-seg-opt active">친구처럼</div>
+                        <div id="schedule-create-style-polite" class="disco-seg-opt">정중하게</div>
+                    </div>
+                </div>
+
+                <div class="disco-modal-label" id="schedule-create-mode-label">모드</div>
+                <div class="disco-pp-row">
+                    <span class="disco-pp-row-label" id="schedule-pp-row-label">핑퐁 모드 (순서대로 1분 30초씩 발언)</span>
+                    <div id="schedule-create-pp-toggle" class="disco-seg-toggle" onclick="toggleScheduleCreatePP()">
+                        <div id="schedule-create-pp-off" class="disco-seg-opt active">OFF</div>
+                        <div id="schedule-create-pp-on" class="disco-seg-opt">ON</div>
+                    </div>
+                </div>
+
                 <button class="disco-modal-submit" id="schedule-create-submit-btn" onclick="submitScheduledRoomCreate()">예약하기</button>
             </div>
         </div>
@@ -2846,7 +2832,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <span id="sub-price-value" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.9);"></span>
                 </div>
             </div>
-            <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:2px; text-decoration:underline;" id="sub-btn-refund">구독 취소하기</button>
+            <button onclick="openChangePlanModal()" id="sub-btn-change-plan" style="width:100%; padding:11px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:10px; color:#fff; font-size:13px; font-weight:700; cursor:pointer; margin-top:2px;">플랜 변경</button>
+            <button onclick="requestRefund()" style="width:100%; padding:8px; background:transparent; border:none; color:rgba(255,255,255,0.2); font-size:11px; cursor:pointer; margin-top:8px; text-decoration:underline;" id="sub-btn-refund">구독 취소하기</button>
             <p id="sub-refund-note" style="font-size:10.5px; color:rgba(255,255,255,0.25); text-align:center; margin:10px 0 0; line-height:1.5;"></p>
         </div>
     </div>
@@ -3078,7 +3065,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         // SW로부터 PUSH_JOIN 메시지 수신 → 자동 토픽 입장
         navigator.serviceWorker.addEventListener('message', e => {
             if (e.data && e.data.type === 'PUSH_JOIN' && e.data.topic) {
-                autoJoinFromPush(e.data.topic);
+                autoJoinFromPush(e.data.topic, e.data.style, e.data.pp);
             }
         });
     }
@@ -3089,11 +3076,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const joinTopic = params.get('join');
         if (joinTopic) {
             window._pushJoinTopic = joinTopic;
+            window._pushJoinStyle = params.get('style');
+            window._pushJoinPP = params.get('pp');
             window.history.replaceState({}, '', '/');
         }
     })();
 
-    function autoJoinFromPush(topic) {
+    // 예약 시 정한 말투/핑퐁 설정을 그대로 이어받아 방을 열어야, 같은 방을 예약한
+    // 다른 사람들도 같은 channelId(핑퐁 여부에 따라 접미사가 달라짐)로 합류할 수 있음
+    function autoJoinFromPush(topic, style, pp) {
+        selectedSpeechStyle = style === 'polite' ? 'polite' : 'casual';
+        pingpongMode = pp === '1' || pp === true;
         const topicInput = document.getElementById('topic-input');
         if (topicInput) {
             topicInput.value = topic;
@@ -3468,7 +3461,33 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     // ── Scheduled 탭: 여러 명이 같은 방에 좌석을 예약해두는 밤 10시 대화방 ──
     let scheduledRoomsCache = [];
     let scheduleCreateSelectedCat = 'general';
+    let scheduleCreateStyle = 'casual'; // 'casual' | 'polite' — 예약할 때 정하는 방 전체의 말투
+    let scheduleCreatePP = false;
     let _scheduledTabDefaultApplied = false;
+
+    function setScheduleCreateStyleUI(style) {
+        const casualEl = document.getElementById('schedule-create-style-casual');
+        const politeEl = document.getElementById('schedule-create-style-polite');
+        if (!casualEl || !politeEl) return;
+        casualEl.classList.toggle('active', style === 'casual');
+        politeEl.classList.toggle('active', style === 'polite');
+    }
+    function toggleScheduleCreateStyle() {
+        scheduleCreateStyle = scheduleCreateStyle === 'casual' ? 'polite' : 'casual';
+        setScheduleCreateStyleUI(scheduleCreateStyle);
+    }
+    function setScheduleCreatePPUI(on) {
+        const onEl = document.getElementById('schedule-create-pp-on');
+        const offEl = document.getElementById('schedule-create-pp-off');
+        if (!onEl || !offEl) return;
+        onEl.classList.toggle('active', on);
+        onEl.classList.toggle('disco-seg-opt-accent', on);
+        offEl.classList.toggle('active', !on);
+    }
+    function toggleScheduleCreatePP() {
+        scheduleCreatePP = !scheduleCreatePP;
+        setScheduleCreatePPUI(scheduleCreatePP);
+    }
 
     async function fetchScheduledRooms() {
         try {
@@ -3518,6 +3537,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         cat.className = 'disco-card-cat';
         cat.textContent = discoCatLabel(room.category);
         topLeft.appendChild(cat);
+        if (room.style) {
+            const styleTag = document.createElement('span');
+            styleTag.className = 'speech-style-badge';
+            styleTag.textContent = textData[currentLang]['speechStyleBadge' + (room.style === 'casual' ? 'Casual' : 'Polite')];
+            topLeft.appendChild(styleTag);
+        }
+        if (room.pingpong) {
+            const pp = document.createElement('span');
+            pp.className = 'disco-pp-badge';
+            pp.textContent = '🏓 PP';
+            topLeft.appendChild(pp);
+        }
         top.appendChild(topLeft);
         const badge = document.createElement('span');
         badge.className = 'disco-status-badge ' + (room.joined ? 'joined' : 'waiting');
@@ -3632,8 +3663,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     function openScheduleCreateModal() {
         if (!auth.currentUser) { promptGuestLogin(); return; }
         scheduleCreateSelectedCat = 'general';
+        scheduleCreateStyle = 'casual';
+        scheduleCreatePP = false;
         document.getElementById('schedule-create-topic-input').value = '';
         renderScheduleCreateCatGrid();
+        setScheduleCreateStyleUI('casual');
+        setScheduleCreatePPUI(false);
         document.getElementById('disco-schedule-modal').classList.add('active');
     }
     function closeScheduleCreateModal() {
@@ -3656,7 +3691,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const res = await fetch(TOKEN_SERVER_URL + '/create-scheduled-room', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken, title, category: scheduleCreateSelectedCat, fcmToken: token })
+                body: JSON.stringify({ idToken, title, category: scheduleCreateSelectedCat, style: scheduleCreateStyle, pingpong: scheduleCreatePP, fcmToken: token })
             });
             const data = await res.json();
             if (!data.success) throw new Error(data.error || 'unknown');
@@ -3728,6 +3763,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('schedule-create-topic-label', '주제', 'Topic');
         setPh('schedule-create-topic-input', '예: 오늘 하루 고생한 나에게 한마디...', 'e.g. A word for myself after a long day...');
         setText('schedule-create-cat-label', '카테고리', 'Category');
+        setText('schedule-create-style-label', '말투', 'Tone');
+        setText('schedule-style-row-label', '이 방의 말투', 'This circle\'s tone');
+        setText('schedule-create-style-casual', '친구처럼', 'Friendly');
+        setText('schedule-create-style-polite', '정중하게', 'Polite');
+        setText('schedule-create-mode-label', '모드', 'Mode');
+        setText('schedule-pp-row-label', '핑퐁 모드 (순서대로 1분 30초씩 발언)', 'Ping Pong mode (take 90s turns speaking in order)');
         setText('schedule-create-submit-btn', '예약하기', 'Schedule');
         renderScheduleCreateCatGrid();
         renderScheduledGrid();
@@ -3738,9 +3779,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('subtab-friends', '친구', 'Friends');
         setText('mycircles-sub-label', '구독 현황', 'Subscription');
         setText('mycircles-withdrawal-link', '회원탈퇴', 'Delete account');
-        setText('mycircles-plans-label', '전환 가능한 플랜', 'Available plans');
-        setText('mycircles-plan-monthly-desc', '세션당 10분 제한 없이 자유롭게 대화', 'No 10-min session limit — talk freely');
-        setText('mycircles-plan-weekly-desc', '세션당 10분 제한 없이 자유롭게 대화', 'No 10-min session limit — talk freely');
         setText('trending-col-topic', '카테고리', 'Category');
         setText('trending-col-circles', '방 개수', 'Circles');
         setText('trending-col-voices', '대화 인원', 'Voices');
@@ -3758,18 +3796,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const uid = auth.currentUser ? auth.currentUser.uid : null;
         const isKo = currentLang === 'ko';
         const valueEl = document.getElementById('mycircles-sub-value');
-        const monthlyRow = document.getElementById('mycircles-plan-monthly');
-        const weeklyRow = document.getElementById('mycircles-plan-weekly');
-        function setPlanRowState(currentPlan) {
-            [['monthly', monthlyRow], ['weekly', weeklyRow]].forEach(([plan, row]) => {
-                if (!row) return;
-                const isCurrent = currentPlan === plan;
-                row.classList.toggle('mycircles-plan-row-disabled', isCurrent);
-                row.style.pointerEvents = isCurrent ? 'none' : '';
-            });
-        }
         if (!valueEl) return;
-        if (!uid) { valueEl.textContent = isKo ? '로그인 필요' : 'Login required'; setPlanRowState(null); return; }
+        if (!uid) { valueEl.textContent = isKo ? '로그인 필요' : 'Login required'; return; }
         try {
             const subSnap = await database.ref('users/' + uid + '/subscription').once('value');
             const sub = subSnap.val();
@@ -3783,12 +3811,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 }
                 valueEl.classList.remove('dim');
                 valueEl.style.color = 'var(--accent-color)';
-                setPlanRowState(sub.plan === 'early50' ? null : sub.plan);
             } else {
                 valueEl.textContent = isKo ? '미구독 · 눌러서 구독하기' : 'Not subscribed · Tap to subscribe';
                 valueEl.classList.add('dim');
                 valueEl.style.color = '';
-                setPlanRowState(null);
             }
         } catch(e) { console.warn('mycircles sub status load failed:', e); }
     }
@@ -4550,8 +4576,10 @@ window.closeTopicInfoModal = closeTopicInfoModal;
             // 푸시 알림 클릭으로 진입한 경우 자동 입장
             if (window._pushJoinTopic) {
                 const t = window._pushJoinTopic;
+                const s = window._pushJoinStyle;
+                const p = window._pushJoinPP;
                 window._pushJoinTopic = null;
-                setTimeout(() => autoJoinFromPush(t), 800);
+                setTimeout(() => autoJoinFromPush(t, s, p), 800);
             }
 
 
@@ -4836,6 +4864,8 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         if (aboutNavBtnHero) aboutNavBtnHero.textContent = currentLang === 'ko' ? '서비스소개' : 'About';
         const refundBtn = document.getElementById('sub-btn-refund');
         if (refundBtn) refundBtn.innerHTML = currentLang === 'ko' ? '구독 취소하기' : 'Cancel Subscription';
+        const changePlanBtn = document.getElementById('sub-btn-change-plan');
+        if (changePlanBtn) changePlanBtn.textContent = currentLang === 'ko' ? '플랜 변경' : 'Change Plan';
         const rm = document.getElementById('refund-modal-title');
         if (rm) rm.textContent = isKo ? '어떤 점이 불편하셨나요?' : 'What was the issue?';
         const rs = document.getElementById('refund-modal-subtitle');

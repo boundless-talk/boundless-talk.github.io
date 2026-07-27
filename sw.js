@@ -66,14 +66,19 @@ messaging.onBackgroundMessage(payload => {
 // 알림 클릭 → 앱 열고 해당 토픽으로 자동 입장
 self.addEventListener('notificationclick', e => {
     e.notification.close();
-    const topic = e.notification.data && e.notification.data.topic;
-    const url = topic ? `/?join=${encodeURIComponent(topic)}` : '/';
+    const data = e.notification.data || {};
+    const topic = data.topic;
+    const style = data.style;
+    const pp = data.pp;
+    let url = topic ? `/?join=${encodeURIComponent(topic)}` : '/';
+    if (topic && style) url += `&style=${encodeURIComponent(style)}`;
+    if (topic && pp) url += `&pp=${encodeURIComponent(pp)}`;
     e.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
             for (const c of list) {
                 if (c.url.includes(self.location.origin)) {
                     c.focus();
-                    c.postMessage({ type: 'PUSH_JOIN', topic });
+                    c.postMessage({ type: 'PUSH_JOIN', topic, style, pp });
                     return;
                 }
             }
