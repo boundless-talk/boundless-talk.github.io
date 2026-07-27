@@ -31,8 +31,9 @@ if (!admin.apps.length && process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 }
 
-// 매일 밤 10시(22:00 KST)에 그날 예약된 대화방 알림 발송 — 1분마다 확인, 하루 한 번만 실행
-let _lastReservationNotifyDate = null;
+// 매일 밤 10시(22:00 KST)에 그날 예약된 대화방들의 좌석 예약자 전원에게 알림 발송
+// — 자리가 다 안 찼어도 예약한 사람들에게는 그대로 알림이 감. 1분마다 확인, 하루 한 번만 실행
+let _lastScheduledNotifyDate = null;
 setInterval(async () => {
     if (!admin.apps.length) return;
     try {
@@ -41,29 +42,35 @@ setInterval(async () => {
         const kstMinute = kst.getUTCMinutes();
         const todayKey = kst.toISOString().slice(0, 10);
         if (kstHour !== 22 || kstMinute > 1) return;
-        if (_lastReservationNotifyDate === todayKey) return;
-        _lastReservationNotifyDate = todayKey;
+        if (_lastScheduledNotifyDate === todayKey) return;
+        _lastScheduledNotifyDate = todayKey;
 
         const db = admin.database();
-        const snap = await db.ref(`reservations/${todayKey}`).once('value');
+        const snap = await db.ref(`scheduledRooms/${todayKey}`).once('value');
         const data = snap.val() || {};
-        const entries = Object.entries(data).filter(([, v]) => v && v.fcmToken && v.title);
-        if (entries.length === 0) return;
+        const rooms = Object.values(data).filter(r => r && r.title && r.seats);
 
-        const results = await Promise.allSettled(entries.map(([, v]) =>
-            admin.messaging().send({
-                token: v.fcmToken,
-                notification: {
-                    title: '🌙 대화의 문이 열렸어요',
-                    body: `예약하신 "${v.title}" 방을 시작해보세요!`
-                },
-                data: { topic: String(v.title) }
-            })
-        ));
+        const sendPromises = [];
+        rooms.forEach(room => {
+            Object.values(room.seats).forEach(seat => {
+                if (!seat || !seat.fcmToken) return;
+                sendPromises.push(admin.messaging().send({
+                    token: seat.fcmToken,
+                    notification: {
+                        title: '🌙 대화의 문이 열렸어요',
+                        body: `예약하신 "${room.title}" 방을 시작해보세요!`
+                    },
+                    data: { topic: String(room.title) }
+                }));
+            });
+        });
+        if (sendPromises.length === 0) return;
+
+        const results = await Promise.allSettled(sendPromises);
         const sent = results.filter(r => r.status === 'fulfilled').length;
-        console.log(`[reservation notify] ${sent}/${entries.length} sent for ${todayKey}`);
+        console.log(`[scheduled notify] ${sent}/${sendPromises.length} sent for ${todayKey}`);
     } catch (e) {
-        console.error('Reservation notify error:', e.message);
+        console.error('Scheduled notify error:', e.message);
     }
 }, 60 * 1000);
 
@@ -177,22 +184,6 @@ app.get('/early50-remaining', async (req, res) => {
     }
 });
 
-// 오늘 예약된 방 제목 목록(uid/토큰 없이 제목만) — Discover 피드에서 "오늘 밤 예정된 대화" 미리보기용
-app.get('/reservations-today', async (req, res) => {
-    if (!admin.apps.length) return res.json({ titles: [] });
-    try {
-        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
-        const today = kst.toISOString().slice(0, 10);
-        const snap = await admin.database().ref(`reservations/${today}`).once('value');
-        const data = snap.val() || {};
-        const titles = Object.values(data).filter(v => v && v.title).map(v => v.title).slice(0, 20);
-        res.json({ titles });
-    } catch (e) {
-        console.error('[reservations-today] error:', e.message);
-        res.json({ titles: [] });
-    }
-});
-
 app.post('/claim-early-access', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
     const { idToken } = req.body;
@@ -239,16 +230,15 @@ app.post('/claim-early-access', async (req, res) => {
     }
 });
 
-// 운영시간 외 "밤 10시 대화방 예약" — Admin SDK로 대신 써서 클라이언트 DB 규칙에 안 걸리게 함
-app.post('/reserve-room', async (req, res) => {
+// 운영시간 외 "밤 10시 대화방 예약(Scheduled)" — Admin SDK로 대신 써서 클라이언트 DB 규칙에 안 걸리게 함
+app.post('/create-scheduled-room', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
-    const { idToken, title, fcmToken } = req.body;
+    const { idToken, title, category, fcmToken } = req.body;
     if (!idToken || !title || !fcmToken) return res.status(400).json({ error: 'idToken, title, fcmToken required' });
 
     let uid;
     try {
-        const decoded = await admin.auth().verifyIdToken(idToken);
-        uid = decoded.uid;
+        uid = (await admin.auth().verifyIdToken(idToken)).uid;
     } catch (e) {
         return res.status(401).json({ error: 'Invalid token' });
     }
@@ -256,15 +246,116 @@ app.post('/reserve-room', async (req, res) => {
     try {
         const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
         const today = kst.toISOString().slice(0, 10);
-        await admin.database().ref(`reservations/${today}/${uid}`).set({
+        const roomId = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        const roomRef = admin.database().ref(`scheduledRooms/${today}/${roomId}`);
+        await roomRef.set({
             title: String(title).slice(0, 200),
-            fcmToken,
-            createdAt: Date.now()
+            category: String(category || 'general').slice(0, 32),
+            createdAt: Date.now(),
+            seats: { [uid]: { fcmToken, joinedAt: Date.now() } }
         });
+        res.json({ success: true, roomId });
+    } catch (e) {
+        console.error('[create-scheduled-room] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 예약방 좌석 참가 — 마지막 자리를 두 명이 동시에 채우는 경쟁 상태를 막기 위해 seats 노드에 트랜잭션을 검
+app.post('/join-scheduled-room', async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId, fcmToken } = req.body;
+    if (!idToken || !roomId || !fcmToken) return res.status(400).json({ error: 'idToken, roomId, fcmToken required' });
+
+    let uid;
+    try {
+        uid = (await admin.auth().verifyIdToken(idToken)).uid;
+    } catch (e) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const today = kst.toISOString().slice(0, 10);
+        const roomRef = admin.database().ref(`scheduledRooms/${today}/${roomId}`);
+
+        const titleSnap = await roomRef.child('title').once('value');
+        if (!titleSnap.exists()) return res.json({ success: false, full: false, error: 'room_not_found' });
+
+        let outcome = 'joined'; // 'joined' | 'full' | 'already'
+        await roomRef.child('seats').transaction(currentSeats => {
+            const seats = currentSeats || {};
+            if (seats[uid]) { outcome = 'already'; return seats; }
+            if (Object.keys(seats).length >= 4) { outcome = 'full'; return seats; }
+            outcome = 'joined';
+            return { ...seats, [uid]: { fcmToken, joinedAt: Date.now() } };
+        });
+
+        res.json({ success: outcome !== 'full', full: outcome === 'full' });
+    } catch (e) {
+        console.error('[join-scheduled-room] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/leave-scheduled-room', async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId } = req.body;
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+
+    let uid;
+    try {
+        uid = (await admin.auth().verifyIdToken(idToken)).uid;
+    } catch (e) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const today = kst.toISOString().slice(0, 10);
+        const roomRef = admin.database().ref(`scheduledRooms/${today}/${roomId}`);
+        await roomRef.child('seats/' + uid).remove();
+
+        // 좌석이 하나도 안 남으면 빈 예약방이 남지 않게 방 자체를 지움
+        const seatsSnap = await roomRef.child('seats').once('value');
+        if (!seatsSnap.exists() || seatsSnap.numChildren() === 0) {
+            await roomRef.remove();
+        }
         res.json({ success: true });
     } catch (e) {
-        console.error('[reserve-room] error:', e.message);
+        console.error('[leave-scheduled-room] error:', e.message);
         res.status(500).json({ error: e.message });
+    }
+});
+
+// 오늘 예약된 방 목록 — idToken을 주면 내가 참여 중인지(joined) 여부도 같이 내려줌
+app.post('/scheduled-rooms-today', async (req, res) => {
+    if (!admin.apps.length) return res.json({ rooms: [] });
+    const { idToken } = req.body || {};
+    let uid = null;
+    if (idToken) {
+        try { uid = (await admin.auth().verifyIdToken(idToken)).uid; } catch (e) { uid = null; }
+    }
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const today = kst.toISOString().slice(0, 10);
+        const snap = await admin.database().ref(`scheduledRooms/${today}`).once('value');
+        const data = snap.val() || {};
+        const rooms = Object.entries(data).map(([id, r]) => {
+            const seats = r.seats || {};
+            return {
+                id,
+                title: r.title,
+                category: r.category || 'general',
+                seatCount: Object.keys(seats).length,
+                maxPeople: 4,
+                joined: uid ? !!seats[uid] : false
+            };
+        });
+        res.json({ rooms });
+    } catch (e) {
+        console.error('[scheduled-rooms-today] error:', e.message);
+        res.json({ rooms: [] });
     }
 });
 

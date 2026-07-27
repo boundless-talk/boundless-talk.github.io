@@ -3368,8 +3368,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 empty.innerHTML = '';
                 if (discoRooms.length === 0 && !isWithinOperatingHours()) {
                     empty.textContent = currentLang === 'ko'
-                        ? '🌙 오늘 밤 10시, 대화의 문이 열립니다. Scheduled 탭에서 미리 예약해보세요.'
-                        : '🌙 Doors open tonight at 10 PM. Reserve a seat in the Scheduled tab.';
+                        ? '🌙 오늘 밤 10시, 대화의 문이 열립니다.'
+                        : '🌙 Doors open tonight at 10 PM.';
                 } else {
                     empty.textContent = discoRooms.length === 0
                         ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!' : 'No circles live right now. Start the first one!')
