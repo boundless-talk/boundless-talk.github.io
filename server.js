@@ -732,14 +732,22 @@ app.post('/notify-admin-login', async (req, res) => {
         const token = tokenSnap.val();
         if (!token) return res.json({ notified: false });
 
-        await admin.messaging().send({
-            token,
-            notification: {
-                title: '새 로그인 알림 🔔',
-                body: isGuest ? '게스트가 접속했어요' : `${email || '회원'}님이 로그인했어요`
+        try {
+            await admin.messaging().send({
+                token,
+                notification: {
+                    title: '새 로그인 알림 🔔',
+                    body: isGuest ? '게스트가 접속했어요' : `${email || '회원'}님이 로그인했어요`
+                }
+            });
+            res.json({ notified: true });
+        } catch (sendErr) {
+            // 토큰이 만료/무효화된 경우 — DB에서 지워서 다음에 관리자가 앱을 열 때 새 토큰으로 자동 재등록되게 함
+            if (sendErr.code === 'messaging/registration-token-not-registered' || sendErr.code === 'messaging/invalid-registration-token') {
+                await admin.database().ref('meta/adminFcmToken').remove().catch(() => {});
             }
-        });
-        res.json({ notified: true });
+            throw sendErr;
+        }
     } catch (e) {
         console.error('[notify-admin-login] error:', e.message);
         res.json({ notified: false });
