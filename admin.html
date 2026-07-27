@@ -593,6 +593,19 @@
                     <div class="stat-label">경고 누적</div>
                     <div class="stat-value warn" id="stat-warned">—</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-label">1회성 방문 비율</div>
+                    <div class="stat-value" id="stat-onetime">—</div>
+                    <div style="font-size:11px;color:var(--text-dim);margin-top:6px;" id="stat-onetime-sub">가입 당일 이후 다시 안 옴</div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <div class="section-title">시간대별 접속 분포 (KST)</div>
+            </div>
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:20px;">
+                <div id="hourly-chart-bars" style="display:flex; align-items:flex-end; gap:3px; height:90px;"></div>
+                <div id="hourly-chart-labels" style="display:flex; gap:3px; margin-top:4px;"></div>
             </div>
 
             <div class="section-header">
@@ -625,23 +638,39 @@
                 <div class="section-title">전체 회원</div>
                 <div class="section-count" id="users-count"></div>
             </div>
-            <div class="tabs">
+
+            <!-- 날짜별 신규 가입 현황 -->
+            <div class="section-header" style="margin-top:0;">
+                <div class="section-title" style="font-size:14px;">날짜별 신규 가입</div>
+            </div>
+            <div class="table-wrap" style="margin-bottom:20px;">
+                <table>
+                    <thead><tr><th>날짜</th><th>👤 신규 회원</th><th>👻 신규 게스트</th><th>합계</th></tr></thead>
+                    <tbody id="daily-signup-list"><tr class="loading-row"><td colspan="4">불러오는 중...</td></tr></tbody>
+                </table>
+            </div>
+
+            <div class="tabs" id="users-filter-tabs">
                 <div class="tab active" id="users-filter-all" onclick="setUserFilter('all')">전체</div>
                 <div class="tab" id="users-filter-member" onclick="setUserFilter('member')">👤 회원</div>
                 <div class="tab" id="users-filter-guest" onclick="setUserFilter('guest')">👻 게스트</div>
+            </div>
+            <div class="tabs" id="users-sort-tabs" style="margin-top:8px;">
+                <div class="tab active" id="users-sort-newest" onclick="setUserSort('newest')">최신 가입순</div>
+                <div class="tab" id="users-sort-recent" onclick="setUserSort('recent')">최근 로그인순</div>
             </div>
             <div class="table-wrap">
                 <table>
                     <thead><tr>
                         <th>UID</th>
-                        <th>이메일</th><th>가입일자</th>
+                        <th>이메일</th><th>가입일자</th><th>최근 로그인</th>
                         <th>상태</th>
                         <th>배터리</th>
                         <th>친구 수</th>
                         <th>액션</th>
                     </tr></thead>
                     <tbody id="user-list">
-                        <tr class="loading-row"><td colspan="7">불러오는 중...</td></tr>
+                        <tr class="loading-row"><td colspan="8">불러오는 중...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -858,6 +887,7 @@
     let allUsers = {};
     let allReports = {};
     let allAppeals = {};
+    let hourlyJoins = {};
     let currentAction = null;
     let currentTargetUid = null;
     let currentPage = 'dashboard';
@@ -896,14 +926,35 @@
 
     // ── 데이터 로드 ──
     async function loadAll() {
-        await Promise.all([loadUsers(), loadReports(), loadAppeals()]);
+        await Promise.all([loadUsers(), loadReports(), loadAppeals(), loadHourlyStats()]);
         renderDashboard();
+    }
+
+    async function loadHourlyStats() {
+        const snap = await db.ref('stats/hourlyJoins').once('value');
+        hourlyJoins = snap.val() || {};
+        renderHourlyChart();
+    }
+
+    function renderHourlyChart() {
+        const bars = document.getElementById('hourly-chart-bars');
+        const labels = document.getElementById('hourly-chart-labels');
+        if (!bars || !labels) return;
+        const counts = Array.from({ length: 24 }, (_, h) => hourlyJoins[h] || 0);
+        const max = Math.max(1, ...counts);
+        bars.innerHTML = counts.map((v, h) =>
+            `<div style="flex:1; height:${Math.max(Math.round((v / max) * 100), v > 0 ? 4 : 0)}%; background:var(--accent); border-radius:3px 3px 0 0;" title="${h}시: ${v}건"></div>`
+        ).join('');
+        labels.innerHTML = counts.map((v, h) =>
+            `<div style="flex:1; text-align:center; font-size:9px; color:var(--text-dim);">${h}</div>`
+        ).join('');
     }
 
     async function loadUsers() {
         const snap = await db.ref('users').once('value');
         allUsers = snap.val() || {};
         renderUserList();
+        renderDailySignups();
         renderBannedLists();
         updateStats();
     }
@@ -939,6 +990,17 @@
         document.getElementById('stat-banned').textContent = users.filter(u => u.banned).length;
         document.getElementById('stat-suspended').textContent = users.filter(u => u.suspendedUntil && u.suspendedUntil > Date.now()).length;
         document.getElementById('stat-warned').textContent = users.filter(u => u.warnedAt).length;
+
+        // 1회성 방문 비율: 가입일과 최근 로그인일이 같은 날(=가입 이후 다른 날 다시 안 옴)인 유저 비율
+        const withDates = users.filter(u => u.createdAt && u.lastLoginAt);
+        const oneTime = withDates.filter(u =>
+            new Date(u.createdAt).toLocaleDateString('sv-SE') === new Date(u.lastLoginAt).toLocaleDateString('sv-SE')
+        );
+        const oneTimePct = withDates.length ? Math.round((oneTime.length / withDates.length) * 100) : 0;
+        document.getElementById('stat-onetime').textContent = withDates.length ? oneTimePct + '%' : '—';
+        document.getElementById('stat-onetime-sub').textContent = withDates.length
+            ? `${oneTime.length}명 / ${withDates.length}명 중`
+            : '가입 당일 이후 다시 안 옴';
     }
 
     // ── 유저 상태 헬퍼 ──
@@ -975,7 +1037,9 @@
             <tr>
                 <td class="uid-cell" title="${uid}">${uid.substring(0,10)}...</td>
                 <td>${email}</td>
-                <td>${fmtJoinDate(u.createdAt)}</td><td><span class="status-pill ${st.cls}">${st.label}</span></td>
+                <td>${fmtJoinDate(u.createdAt)}</td>
+                <td>${fmtJoinDate(u.lastLoginAt)}</td>
+                <td><span class="status-pill ${st.cls}">${st.label}</span></td>
                 <td>${batteryPill(u)}</td>
                 <td>${friendCount}명</td>
                 <td><button class="action-btn btn-view" onclick="openUserModal('${uid}')">상세</button></td>
@@ -1046,8 +1110,16 @@
     let currentUserFilter = 'all';
     function setUserFilter(filter) {
         currentUserFilter = filter;
-        document.querySelectorAll('#page-users .tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('#users-filter-tabs .tab').forEach(t => t.classList.remove('active'));
         document.getElementById('users-filter-' + filter).classList.add('active');
+        renderUserList();
+    }
+
+    let currentUserSort = 'newest'; // 'newest'(최신 가입순) | 'recent'(최근 로그인순)
+    function setUserSort(sort) {
+        currentUserSort = sort;
+        document.querySelectorAll('#users-sort-tabs .tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('users-sort-' + sort).classList.add('active');
         renderUserList();
     }
 
@@ -1058,11 +1130,41 @@
         );
         if (currentUserFilter === 'member') entries = entries.filter(([, u]) => !!u.email);
         if (currentUserFilter === 'guest') entries = entries.filter(([, u]) => !u.email);
+        const sortKey = currentUserSort === 'recent' ? 'lastLoginAt' : 'createdAt';
+        entries.sort(([, a], [, b]) => (b[sortKey] || 0) - (a[sortKey] || 0));
         document.getElementById('users-count').textContent = `${entries.length}명`;
         const tbody = document.getElementById('user-list');
         tbody.innerHTML = entries.length
             ? entries.map(([uid, u]) => userRow(uid, u, 'full')).join('')
-            : '<tr class="empty-row"><td colspan="7">결과 없음</td></tr>';
+            : '<tr class="empty-row"><td colspan="8">결과 없음</td></tr>';
+    }
+
+    // ── 날짜별 신규 가입 현황 (최근 14일) ──
+    function renderDailySignups() {
+        const tbody = document.getElementById('daily-signup-list');
+        if (!tbody) return;
+        const buckets = {}; // 'YYYY-MM-DD' → { member: n, guest: n }
+        Object.values(allUsers).forEach(u => {
+            if (!u.createdAt) return;
+            const day = new Date(u.createdAt).toLocaleDateString('sv-SE'); // YYYY-MM-DD (KST 표시 기준 브라우저 로컬)
+            if (!buckets[day]) buckets[day] = { member: 0, guest: 0 };
+            if (u.email) buckets[day].member++; else buckets[day].guest++;
+        });
+        const days = Object.keys(buckets).sort((a, b) => b.localeCompare(a)).slice(0, 14);
+        if (days.length === 0) {
+            tbody.innerHTML = '<tr class="empty-row"><td colspan="4">데이터 없음</td></tr>';
+            return;
+        }
+        tbody.innerHTML = days.map(day => {
+            const b = buckets[day];
+            const dateLabel = new Date(day).toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit', weekday: 'short' });
+            return `<tr>
+                <td>${dateLabel}</td>
+                <td>${b.member}명</td>
+                <td>${b.guest}명</td>
+                <td><strong>${b.member + b.guest}명</strong></td>
+            </tr>`;
+        }).join('');
     }
 
     function renderBannedLists() {
