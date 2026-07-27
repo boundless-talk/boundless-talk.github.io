@@ -2545,23 +2545,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
 
     <!-- 친구 요청 수신 배너 -->
-    <!-- 혼자 대기 중 → 인연 레이더 켜두기 배너 -->
-    <div id="waitlist-banner" class="glass-card" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:360px; border-radius:16px; padding:16px; z-index:9500;">
-        <div style="font-size:13px; font-weight:700; color:var(--accent-color); margin-bottom:6px;">📡 <span id="wl-title">지금은 이 주제를 공유할 사람이 없네요.</span></div>
-        <div style="font-size:11.5px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:12px;" id="wl-desc">24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 알림을 보내드릴게요.</div>
-        <div style="display:flex; gap:8px; align-items:center;">
-            <button id="wl-enable-btn" class="intro2-start-btn" onclick="subscribeWaitlist()" style="flex:3; padding:12px; font-size:13px; white-space:nowrap; margin:0;"></button>
-            <button id="wl-close-btn" onclick="document.getElementById('waitlist-banner').style.display='none'" style="flex:1; background:transparent; border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.4); border-radius:8px; padding:9px 8px; font-size:11px; cursor:pointer; white-space:nowrap; margin:0;"></button>
-        </div>
-    </div>
-
-    <!-- User B 대기 카운트다운 -->
-    <div id="waitlist-countdown" class="glass-card" style="display:none; position:fixed; bottom:80px; left:50%; transform:translateX(-50%); width:90%; max-width:360px; border-radius:16px; padding:16px; z-index:9500; text-align:center;">
-        <div style="font-size:13px; font-weight:700; color:#b46fff; margin-bottom:6px;">🌌 당신이 보낸 신호가 은하수를 건너고 있어요.</div>
-        <div style="font-size:11.5px; color:rgba(255,255,255,0.55); line-height:1.5; margin-bottom:10px;">이 키워드를 기다리던 상대에게 알림을 보냈습니다.<br>잠시만 나가지 말고 기다려 주세요.</div>
-        <div id="wl-countdown-timer" style="font-size:32px; font-weight:800; color:#fff; letter-spacing:2px;">3:00</div>
-    </div>
-
     <div id="friend-request-banner" class="glass-card">
         <div class="frb-top">
             <div class="frb-title" id="frb-title">💌 친구 요청이 왔어요!</div>
@@ -2954,9 +2937,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     // ── FCM 초기화 ──────────────────────────────────────────
     const FCM_VAPID_KEY = 'BP6PHmLRXOfuipR_pFfM-lwP_6AUBbIpwvrHiTr28oSjkL40VqgwXfUJgyTybbMx45vmSi5S7GujHW3Z8r-mmmQ';
     let messaging = null;
-    let waitlistTopic = null;     // 현재 대기 등록한 토픽
-    let hadPeer = false;          // 이번 세션에서 상대방이 한 번이라도 들어왔는지
-    let countdownInterval = null; // 3분 카운트다운
 
     async function initMessaging() {
         if (messaging) return messaging;
@@ -3099,91 +3079,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         const joinBtn = document.getElementById('join-btn');
         if (joinBtn && !joinBtn.disabled) joinBtn.click();
-    }
-
-    // 인연 레이더 구독 (FCM 토큰 → Firebase waitlist 저장)
-    async function subscribeWaitlist() {
-        if (!waitlistTopic || !auth.currentUser) return;
-        const btn = document.getElementById('wl-enable-btn');
-        if (btn) { btn.disabled = true; btn.textContent = '처리 중...'; }
-        try {
-            const perm = await Notification.requestPermission();
-            if (perm !== 'granted') {
-                showBadgeToast(currentLang === 'ko' ? '알림 권한을 허용해 주세요.' : 'Please allow notifications.');
-                if (btn) { btn.disabled = false; btn.textContent = '📡 알림 받기'; }
-                return;
-            }
-            await initMessaging();
-            const reg = await navigator.serviceWorker.ready;
-            const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
-            if (!token) throw new Error('FCM token empty');
-
-            const uid = auth.currentUser.uid;
-            await database.ref(`waitlist/${waitlistTopic}/${uid}`).set({
-                fcmToken: token,
-                timestamp: Date.now(),
-                expiresAt: Date.now() + 86400000
-            });
-
-            document.getElementById('waitlist-banner').style.display = 'none';
-            const msg = currentLang === 'ko'
-                ? '✅ 24시간 레이더가 켜졌어요! 누군가 오면 바로 알려드릴게요.'
-                : '✅ Radar is on! We\'ll notify you when someone matches.';
-            showBadgeToast(msg);
-        } catch (e) {
-            console.error('subscribeWaitlist error:', e);
-            showBadgeToast(currentLang === 'ko' ? '알림 설정에 실패했어요: ' + e.message : 'Failed: ' + e.message);
-            if (btn) { btn.disabled = false; btn.textContent = '📡 알림 받기'; }
-        }
-    }
-
-    function hideWaitlistBanner() {
-        document.getElementById('waitlist-banner').style.display = 'none';
-    }
-
-    function showWaitlistBanner() {
-        if (!waitlistTopic || waitlistTopic.startsWith('🔒_')) return;
-        document.getElementById('waitlist-banner').style.display = 'block';
-    }
-
-    // User B: 대기자에게 FCM 발송 후 3분 카운트다운
-    async function notifyWaitlistAndCountdown(topic) {
-        if (!topic || topic.startsWith('🔒_')) return;
-        try {
-            const res = await fetch(`${TOKEN_SERVER_URL}/push/notify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ keyword: topic })
-            });
-            const data = await res.json();
-            if (data.notified && data.notified > 0) startCountdown();
-        } catch (e) {
-            console.warn('push/notify failed:', e.message);
-        }
-    }
-
-    function startCountdown() {
-        const box = document.getElementById('waitlist-countdown');
-        const timerEl = document.getElementById('wl-countdown-timer');
-        if (!box || !timerEl) return;
-        box.style.display = 'block';
-        let secs = 180;
-        clearInterval(countdownInterval);
-        countdownInterval = setInterval(() => {
-            secs--;
-            const m = Math.floor(secs / 60);
-            const s = secs % 60;
-            timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
-            if (secs <= 0) {
-                clearInterval(countdownInterval);
-                box.style.display = 'none';
-            }
-        }, 1000);
-    }
-
-    function stopCountdown() {
-        clearInterval(countdownInterval);
-        document.getElementById('waitlist-countdown').style.display = 'none';
     }
 
     // 2. Global State Management
@@ -4013,10 +3908,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         callBtn: "Call",
         editNickname: "✏️ Rename",
         unfriend: "🚫 Unfriend",
-        wlTitle: "No one to share this topic with right now.",
-        wlDesc: "We'll keep the radar on for 24 hours. If someone enters the same keyword, we'll send you a signal right away.",
-        wlEnable: "📡 Get Notified",
-        wlClose: "Close",
         frbTitle: "💌 Friend request received!",
         frbDesc: "Looks like you two clicked!<br>They'd love to chat again — what do you say?",
         frbPlaceholder: "Their nickname (only visible to you)",
@@ -4138,10 +4029,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         callBtn: "연결",
         editNickname: "✏️ 이름 변경",
         unfriend: "🚫 친구 끊기",
-        wlTitle: "지금은 이 주제를 공유할 사람이 없네요.",
-        wlDesc: "24시간 동안 레이더를 켜둘게요. 누군가 같은 키워드를 입력하면 바로 알림을 보내드릴게요.",
-        wlEnable: "📡 알림 받기",
-        wlClose: "닫기",
         frbTitle: "💌 친구 요청이 왔어요!",
         frbDesc: "통하는 게 있었나 봐요!<br>상대방이 '다음에 또 얘기하자'며 친구 요청을 슬쩍 던졌습니다.<br>잡을까요, 말까요?",
         frbPlaceholder: "상대방 닉네임 (나만 보임)",
@@ -4623,12 +4510,6 @@ function updateUI() {
         const s6 = document.getElementById('intro2-s6'); if (s6) s6.innerHTML = lang.intro2S6;
         const s7 = document.getElementById('intro2-s7'); if (s7) s7.innerHTML = lang.intro2S7;
         if(document.getElementById('label-add-friend')) document.getElementById('label-add-friend').innerText = lang.addFriendBtn;
-
-        // 인연 레이더 배너 다국어
-        const wlTitle = document.getElementById('wl-title'); if (wlTitle) wlTitle.textContent = lang.wlTitle;
-        const wlDesc = document.getElementById('wl-desc'); if (wlDesc) wlDesc.textContent = lang.wlDesc;
-        const wlEnableBtn = document.getElementById('wl-enable-btn'); if (wlEnableBtn && !wlEnableBtn.disabled) wlEnableBtn.textContent = lang.wlEnable;
-        const wlCloseBtn = document.getElementById('wl-close-btn'); if (wlCloseBtn) wlCloseBtn.textContent = lang.wlClose;
 
         // 친구 요청 배너 다국어
         const frbTitleEl = document.getElementById('frb-title'); if (frbTitleEl) frbTitleEl.textContent = lang.frbTitle;
@@ -5589,8 +5470,6 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 console.error("Token fetch failed:", e);
                 throw new Error("토큰 서버 연결 실패. 잠시 후 다시 시도해 주세요.");
             }
-            hadPeer = false;
-            waitlistTopic = finalTopic.startsWith('🔒_') ? null : finalTopic;
             dbg('8. Agora join 시도');
             // uid=0으로 고정하면 같은 채널에 동시에 들어온 두 사람이 서로 같은 Agora UID로
             // 충돌해서(서로 연결이 안 되거나 상대 이름이 내 이름으로 겹쳐 보이는 원인) null을 넘겨
@@ -5731,9 +5610,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const ppRow = document.getElementById('pingpong-toggle-row');
             if (ppRow) ppRow.style.display = 'none';
 
-            // 대기자 알림 발송 (User B 역할)
-            notifyWaitlistAndCountdown(finalTopic);
-
             isJoining = false;
 
         } catch (error) {
@@ -5788,10 +5664,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 roomParticipants.push(user.uid);
                 renderParticipantsUI();
                 if (roomParticipants.length === 1) {
-                    hadPeer = true;
                     startFreeTimer();
-                    hideWaitlistBanner();
-                    stopCountdown();
                     // 핑퐁 매칭 성공 → 지연 팝업 취소
                     if (ppSlowMatchTimer) { clearTimeout(ppSlowMatchTimer); ppSlowMatchTimer = null; }
                     const ppModal = document.getElementById('pp-slow-match-modal');
@@ -7547,11 +7420,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
     })();
 
-    window.addEventListener('beforeunload', () => {
-        // PC 탭/창 닫기 시도 시 (모바일에선 동작 안 함)
-        if (isJoined && !hadPeer && waitlistTopic) showWaitlistBanner();
-    });
-
     // 화면 잠금/백그라운드 전환 시 하트비트(setInterval)가 지연되거나 멈출 수 있어,
     // 다시 돌아오는 즉시 ts를 갱신해 "유령 방"으로 잘못 판정되는 것을 방지
     document.addEventListener('visibilitychange', () => {
@@ -7561,10 +7429,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     });
 
     document.getElementById('leave-btn').onclick = async function() {
-        const _shouldShowRadar = isJoined && !hadPeer && waitlistTopic;
         try {
-            hideWaitlistBanner();
-            stopCountdown();
             clearFreeTimer();
             stopPPMode();
             stopRollingAudioRecorder();
@@ -7609,9 +7474,6 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
             // 피어 배지 전송 타겟 리스트박스 렌더링 구성
             setupVoteTargetsUI();
-
-            // 혼자 나간 경우 → 레이더 배너 표시 (badge-modal 닫은 뒤에도 유지)
-            if (_shouldShowRadar) showWaitlistBanner();
 
             // 모바일 ghost tap 방지: 터치 이벤트 소멸 후 모달 오픈
             // AI 대화 요약본 분석 브리핑 레이아웃 활성화

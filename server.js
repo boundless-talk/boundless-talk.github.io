@@ -31,27 +31,6 @@ if (!admin.apps.length && process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 }
 
-// 1시간마다 만료된 waitlist 항목 정리
-setInterval(async () => {
-    if (!admin.apps.length) return;
-    try {
-        const db = admin.database();
-        const snap = await db.ref('waitlist').once('value');
-        const data = snap.val() || {};
-        const now = Date.now();
-        const updates = {};
-        Object.entries(data).forEach(([kw, users]) => {
-            if (!users) return;
-            Object.entries(users).forEach(([uid, entry]) => {
-                if (entry && entry.expiresAt < now) updates[`waitlist/${kw}/${uid}`] = null;
-            });
-        });
-        if (Object.keys(updates).length > 0) await db.ref().update(updates);
-    } catch (e) {
-        console.error('Waitlist cleanup error:', e.message);
-    }
-}, 60 * 60 * 1000);
-
 // 매일 밤 10시(22:00 KST)에 그날 예약된 대화방 알림 발송 — 1분마다 확인, 하루 한 번만 실행
 let _lastReservationNotifyDate = null;
 setInterval(async () => {
@@ -706,55 +685,6 @@ app.post('/verifyEmailCode', async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         console.error('verifyEmailCode error:', err.message);
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// 대기 중인 사용자에게 FCM 푸시 발송
-app.post('/push/notify', async (req, res) => {
-    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
-    const { keyword, topic } = req.body;
-    const normalizedKw = keyword || topic;
-    if (!normalizedKw) return res.status(400).json({ error: 'keyword required' });
-
-    try {
-        const db = admin.database();
-        const snap = await db.ref(`waitlist/${normalizedKw}`).once('value');
-        const users = snap.val() || {};
-        const now = Date.now();
-
-        const valid = [];
-        const expiredUids = [];
-        Object.entries(users).forEach(([uid, entry]) => {
-            if (!entry) return;
-            if (entry.expiresAt < now) expiredUids.push(uid);
-            else if (entry.fcmToken) valid.push({ uid, token: entry.fcmToken });
-        });
-
-        for (const uid of expiredUids) await db.ref(`waitlist/${normalizedKw}/${uid}`).remove();
-
-        if (valid.length === 0) return res.json({ notified: 0 });
-
-        const message = {
-            notification: {
-                title: '딩동! 은하수를 건너온 신호 🌌',
-                body: `당신이 남겨둔 #${normalizedKw} 에 누군가 따뜻한 온기를 더했습니다. 스쳐 지나가기 전에 지금 대화를 시작해 볼까요?`
-            },
-            data: { topic: String(normalizedKw) },
-            tokens: valid.map(v => v.token)
-        };
-
-        const result = await admin.messaging().sendEachForMulticast(message);
-
-        for (let i = 0; i < result.responses.length; i++) {
-            if (result.responses[i].success) {
-                await db.ref(`waitlist/${normalizedKw}/${valid[i].uid}`).remove();
-            }
-        }
-
-        res.json({ notified: result.successCount });
-    } catch (err) {
-        console.error('push/notify error:', err.message);
         res.status(500).json({ error: err.message });
     }
 });
