@@ -888,6 +888,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #guest-badge {
             background: rgba(0,0,0,0.04) !important; border-color: rgba(255,111,156,0.4) !important; color: rgba(43,31,36,0.55) !important;
         }
+        html[data-cute-mode="cute"] #login-sheet { background: #fffaf7 !important; }
+        html[data-cute-mode="cute"] #login-sheet-title { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #login-sheet-google-btn { border: 1px solid rgba(0,0,0,0.06) !important; }
+        html[data-cute-mode="cute"] #login-sheet-email-signup-btn {
+            background: #ffe6ee !important; color: #2b1f24 !important; border: none !important;
+        }
         html[data-cute-mode="cute"] #login-back-btn {
             background: none !important; border: none !important; color: rgba(43,31,36,0.6) !important;
         }
@@ -2118,6 +2124,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <!-- 로그인 바텀시트: 게스트가 앱 사용 중(3번화면)에 잠긴 기능을 눌렀을 때, 현재 화면은 유지한 채 아래에서 올라옴 -->
+    <div id="login-sheet-overlay" onclick="if(event.target===this) closeLoginSheet()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9900; opacity:0; transition:opacity .25s ease;">
+        <div id="login-sheet" style="position:fixed; left:0; right:0; bottom:0; background:#17181c; border-radius:20px 20px 0 0; padding:14px 20px calc(22px + env(safe-area-inset-bottom, 0px)); transform:translateY(100%); transition:transform .32s cubic-bezier(.22,1,.36,1); box-shadow:0 -10px 40px rgba(0,0,0,0.4); max-width:480px; margin:0 auto; box-sizing:border-box;">
+            <div style="width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,0.15); margin:0 auto 16px;"></div>
+            <div id="login-sheet-title" style="font-size:15px; font-weight:700; color:#fff; text-align:center; margin-bottom:16px;">로그인하고 계속하기</div>
+            <button id="login-sheet-google-btn" onclick="closeLoginSheet(); handleGoogleLoginClick();" style="width:100%; background-color:#fff; color:#1f1f1f; margin:0 0 10px 0; display:flex; align-items:center; justify-content:center; gap:10px; font-size:13.5px; padding:13px 14px; font-weight:700; border-radius:12px; border:none; cursor:pointer;">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                    <path d="M9 18c2.43 0 4.467-.806 5.956-2.18L12.048 13.562c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+                    <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                    <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                </svg>
+                <span id="login-sheet-google-text">Continue with Google</span>
+            </button>
+            <button id="login-sheet-email-signup-btn" onclick="closeLoginSheet(); handleEmailSignupClick();" style="width:100%; background-color:rgba(255,255,255,0.06); color:#f5f4f2; border:1px solid rgba(255,255,255,0.1); margin:0; font-size:13.5px; padding:13px 14px; font-weight:600; border-radius:12px; cursor:pointer;">
+                <span id="login-sheet-email-text">이메일로 회원가입</span>
+            </button>
+        </div>
+    </div>
+
     <!-- 회원탈퇴 모달 -->
     <div class="modal-overlay" id="withdrawal-modal" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="modal-content" style="max-width:340px; text-align:left;">
@@ -2296,6 +2322,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
 
                 <button class="disco-modal-submit" id="disco-create-submit-btn" onclick="submitDiscoCreate()">방 만들고 시작하기</button>
+            </div>
+        </div>
+
+        <!-- 운영시간 외 방 만들기 → 밤 10시 대화방 예약 -->
+        <div class="modal-overlay" id="disco-reserve-modal" onclick="if(event.target===this) closeReserveModal()">
+            <div class="disco-modal-box" style="text-align:center;">
+                <div style="font-size:26px; margin-bottom:10px;">🌙</div>
+                <div class="disco-modal-title" id="reserve-title-heading" style="margin-bottom:6px;">오늘 밤 10시, 대화의 문이 열립니다.</div>
+                <div id="reserve-desc" style="font-size:13px; color:rgba(255,255,255,0.5); line-height:1.6; margin-bottom:18px;">지금 대화방을 미리 만들어두시면<br>밤 10시에 입장 알림을 보내드릴게요.</div>
+                <div class="disco-modal-label" id="reserve-input-label" style="text-align:left;">방 제목</div>
+                <input type="text" id="reserve-title-input" placeholder="예: 오늘 하루 고생한 나에게 한마디...">
+                <button class="disco-modal-submit" id="reserve-submit-btn" onclick="submitRoomReservation()">밤 10시 대화방 예약하기</button>
             </div>
         </div>
 
@@ -3411,9 +3449,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (rooms.length === 0) {
             if (empty) {
                 empty.style.display = 'block';
-                empty.textContent = discoRooms.length === 0
-                    ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!' : 'No circles live right now. Start the first one!')
-                    : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No circles match your filters.');
+                if (discoRooms.length === 0 && !isWithinOperatingHours()) {
+                    empty.textContent = currentLang === 'ko' ? '🌙 오늘 밤 10시, 대화의 문이 열립니다.' : '🌙 Doors open tonight at 10 PM.';
+                } else {
+                    empty.textContent = discoRooms.length === 0
+                        ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!' : 'No circles live right now. Start the first one!')
+                        : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No circles match your filters.');
+                }
             }
             return;
         }
@@ -3479,7 +3521,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         discoCreateStyle = discoCreateStyle === 'casual' ? 'polite' : 'casual';
         setDiscoCreateStyleUI(discoCreateStyle);
     }
+    // 운영시간: 밤 10시(22:00) ~ 자정(24:00) KST
+    function isWithinOperatingHours() {
+        const now = new Date();
+        const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours();
+        return kstHour >= 22;
+    }
     function openDiscoCreateModal() {
+        if (!isWithinOperatingHours()) { openReserveModal(); return; }
         discoCreateSelectedCat = 'general';
         discoCreatePP = false;
         discoCreateStyle = 'casual';
@@ -3492,7 +3541,57 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     function closeDiscoCreateModal() {
         document.getElementById('disco-create-modal').classList.remove('active');
     }
+
+    // 운영시간 외 "방 만들기" → 밤 10시 대화방 예약
+    function openReserveModal() {
+        if (!auth.currentUser) { promptGuestLogin(); return; }
+        document.getElementById('reserve-title-input').value = '';
+        document.getElementById('disco-reserve-modal').classList.add('active');
+    }
+    function closeReserveModal() {
+        document.getElementById('disco-reserve-modal').classList.remove('active');
+    }
+    async function submitRoomReservation() {
+        const isKo = currentLang === 'ko';
+        const input = document.getElementById('reserve-title-input');
+        const title = input.value.normalize('NFC').trim();
+        if (!title) {
+            alert(isKo ? '방 제목을 입력해 주세요.' : 'Please enter a room title.');
+            input.focus();
+            return;
+        }
+        const btn = document.getElementById('reserve-submit-btn');
+        if (btn) { btn.disabled = true; }
+        try {
+            if (!('Notification' in window)) {
+                showBadgeToast(isKo ? '이 브라우저는 알림을 지원하지 않아요.' : 'This browser doesn\'t support notifications.');
+                return;
+            }
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+                showBadgeToast(isKo ? '알림 권한을 허용해 주세요.' : 'Please allow notifications.');
+                return;
+            }
+            await initMessaging();
+            const reg = await navigator.serviceWorker.ready;
+            const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
+            if (!token) throw new Error('FCM token empty');
+            const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+            const today = kst.toISOString().slice(0, 10);
+            const uid = auth.currentUser.uid;
+            await database.ref(`reservations/${today}/${uid}`).set({ title, fcmToken: token, createdAt: Date.now() });
+            closeReserveModal();
+            showBadgeToast(isKo ? '✅ 예약 완료! 밤 10시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 10 PM.');
+        } catch (e) {
+            console.warn('submitRoomReservation failed:', e.message);
+            showBadgeToast((isKo ? '예약 중 오류: ' : 'Reservation error: ') + e.message);
+        } finally {
+            if (btn) { btn.disabled = false; }
+        }
+    }
+
     function submitDiscoCreate() {
+        if (!isWithinOperatingHours()) { closeDiscoCreateModal(); openReserveModal(); return; }
         if (isJoined || isJoining) return;
         const topicInput = document.getElementById('disco-create-topic-input');
         const topic = topicInput.value.normalize('NFC').trim();
@@ -3535,6 +3634,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('disco-create-mode-label', '모드', 'Mode');
         setText('disco-pp-row-label', '핑퐁 모드 (순서대로 1분 30초씩 발언)', 'Ping Pong mode (take 90s turns speaking in order)');
         setText('disco-create-submit-btn', '방 만들고 시작하기', 'Create and start');
+        setText('reserve-title-heading', '오늘 밤 10시, 대화의 문이 열립니다.', 'Doors open tonight at 10 PM.');
+        const reserveDescEl = document.getElementById('reserve-desc');
+        if (reserveDescEl) reserveDescEl.innerHTML = isKo ? '지금 대화방을 미리 만들어두시면<br>밤 10시에 입장 알림을 보내드릴게요.' : 'Set up your circle now and we\'ll notify you<br>the moment it opens at 10 PM.';
+        setText('reserve-input-label', '방 제목', 'Room title');
+        setPh('reserve-title-input', '예: 오늘 하루 고생한 나에게 한마디...', 'e.g. A word for myself after a long day...');
+        setText('reserve-submit-btn', '밤 10시 대화방 예약하기', 'Reserve for 10 PM');
         setText('mycircles-subtext', '익명 기반 — 대화 기록은 이 기기에만 저장돼요.', 'Anonymous by design — your history lives only on this device.');
         setText('subtab-recent', '최근 참여', 'Recently joined');
         setText('subtab-subscription', '구독', 'Subscription');
@@ -4722,6 +4827,9 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "LOGOUT" : "로그아웃";
         document.getElementById('email-login-btn-main').innerText = (currentLang === 'en') ? "Continue with email" : "이메일로 계속하기";
         document.getElementById('email-signup-btn-main').innerText = (currentLang === 'en') ? "Sign up with email" : "이메일로 회원가입";
+        document.getElementById('login-sheet-title').innerText = (currentLang === 'en') ? "Log in to continue" : "로그인하고 계속하기";
+        document.getElementById('login-sheet-google-text').innerText = (currentLang === 'en') ? "Continue with Google" : "구글로 계속하기";
+        document.getElementById('login-sheet-email-text').innerText = (currentLang === 'en') ? "Sign up with email" : "이메일로 회원가입";
         document.getElementById('signup-prompt-text').innerText = (currentLang === 'en') ? "Don't have an account?" : "계정이 없으신가요?";
         const findPwBtn = document.getElementById('find-pw-btn'); if(findPwBtn) findPwBtn.textContent = isKo ? '비밀번호를 잊으셨나요?' : 'Forgot password?';
 
@@ -4901,7 +5009,8 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         });
     });
 
-    document.getElementById('google-login-btn').addEventListener('click', () => {
+    // 구글 로그인 버튼(로그인 화면 + 바텀시트 둘 다 여기서 호출)
+    function handleGoogleLoginClick() {
         requireConsent(() => {
             auth.signInWithPopup(provider).catch((error) => {
                 if (error && (error.code === 'auth/popup-blocked' ||
@@ -4913,7 +5022,8 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
                 }
             });
         });
-    });
+    }
+    document.getElementById('google-login-btn').addEventListener('click', handleGoogleLoginClick);
 
     // 페이지 로드 시 Redirect 결과 처리 (Redirect 방식으로 로그인한 경우 돌아왔을 때 처리)
     auth.getRedirectResult().catch((error) => {
@@ -4938,14 +5048,16 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         document.getElementById('signup-modal').classList.remove('active');
     }
 
-    document.getElementById('email-signup-btn-main').addEventListener('click', () => {
+    // 이메일 회원가입 버튼(로그인 화면 + 바텀시트 둘 다 여기서 호출)
+    function handleEmailSignupClick() {
         requireConsent(() => {
             signupFormOpen = true;
             document.getElementById('signup-modal').classList.add('active');
             auth.signOut().catch(err => console.log("기존 세션 정리 중 예외 발생:", err));
             resetSignupSteps();
         });
-    });
+    }
+    document.getElementById('email-signup-btn-main').addEventListener('click', handleEmailSignupClick);
 
     // ── 이메일 로그인 제출 ──
     document.getElementById('email-login-btn').addEventListener('click', () => {
@@ -8076,10 +8188,32 @@ function closeSettingsModal() {
     if (_settingsDailyEnergyRef) { _settingsDailyEnergyRef.off(); _settingsDailyEnergyRef = null; }
     if (_settingsEnergyRef) { _settingsEnergyRef.off(); _settingsEnergyRef = null; }
 }
-// 게스트가 설정 화면의 "대화 충전량" 카드 CTA를 누르면 게스트 세션을 끝내고 로그인 화면으로 보냄
+// 잠긴 "대화 충전량" 카드 CTA를 누르면: 3번화면(앱 사용 중)이면 현재 화면 위에 로그인 바텀시트를 띄우고,
+// 2번화면(로그인 화면 자체)이면 이미 뒤에 로그인 UI가 있으니 설정 모달만 닫아서 보여줌
 function promptGuestLogin() {
-    closeSettingsModal();
-    auth.signOut();
+    const talkControls = document.getElementById('talk-controls');
+    const onMainScreen = talkControls && talkControls.style.display !== 'none';
+    if (onMainScreen) {
+        openLoginSheet();
+    } else {
+        closeSettingsModal();
+    }
+}
+function openLoginSheet() {
+    const overlay = document.getElementById('login-sheet-overlay');
+    const sheet = document.getElementById('login-sheet');
+    overlay.style.display = 'block';
+    requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        sheet.style.transform = 'translateY(0)';
+    });
+}
+function closeLoginSheet() {
+    const overlay = document.getElementById('login-sheet-overlay');
+    const sheet = document.getElementById('login-sheet');
+    overlay.style.opacity = '0';
+    sheet.style.transform = 'translateY(100%)';
+    setTimeout(() => { overlay.style.display = 'none'; }, 320);
 }
 function setLangFromSettings(lang) {
     if (currentLang === lang) return;
@@ -8135,14 +8269,14 @@ function renderSettingsBattery() {
     const cardsEl = document.getElementById('settings-cards');
     const ctaEl = document.getElementById('settings-guest-locked-cta');
     const rankNameEl = document.getElementById('settings-rank-name');
-    if (isGuest) {
+    if (isGuest || !auth.currentUser) {
         rankNameEl.textContent = '🪫 0%';
         rankNameEl.classList.add('settings-value-muted');
         const subEl = document.getElementById('settings-rank-sub');
         if (subEl) subEl.textContent = '';
         if (ctaEl) {
             ctaEl.style.display = 'flex';
-            ctaEl.textContent = isKo ? '확인하러 로그인' : 'Log in to see';
+            ctaEl.textContent = isKo ? '대화충전량 확인하기' : 'Check my Talk Charge';
         }
         if (cardsEl) cardsEl.classList.add('guest-order');
         return;
@@ -8159,7 +8293,7 @@ function renderSettingsDailyEnergy() {
     if (_settingsDailyEnergyData == null) return;
     const isKo = currentLang === 'ko';
     const badgeCountEl = document.getElementById('settings-badge-count');
-    if (isGuest) {
+    if (isGuest || !auth.currentUser) {
         badgeCountEl.textContent = '';
         badgeCountEl.classList.add('settings-value-muted');
         document.getElementById('settings-badge-chips').innerHTML = '';
@@ -8177,7 +8311,10 @@ async function loadSettingsMyPage() {
     const isKo = currentLang === 'ko';
     if (!uid) {
         document.getElementById('settings-time-value').textContent = isKo ? '로그인 필요' : 'Login required';
-        document.getElementById('settings-badge-count').textContent = '-';
+        _settingsEnergyData = { pct: 0 };
+        _settingsDailyEnergyData = 0;
+        renderSettingsBattery();
+        renderSettingsDailyEnergy();
         return;
     }
     // KST 기준 오늘 날짜
@@ -8905,18 +9042,26 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
 
     // 로그인 화면(2번) 도달 시, 첫 50명 프로모션이 아직 남아있으면 안내 팝업 표시
     let early50PromoShown = false;
+    // 이 팝업은 오직 2번 화면(로그인 화면)에서만 뜨는 게 맞음 — 이미 3번 화면(앱 사용 중)으로 넘어갔다면
+    // (게스트든 회원이든) 더 이상 의미가 없으므로 띄우지 않음
+    function isOnMainScreen3() {
+        const talkControls = document.getElementById('talk-controls');
+        return !!(talkControls && talkControls.style.display !== 'none');
+    }
     async function showEarly50PromoIfEligible() {
         if (early50PromoShown) return;
         // "로그인하고 혜택 받기" 팝업은 아직 로그인 안 한(또는 게스트인) 사람에게만 의미가 있음 —
         // 1번 화면이 이제 자동으로 재생/전환되면서, 실제로는 이미 로그인된 사람에게도 이 타이머가
         // 똑같이 돌게 되어 엉뚱하게 뜨는 문제가 있었음
         if (auth.currentUser && !auth.currentUser.isAnonymous) return;
+        if (isOnMainScreen3()) return;
         early50PromoShown = true;
         try {
             const res = await fetch(TOKEN_SERVER_URL + '/early50-remaining');
             const data = await res.json();
             const remaining = data.remaining || 0;
             if (!remaining || remaining <= 0) return;
+            if (isOnMainScreen3()) return; // fetch가 끝나는 사이 3번 화면으로 넘어갔을 수 있음
             const isKo = currentLang === 'ko';
             document.getElementById('early50-promo-title').innerHTML = isKo
                 ? '지루한 하루를 바꿀 라이브 통화.'

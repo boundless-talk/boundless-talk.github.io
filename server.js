@@ -52,6 +52,42 @@ setInterval(async () => {
     }
 }, 60 * 60 * 1000);
 
+// 매일 밤 10시(22:00 KST)에 그날 예약된 대화방 알림 발송 — 1분마다 확인, 하루 한 번만 실행
+let _lastReservationNotifyDate = null;
+setInterval(async () => {
+    if (!admin.apps.length) return;
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const kstHour = kst.getUTCHours();
+        const kstMinute = kst.getUTCMinutes();
+        const todayKey = kst.toISOString().slice(0, 10);
+        if (kstHour !== 22 || kstMinute > 1) return;
+        if (_lastReservationNotifyDate === todayKey) return;
+        _lastReservationNotifyDate = todayKey;
+
+        const db = admin.database();
+        const snap = await db.ref(`reservations/${todayKey}`).once('value');
+        const data = snap.val() || {};
+        const entries = Object.entries(data).filter(([, v]) => v && v.fcmToken && v.title);
+        if (entries.length === 0) return;
+
+        const results = await Promise.allSettled(entries.map(([, v]) =>
+            admin.messaging().send({
+                token: v.fcmToken,
+                notification: {
+                    title: '🌙 대화의 문이 열렸어요',
+                    body: `예약하신 "${v.title}" 방을 시작해보세요!`
+                },
+                data: { topic: String(v.title) }
+            })
+        ));
+        const sent = results.filter(r => r.status === 'fulfilled').length;
+        console.log(`[reservation notify] ${sent}/${entries.length} sent for ${todayKey}`);
+    } catch (e) {
+        console.error('Reservation notify error:', e.message);
+    }
+}, 60 * 1000);
+
 const app = express();
 app.use(cors());
 
