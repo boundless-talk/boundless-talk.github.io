@@ -177,6 +177,22 @@ app.get('/early50-remaining', async (req, res) => {
     }
 });
 
+// 오늘 예약된 방 제목 목록(uid/토큰 없이 제목만) — Discover 피드에서 "오늘 밤 예정된 대화" 미리보기용
+app.get('/reservations-today', async (req, res) => {
+    if (!admin.apps.length) return res.json({ titles: [] });
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const today = kst.toISOString().slice(0, 10);
+        const snap = await admin.database().ref(`reservations/${today}`).once('value');
+        const data = snap.val() || {};
+        const titles = Object.values(data).filter(v => v && v.title).map(v => v.title).slice(0, 20);
+        res.json({ titles });
+    } catch (e) {
+        console.error('[reservations-today] error:', e.message);
+        res.json({ titles: [] });
+    }
+});
+
 app.post('/claim-early-access', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
     const { idToken } = req.body;

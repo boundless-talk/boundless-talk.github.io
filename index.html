@@ -1627,6 +1627,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-wave { display: flex; align-items: center; gap: 2px; height: 20px; }
         .disco-wave span { width: 2px; background: var(--dr); border-radius: 1px; display: inline-block; }
         .disco-empty { padding: 28px 14px; text-align: center; color: rgba(255,255,255,0.35); font-size: 13px; }
+        .disco-reserved-sublabel { margin-top: 10px; font-size: 11px; color: rgba(255,255,255,0.3); }
+        html[data-cute-mode="cute"] .disco-reserved-sublabel { color: rgba(43,31,36,0.4); }
+        .disco-reserved-list { margin-top: 16px; display: flex; flex-direction: column; gap: 7px; align-items: center; }
+        .disco-reserved-chip { font-size: 12.5px; color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 9px 16px; max-width: 280px; }
+        html[data-cute-mode="cute"] .disco-reserved-chip { color: rgba(43,31,36,0.6); background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
         .disco-toggle-manual { background: none; border: none; color: rgba(255,255,255,0.35); font-size: 12px; text-decoration: underline; cursor: pointer; align-self: center; padding: 4px; }
         .disco-divider { display: flex; align-items: center; gap: 10px; margin: 4px 0 2px; }
         .disco-divider .line { flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
@@ -1910,6 +1915,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-trending-label,
         html[data-cute-mode="cute"] .disco-modal-label,
         html[data-cute-mode="cute"] .disco-pp-row-label { color: rgba(43,31,36,.55); }
+        html[data-cute-mode="cute"] #reserve-desc { color: rgba(43,31,36,.55) !important; }
         html[data-cute-mode="cute"] .disco-chip { background: #fff; color: rgba(43,31,36,.65); border-color: rgba(0,0,0,.08); }
         html[data-cute-mode="cute"] .disco-chip.active { background: #ff6f9c; border-color: #ff6f9c; color: #fff; }
         html[data-cute-mode="cute"] .disco-card { border-radius: 16px; box-shadow: 0 6px 18px rgba(255,111,156,.1); }
@@ -3345,8 +3351,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             if (empty) {
                 empty.style.display = 'block';
                 if (discoRooms.length === 0 && !isWithinOperatingHours()) {
-                    empty.textContent = currentLang === 'ko' ? '🌙 오늘 밤 10시, 대화의 문이 열립니다.' : '🌙 Doors open tonight at 10 PM.';
+                    renderDiscoEmptyWithReservations(empty);
                 } else {
+                    empty.innerHTML = '';
                     empty.textContent = discoRooms.length === 0
                         ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!' : 'No circles live right now. Start the first one!')
                         : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No circles match your filters.');
@@ -3421,6 +3428,44 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const now = new Date();
         const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours();
         return kstHour >= 22;
+    }
+
+    // 오늘 예약된 방 제목 미리보기 — 다른 사람들도 오늘 밤 뭐가 열릴지 기대하게 만드는 용도
+    let _reservedTitlesCache = [];
+    let _reservedTitlesFetchedAt = 0;
+    async function fetchReservedTitlesIfNeeded() {
+        if (Date.now() - _reservedTitlesFetchedAt < 60000) return;
+        _reservedTitlesFetchedAt = Date.now();
+        try {
+            const res = await fetch(TOKEN_SERVER_URL + '/reservations-today');
+            const data = await res.json();
+            _reservedTitlesCache = data.titles || [];
+            if (!isWithinOperatingHours() && discoRooms.length === 0) renderDiscoGrid();
+        } catch (e) {
+            console.warn('fetchReservedTitlesIfNeeded failed:', e.message);
+        }
+    }
+    function renderDiscoEmptyWithReservations(empty) {
+        empty.innerHTML = '';
+        const msg = document.createElement('div');
+        msg.textContent = currentLang === 'ko' ? '🌙 오늘 밤 10시, 대화의 문이 열립니다.' : '🌙 Doors open tonight at 10 PM.';
+        empty.appendChild(msg);
+        fetchReservedTitlesIfNeeded();
+        if (_reservedTitlesCache.length > 0) {
+            const sub = document.createElement('div');
+            sub.className = 'disco-reserved-sublabel';
+            sub.textContent = currentLang === 'ko' ? '오늘 밤 예정된 대화' : 'Coming up tonight';
+            empty.appendChild(sub);
+            const listWrap = document.createElement('div');
+            listWrap.className = 'disco-reserved-list';
+            _reservedTitlesCache.slice(0, 5).forEach(title => {
+                const chip = document.createElement('div');
+                chip.className = 'disco-reserved-chip';
+                chip.textContent = '🔒 ' + title;
+                listWrap.appendChild(chip);
+            });
+            empty.appendChild(listWrap);
+        }
     }
     function openDiscoCreateModal() {
         if (!isWithinOperatingHours()) { openReserveModal(); return; }
