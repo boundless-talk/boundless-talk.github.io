@@ -343,6 +343,13 @@
         .lang-pill.active { background: var(--accent-color); color: #000; }
         .lang-pill.inactive { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.1); }
         .settings-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+        /* 게스트일 때: 대화충전량+오늘 받은 배지를 하나로 묶어 블러 오버레이로 덮고, 오늘 남은 시간은 맨 아래로 */
+        #settings-guest-locked-wrap { display: contents; }
+        #settings-cards.guest-order #settings-guest-locked-wrap { display: flex; flex-direction: row; gap: 10px; position: relative; grid-column: 1 / -1; order: 1; }
+        #settings-cards.guest-order #settings-guest-locked-wrap .settings-card { flex: 1; min-width: 0; }
+        #settings-cards.guest-order #settings-time-card { order: 2; grid-column: 1 / -1; }
+        .settings-value-muted { color: rgba(255,255,255,0.85) !important; }
+        html[data-cute-mode="cute"] .settings-value-muted { color: rgba(43,31,36,0.5) !important; }
         .settings-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 12px; }
         .settings-card-icon { font-size: 18px; margin-bottom: 6px; }
         #settings-rank-emoji, #main-badge-emoji { display: none; }
@@ -372,7 +379,10 @@
         html[data-cute-mode="cute"] .settings-card-label { color: rgba(43,31,36,0.45); }
         html[data-cute-mode="cute"] #settings-rank-name,
         html[data-cute-mode="cute"] #settings-badge-count { color: #7BC4A1 !important; }
+        html[data-cute-mode="cute"] #settings-rank-name.settings-value-muted,
+        html[data-cute-mode="cute"] #settings-badge-count.settings-value-muted { color: rgba(43,31,36,0.5) !important; }
         html[data-cute-mode="cute"] .settings-badge-chip { color: #7BC4A1; background: rgba(123,196,161,0.1); border-color: rgba(123,196,161,0.25); }
+        html[data-cute-mode="cute"] #settings-guest-locked-cta { background: rgba(255,255,255,0.5) !important; color: #d18a1f !important; text-shadow: 0 1px 3px rgba(255,255,255,0.8) !important; }
         html[data-cute-mode="cute"] .settings-card-value { color: #2b1f24; }
         html[data-cute-mode="cute"] .settings-card-value.dim { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] .settings-card-sub { color: rgba(43,31,36,0.4); }
@@ -2034,7 +2044,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <div id="intro2-steps" style="text-align:left; margin-bottom:12px; display:flex; flex-direction:column; gap:14px;">
                 <div class="intro2-step"><span class="intro2-num">01</span><p id="intro2-s1"><strong>Pick a Topic</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">02</span><p id="intro2-s2"><strong>Fuel the Chat</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span></p></div>
-                <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3"><strong>Tag &amp; Charge</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and send them a ⚡ to charge their battery!</span></p></div>
+                <div class="intro2-step"><span class="intro2-num">03</span><p id="intro2-s3"><strong>Tag &amp; Charge</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and send them a ⚡ to top up their Talk Charge!</span></p></div>
                 <div class="intro2-step"><span class="intro2-num">04</span><p id="intro2-s4"><strong>Keep it Chill</strong><br><span style="font-size:13px; color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">Warning</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24h Ban</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">Permanent Ban</span></span></p></div>
             </div>
         </div>
@@ -2042,7 +2052,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     <div id="lang-container-anchor" style="display:none;"></div>
     <div class="lang-container" id="lang-container">
-        <div class="main-battery" id="main-battery" title="Battery">
+        <div class="main-battery" id="main-battery" title="Talk Charge">
             <div class="main-battery-body"><div class="main-battery-fill" id="main-battery-fill" style="width:0%"></div></div>
             <div class="main-battery-nub"></div>
             <span class="main-battery-pct" id="main-battery-pct">0%</span>
@@ -2076,24 +2086,27 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
 
             <div class="settings-section-label" id="settings-mypage-label">My page</div>
-            <div class="settings-cards">
-                <div class="settings-card">
+            <div class="settings-cards" id="settings-cards">
+                <div class="settings-card" id="settings-time-card">
                     <div class="settings-card-label" id="settings-time-label">오늘 남은 시간</div>
                     <div class="settings-card-value" id="settings-time-value" style="color:var(--accent-color);">--:--:--</div>
                     <div class="settings-card-sub" id="settings-time-sub">구독 혜택</div>
                 </div>
-                <div class="settings-card">
-                    <div class="settings-card-icon" id="settings-rank-emoji">👋</div>
-                    <div class="settings-card-label" id="settings-rank-label">내 랭크</div>
-                    <div class="settings-card-value" id="settings-rank-name" style="color:#ffd166;">--</div>
-                    <div class="settings-card-sub" id="settings-rank-sub">누적 배지</div>
-                </div>
-            </div>
-            <div class="settings-card" style="margin-top:10px;">
-                <div class="settings-card-label" id="settings-badge-label">오늘 받은 배지</div>
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
-                    <div class="settings-card-value" id="settings-badge-count" style="color:#ffd166;font-size:17px;font-weight:700;">0</div>
-                    <div class="settings-badge-chips" id="settings-badge-chips"></div>
+                <div id="settings-guest-locked-wrap">
+                    <div class="settings-card" id="settings-rank-card">
+                        <div class="settings-card-icon" id="settings-rank-emoji">👋</div>
+                        <div class="settings-card-label" id="settings-rank-label">내 랭크</div>
+                        <div class="settings-card-value" id="settings-rank-name" style="color:#ffd166;">--</div>
+                        <div class="settings-card-sub" id="settings-rank-sub">누적 배지</div>
+                    </div>
+                    <div class="settings-card" id="settings-badge-card" style="grid-column:1 / -1;">
+                        <div class="settings-card-label" id="settings-badge-label">오늘 받은 배지</div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                            <div class="settings-card-value" id="settings-badge-count" style="color:#ffd166;font-size:17px;font-weight:700;">0</div>
+                            <div class="settings-badge-chips" id="settings-badge-chips"></div>
+                        </div>
+                    </div>
+                    <div id="settings-guest-locked-cta" onclick="promptGuestLogin()" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; text-align:center; padding:6px; background:rgba(20,20,22,0.4); backdrop-filter:blur(1px); border-radius:12px; cursor:pointer; font-size:10.5px; font-weight:600; color:rgba(255,209,102,0.9); line-height:1.35; text-shadow:0 1px 3px rgba(0,0,0,0.6);"></div>
                 </div>
             </div>
 
@@ -3787,7 +3800,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             repTitle: "TALK STATS",
             badgeManner: "NICE", badgeLogic: "LOGIC", badgeHumor: "FUN", badgeEmpathy: "WARM", badgePassion: "BOLD",
             mTitle: "Conversation Report",
-            mDesc: "Check out what AI noted, and send a peer a lightning bolt (+1% battery)!",
+            mDesc: "Check out what AI noted, and send a peer a lightning bolt (+1% Talk Charge)!",
             sendBoltBtn: "Send Lightning", vSkip: "Skip & Close",
             aiLoading: "AI Chat Summary Loading...",
             aiHeadline: "Today's Dialogue Highlights",
@@ -3847,7 +3860,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCountdown: "Call ends in",
         intro2S1: `<strong>Pick a Topic</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span>`,
         intro2S2: `<strong>Fuel the Chat</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span>`,
-        intro2S3: `<strong>Tag &amp; Charge</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and send them a ⚡ to charge their battery!</span>`,
+        intro2S3: `<strong>Tag &amp; Charge</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Save your favorite speakers to chat again, and send them a ⚡ to top up their Talk Charge!</span>`,
         intro2S4: `<strong>Keep it Chill</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Be respectful. Anyone ruining the vibe will be reported and banned immediately.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">Warning</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24h Ban</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">Permanent Ban</span></span>`,
         intro2S5: ``,
         intro2S6: ``,
@@ -3912,7 +3925,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             repTitle: "대화스탯",
             badgeManner: "친절", badgeLogic: "논리", badgeHumor: "유머", badgeEmpathy: "공감", badgePassion: "열정",
             mTitle: "대화 분석 리포트",
-            mDesc: "AI가 요약한 대화 내용을 확인하고, 함께 대화한 상대방에게 번개(⚡)를 보내보세요! (+1% 배터리)",
+            mDesc: "AI가 요약한 대화 내용을 확인하고, 함께 대화한 상대방에게 번개(⚡)를 보내보세요! (+1% 대화충전량)",
             sendBoltBtn: "번개 보내기", vSkip: "닫기 및 건너뛰기",
             aiLoading: "AI가 대화 요약본을 추출하는 중...",
             aiHeadline: "오늘의 대화 핵심 쟁점 분석 결과",
@@ -3972,7 +3985,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCountdown: "통화 종료까지",
         intro2S1: `<strong>주제 던지기</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">지금 하고 싶은 이야기를 입력하거나, 이미 활기찬 대화방에 바로 조인하세요!</span>`,
         intro2S2: `<strong>10분의 몰입</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">매 세션 10분은 완전히 무료! 대화 흐름을 끊고 싶지 않다면 언제든 구독해보세요.</span>`,
-        intro2S3: `<strong>크루 저장 &amp; 번개 충전</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">또 얘기하고 싶은 대화 상대를 저장하고, 번개(⚡)를 보내 배터리를 채워주세요!</span>`,
+        intro2S3: `<strong>크루 저장 &amp; 번개 충전</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">또 얘기하고 싶은 대화 상대를 저장하고, 번개(⚡)를 보내 대화충전량을 채워주세요!</span>`,
         intro2S4: `<strong>매너가 필수</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">서로를 존중해주세요. 대화 흐름을 깨거나 불쾌감을 주면 바로 아웃입니다.</span><span class="intro2-warn-bar"><span class="intro2-warn-step">경고</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step">24시간 정지</span><span class="intro2-warn-arrow">→</span><span class="intro2-warn-step intro2-warn-final">영구 정지</span></span>`,
         intro2S5: ``,
         intro2S6: ``,
@@ -8026,6 +8039,11 @@ function closeSettingsModal() {
     if (_settingsDailyEnergyRef) { _settingsDailyEnergyRef.off(); _settingsDailyEnergyRef = null; }
     if (_settingsEnergyRef) { _settingsEnergyRef.off(); _settingsEnergyRef = null; }
 }
+// 게스트가 설정 화면의 "대화 충전량" 카드 CTA를 누르면 게스트 세션을 끝내고 로그인 화면으로 보냄
+function promptGuestLogin() {
+    closeSettingsModal();
+    auth.signOut();
+}
 function setLangFromSettings(lang) {
     if (currentLang === lang) return;
     document.getElementById('lang-toggle-btn').click();
@@ -8044,7 +8062,7 @@ function updateSettingsModalLang() {
     document.getElementById('settings-time-label').textContent = isKo ? '오늘 남은 시간' : 'Today\'s remaining time';
     document.getElementById('settings-time-sub').textContent = '';
     document.getElementById('settings-badge-label').textContent = isKo ? '오늘 받은 번개' : 'Lightning received today';
-    document.getElementById('settings-rank-label').textContent = isKo ? '배터리' : 'Battery';
+    document.getElementById('settings-rank-label').textContent = isKo ? '대화 충전량' : 'Talk Charge';
     document.getElementById('settings-rank-sub').textContent = isKo ? '매일 1%씩 감소' : 'Drains 1% per day';
     renderSettingsBattery();
     renderSettingsDailyEnergy();
@@ -8077,25 +8095,40 @@ function updateTopicInfoModalLang() {
 function renderSettingsBattery() {
     if (!_settingsEnergyData) return;
     const isKo = currentLang === 'ko';
+    const cardsEl = document.getElementById('settings-cards');
+    const ctaEl = document.getElementById('settings-guest-locked-cta');
+    const rankNameEl = document.getElementById('settings-rank-name');
     if (isGuest) {
-        document.getElementById('settings-rank-name').textContent = isKo ? '로그인필요' : 'Login required';
+        rankNameEl.textContent = '🪫 0%';
+        rankNameEl.classList.add('settings-value-muted');
         const subEl = document.getElementById('settings-rank-sub');
         if (subEl) subEl.textContent = '';
+        if (ctaEl) {
+            ctaEl.style.display = 'flex';
+            ctaEl.textContent = isKo ? '⚡ 로그인하고 100% 충전하기' : '⚡ Log in to charge to 100%';
+        }
+        if (cardsEl) cardsEl.classList.add('guest-order');
         return;
     }
+    if (ctaEl) ctaEl.style.display = 'none';
+    if (cardsEl) cardsEl.classList.remove('guest-order');
+    rankNameEl.classList.remove('settings-value-muted');
     const pct = _settingsEnergyData.pct || 0;
     document.getElementById('settings-rank-emoji').textContent = getBatteryEmoji(pct);
-    document.getElementById('settings-rank-name').textContent = pct + '%';
+    rankNameEl.textContent = pct + '%';
 }
 
 function renderSettingsDailyEnergy() {
     if (_settingsDailyEnergyData == null) return;
     const isKo = currentLang === 'ko';
+    const badgeCountEl = document.getElementById('settings-badge-count');
     if (isGuest) {
-        document.getElementById('settings-badge-count').textContent = isKo ? '로그인필요' : 'Login required';
+        badgeCountEl.textContent = isKo ? '로그인필요' : 'Login required';
+        badgeCountEl.classList.add('settings-value-muted');
         document.getElementById('settings-badge-chips').innerHTML = '';
         return;
     }
+    badgeCountEl.classList.remove('settings-value-muted');
     const count = _settingsDailyEnergyData || 0;
     document.getElementById('settings-badge-count').textContent = count;
     const chipsEl = document.getElementById('settings-badge-chips');
@@ -8601,7 +8634,7 @@ B-TALK은 이용자 간 연결을 위한 플랫폼만을 제공합니다. 대화
 • Type a topic you want to talk about right now, or jump straight into an already-active room
 • Join a live group voice conversation (real-time voice, not text) with multiple participants
 • Use real-time auto-translation to talk across languages (Premium feature)
-• Save people you enjoyed talking to, and send/receive ⚡ lightning to charge your battery
+• Save people you enjoyed talking to, and send/receive ⚡ lightning to top up your Talk Charge
 
 ─── Who It's For ───
 • People who enjoy meeting new perspectives and talking with strangers
@@ -8623,7 +8656,7 @@ Every session starts with 10 free minutes. To keep talking longer, you can subsc
 • 지금 이야기하고 싶은 주제를 직접 입력하거나, 이미 열려 있는 대화방에 바로 참여
 • 여러 명이 함께 참여하는 실시간 그룹 음성 채팅 (텍스트가 아닌 실제 음성 대화)
 • 실시간 자동 번역으로 언어가 달라도 대화 가능 (Premium 기능)
-• 마음에 맞았던 대화 상대를 저장하고, 번개(⚡)를 주고받아 배터리 충전
+• 마음에 맞았던 대화 상대를 저장하고, 번개(⚡)를 주고받아 대화충전량 충전
 
 ─── 이런 분들에게 ───
 • 새로운 관점과 낯선 사람과의 대화를 즐기고 싶은 분
