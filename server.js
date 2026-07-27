@@ -723,31 +723,47 @@ app.post('/push/notify', async (req, res) => {
     }
 });
 
-// 누군가(게스트 포함) 로그인하면 운영자 기기로 푸시 알림 — meta/adminFcmToken에 등록된 기기로 전송
+// 누군가(게스트 포함) 로그인하면 운영자 기기로 푸시 알림 — meta/adminFcmTokens에 등록된 모든 기기로 전송
+// (폰, 컴퓨터 등 여러 기기를 동시에 등록해둘 수 있음. meta/adminFcmToken은 예전 방식의 잔여 데이터로,
+//  있으면 같이 보내고 없으면 무시함)
 app.post('/notify-admin-login', async (req, res) => {
     if (!admin.apps.length) return res.json({ notified: false });
     try {
         const { isGuest, email } = req.body;
-        const tokenSnap = await admin.database().ref('meta/adminFcmToken').once('value');
-        const token = tokenSnap.val();
-        if (!token) return res.json({ notified: false });
+        const [tokensSnap, legacySnap] = await Promise.all([
+            admin.database().ref('meta/adminFcmTokens').once('value'),
+            admin.database().ref('meta/adminFcmToken').once('value')
+        ]);
+        const tokenMap = tokensSnap.val() || {};
+        const targets = Object.entries(tokenMap)
+            .filter(([, v]) => v && v.token)
+            .map(([key, v]) => ({ key, token: v.token, legacy: false }));
+        const legacyToken = legacySnap.val();
+        if (legacyToken) targets.push({ key: null, token: legacyToken, legacy: true });
 
-        try {
-            await admin.messaging().send({
-                token,
-                notification: {
-                    title: '새 로그인 알림 🔔',
-                    body: isGuest ? '게스트가 접속했어요' : `${email || '회원'}님이 로그인했어요`
+        if (targets.length === 0) return res.json({ notified: false });
+
+        const notification = {
+            title: '새 로그인 알림 🔔',
+            body: isGuest ? '게스트가 접속했어요' : `${email || '회원'}님이 로그인했어요`
+        };
+
+        let notifiedCount = 0;
+        await Promise.all(targets.map(async (t) => {
+            try {
+                await admin.messaging().send({ token: t.token, notification });
+                notifiedCount++;
+            } catch (sendErr) {
+                // 토큰이 만료/무효화된 경우 — DB에서 지워서 다음에 해당 기기가 앱을 열 때 새 토큰으로 자동 재등록되게 함
+                if (sendErr.code === 'messaging/registration-token-not-registered' || sendErr.code === 'messaging/invalid-registration-token') {
+                    if (t.legacy) await admin.database().ref('meta/adminFcmToken').remove().catch(() => {});
+                    else await admin.database().ref('meta/adminFcmTokens/' + t.key).remove().catch(() => {});
+                } else {
+                    console.error('[notify-admin-login] send error:', sendErr.message);
                 }
-            });
-            res.json({ notified: true });
-        } catch (sendErr) {
-            // 토큰이 만료/무효화된 경우 — DB에서 지워서 다음에 관리자가 앱을 열 때 새 토큰으로 자동 재등록되게 함
-            if (sendErr.code === 'messaging/registration-token-not-registered' || sendErr.code === 'messaging/invalid-registration-token') {
-                await admin.database().ref('meta/adminFcmToken').remove().catch(() => {});
             }
-            throw sendErr;
-        }
+        }));
+        res.json({ notified: notifiedCount > 0, count: notifiedCount });
     } catch (e) {
         console.error('[notify-admin-login] error:', e.message);
         res.json({ notified: false });
