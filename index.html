@@ -881,7 +881,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #cp-monthly-price { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] #cp-monthly-desc { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] #logout-btn,
-        html[data-cute-mode="cute"] #admin-push-btn {
+        html[data-cute-mode="cute"] #admin-push-btn,
+        html[data-cute-mode="cute"] #admin-push-debug-btn {
             background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.12) !important; color: rgba(43,31,36,0.6) !important;
         }
         html[data-cute-mode="cute"] #guest-badge {
@@ -2111,6 +2112,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
 
             <button id="admin-push-btn" onclick="registerAdminPushToken()" style="display:none; width:100%; margin-top:0; margin-bottom:8px; padding:11px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; cursor:pointer;">🔔 이 기기로 로그인 알림 받기</button>
+            <button id="admin-push-debug-btn" onclick="showLoginNotifyDebug()" style="display:none; width:100%; margin-top:0; margin-bottom:8px; padding:11px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; cursor:pointer;">🔍 마지막 알림 로그 보기</button>
             <div class="settings-section-label" id="settings-account-label">Account</div>
             <button id="logout-btn" style="display:none; width:100%; margin-top:0;">LOGOUT</button>
         </div>
@@ -2997,12 +2999,37 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
 
     // 운영자가 아닌 누군가(게스트 포함) 로그인하면 운영자에게 푸시 알림
+    // 클라이언트가 실제로 이 함수까지 도달했는지 확인할 수 있도록 흔적을 DB에 남겨둠 (진단용)
     function notifyAdminOfLogin(user, guestFlag) {
+        database.ref('meta/lastLoginNotifyAttempt').set({
+            at: Date.now(), isGuest: guestFlag, email: user.email || null, ua: navigator.userAgent.slice(0, 80)
+        }).catch(() => {});
         fetch(TOKEN_SERVER_URL + '/notify-admin-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ isGuest: guestFlag, email: user.email || null })
         }).catch(() => {});
+    }
+
+    // 관리자용 진단: 마지막 로그인 알림 시도/발송 결과를 확인
+    async function showLoginNotifyDebug() {
+        const isKo = currentLang === 'ko';
+        try {
+            const [attemptSnap, debugSnap] = await Promise.all([
+                database.ref('meta/lastLoginNotifyAttempt').once('value'),
+                database.ref('meta/lastLoginNotifyDebug').once('value')
+            ]);
+            const a = attemptSnap.val();
+            const d = debugSnap.val();
+            const fmt = (ts) => ts ? new Date(ts).toLocaleString(isKo ? 'ko-KR' : 'en-US') : (isKo ? '기록 없음' : 'no record');
+            let msg = isKo
+                ? `[클라이언트 발신 시도]\n시각: ${fmt(a && a.at)}\n게스트여부: ${a ? (a.isGuest ? '예' : '아니오') : '-'}\n\n[서버 발송 결과]\n시각: ${fmt(d && d.at)}\n등록된 기기 수: ${d ? d.targetCount : '-'}\n발송 성공 수: ${d ? d.notifiedCount : '-'}`
+                : `[Client attempt]\nAt: ${fmt(a && a.at)}\nGuest: ${a ? (a.isGuest ? 'yes' : 'no') : '-'}\n\n[Server send result]\nAt: ${fmt(d && d.at)}\nRegistered devices: ${d ? d.targetCount : '-'}\nSent OK: ${d ? d.notifiedCount : '-'}`;
+            if (d && d.errors && d.errors.length) msg += (isKo ? '\n오류: ' : '\nErrors: ') + d.errors.join(' / ');
+            alert(msg);
+        } catch (e) {
+            alert((isKo ? '로그 조회 실패: ' : 'Failed to load log: ') + e.message);
+        }
     }
 
     // 서비스 워커 등록 (앱 로드 시)
@@ -8038,9 +8065,11 @@ function openSettingsModal() {
     updateSettingsModalLang();
     loadSettingsMyPage();
     const adminBtn = document.getElementById('admin-push-btn');
+    const adminDebugBtn = document.getElementById('admin-push-debug-btn');
     const user = auth.currentUser;
     const isAdminUser = !!user && (user.uid === ADMIN_UID || user.email === ADMIN_EMAIL);
     if (adminBtn) adminBtn.style.display = isAdminUser ? 'block' : 'none';
+    if (adminDebugBtn) adminDebugBtn.style.display = isAdminUser ? 'block' : 'none';
 }
 function closeSettingsModal() {
     document.getElementById('settings-modal-overlay').classList.remove('open');
@@ -8113,7 +8142,7 @@ function renderSettingsBattery() {
         if (subEl) subEl.textContent = '';
         if (ctaEl) {
             ctaEl.style.display = 'flex';
-            ctaEl.textContent = isKo ? '⚡ 로그인하고 100% 충전하기' : '⚡ Log in to charge to 100%';
+            ctaEl.textContent = isKo ? '확인하러 로그인' : 'Log in to see';
         }
         if (cardsEl) cardsEl.classList.add('guest-order');
         return;
@@ -8131,7 +8160,7 @@ function renderSettingsDailyEnergy() {
     const isKo = currentLang === 'ko';
     const badgeCountEl = document.getElementById('settings-badge-count');
     if (isGuest) {
-        badgeCountEl.textContent = isKo ? '로그인필요' : 'Login required';
+        badgeCountEl.textContent = '';
         badgeCountEl.classList.add('settings-value-muted');
         document.getElementById('settings-badge-chips').innerHTML = '';
         return;

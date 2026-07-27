@@ -728,6 +728,8 @@ app.post('/push/notify', async (req, res) => {
 //  있으면 같이 보내고 없으면 무시함)
 app.post('/notify-admin-login', async (req, res) => {
     if (!admin.apps.length) return res.json({ notified: false });
+    // 진단용: 이 요청이 서버까지 실제로 도달해서 어떻게 처리됐는지 DB에 남겨둠 (설정 화면의 "마지막 알림 로그 보기"에서 확인 가능)
+    const writeDebug = (extra) => admin.database().ref('meta/lastLoginNotifyDebug').set({ at: Date.now(), ...extra }).catch(() => {});
     try {
         const { isGuest, email } = req.body;
         const [tokensSnap, legacySnap] = await Promise.all([
@@ -741,7 +743,10 @@ app.post('/notify-admin-login', async (req, res) => {
         const legacyToken = legacySnap.val();
         if (legacyToken) targets.push({ key: null, token: legacyToken, legacy: true });
 
-        if (targets.length === 0) return res.json({ notified: false });
+        if (targets.length === 0) {
+            await writeDebug({ targetCount: 0, notifiedCount: 0, errors: ['등록된 기기 없음 (meta/adminFcmTokens 비어있음)'] });
+            return res.json({ notified: false });
+        }
 
         const notification = {
             title: '새 로그인 알림 🔔',
@@ -749,11 +754,13 @@ app.post('/notify-admin-login', async (req, res) => {
         };
 
         let notifiedCount = 0;
+        const errors = [];
         await Promise.all(targets.map(async (t) => {
             try {
                 await admin.messaging().send({ token: t.token, notification });
                 notifiedCount++;
             } catch (sendErr) {
+                errors.push(`${t.token.slice(0, 10)}...: ${sendErr.code || sendErr.message}`);
                 // 토큰이 만료/무효화된 경우 — DB에서 지워서 다음에 해당 기기가 앱을 열 때 새 토큰으로 자동 재등록되게 함
                 if (sendErr.code === 'messaging/registration-token-not-registered' || sendErr.code === 'messaging/invalid-registration-token') {
                     if (t.legacy) await admin.database().ref('meta/adminFcmToken').remove().catch(() => {});
@@ -763,9 +770,11 @@ app.post('/notify-admin-login', async (req, res) => {
                 }
             }
         }));
+        await writeDebug({ targetCount: targets.length, notifiedCount, errors });
         res.json({ notified: notifiedCount > 0, count: notifiedCount });
     } catch (e) {
         console.error('[notify-admin-login] error:', e.message);
+        await writeDebug({ targetCount: 0, notifiedCount: 0, errors: [e.message] });
         res.json({ notified: false });
     }
 });
