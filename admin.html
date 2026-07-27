@@ -1471,6 +1471,7 @@
         db.ref('users').once('value', snap => {
             const list = document.getElementById('subscriptions-list');
             const data = snap.val() || {};
+            console.log('[loadSubscriptions] user count:', Object.keys(data).length);
             const now = new Date();
             const subs = Object.entries(data).filter(([, u]) => {
                 const s = u.subscription;
@@ -1504,6 +1505,10 @@
                     <span style="font-size:12px;font-weight:700;color:${planColor};background:rgba(0,0,0,0.2);padding:4px 12px;border-radius:20px;">${planLabel}</span>
                 </div>`;
             }).join('');
+        }, err => {
+            console.error('[loadSubscriptions] failed:', err);
+            document.getElementById('subscriptions-list').innerHTML =
+                `<div style="text-align:center;padding:40px;color:var(--danger);font-size:13px;">구독 목록을 불러오지 못했습니다: ${err.message}</div>`;
         });
     }
 
