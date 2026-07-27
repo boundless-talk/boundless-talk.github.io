@@ -3253,7 +3253,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const wave = document.createElement('div');
         wave.className = 'disco-wave';
         const anims = ['discoWave1', 'discoWave2', 'discoWave3', 'discoWave4'];
-        const barCount = 2 + (seed % 3); // 2~4개, 방마다 다르게
+        const barCount = 4;
         for (let i = 0; i < barCount; i++) {
             const bar = document.createElement('span');
             bar.style.animation = anims[(seed + i) % anims.length] + ' 1s ease-in-out infinite';
@@ -3294,7 +3294,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const live = document.createElement('span');
         live.className = 'disco-live-badge';
         live.innerHTML = '<span class="dot"></span>';
-        live.appendChild(document.createTextNode(currentLang === 'ko' ? 'LIVE' : 'LIVE'));
+        live.appendChild(document.createTextNode('LIVE NOW'));
         badges.appendChild(live);
         top.appendChild(badges);
         card.appendChild(top);
@@ -3353,6 +3353,38 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         });
     }
 
+    // ── 10시 전 Discover 빈 화면: 실시간 카운트다운 ──
+    let discoCountdownInterval = null;
+    function stopDiscoCountdown() {
+        if (discoCountdownInterval) { clearInterval(discoCountdownInterval); discoCountdownInterval = null; }
+    }
+    function msUntilTonightOpen() {
+        const now = Date.now();
+        const kst = new Date(now + 9 * 60 * 60 * 1000);
+        // "+9h 시프트된 시계"의 UTC 필드로 오늘 KST 22:00을 만든 뒤, 다시 실제 UTC epoch로 되돌림
+        const kst2200Epoch = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate(), 22, 0, 0) - 9 * 60 * 60 * 1000;
+        return Math.max(0, kst2200Epoch - now);
+    }
+    function formatCountdown(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const h = Math.floor(totalSec / 3600);
+        const m = Math.floor((totalSec % 3600) / 60);
+        const s = totalSec % 60;
+        const pad = n => String(n).padStart(2, '0');
+        return h > 0 ? (pad(h) + ':' + pad(m) + ':' + pad(s)) : (pad(m) + ':' + pad(s));
+    }
+    function startDiscoCountdown(el) {
+        stopDiscoCountdown();
+        const tick = () => {
+            if (isWithinOperatingHours()) { stopDiscoCountdown(); renderDiscoGrid(); return; }
+            el.textContent = currentLang === 'ko'
+                ? `⏰ ${formatCountdown(msUntilTonightOpen())} 뒤 대화의 문이 열립니다.`
+                : `⏰ Doors open in ${formatCountdown(msUntilTonightOpen())}.`;
+        };
+        tick();
+        discoCountdownInterval = setInterval(tick, 1000);
+    }
+
     function renderDiscoGrid() {
         const grid = document.getElementById('disco-grid');
         const empty = document.getElementById('disco-empty');
@@ -3376,10 +3408,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 empty.innerHTML = '';
                 if (discoRooms.length === 0 && !isWithinOperatingHours()) {
                     empty.classList.add('disco-empty-hero');
-                    empty.textContent = currentLang === 'ko'
-                        ? '🌙 오늘 밤 10시, 대화의 문이 열립니다.'
-                        : '🌙 Doors open tonight at 10 PM.';
+                    startDiscoCountdown(empty);
                 } else {
+                    stopDiscoCountdown();
                     empty.classList.remove('disco-empty-hero');
                     empty.textContent = discoRooms.length === 0
                         ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!' : 'No circles live right now. Start the first one!')
@@ -3388,6 +3419,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             }
             return;
         }
+        stopDiscoCountdown();
         if (empty) empty.style.display = 'none';
         rooms.forEach(room => grid.appendChild(createDiscoCardEl(room)));
     }
@@ -3523,17 +3555,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const empty = document.getElementById('scheduled-empty');
         if (!grid) return;
         grid.innerHTML = '';
-        if (scheduledRoomsCache.length === 0) {
+        // 실제로 열려서 Discover에도 뜨는 방은 Scheduled에 중복으로 보이지 않게 뺌
+        const visibleRooms = scheduledRoomsCache.filter(room =>
+            !(isWithinOperatingHours() && (discoRooms || []).some(r => r.topic === room.title))
+        );
+        if (visibleRooms.length === 0) {
             if (empty) {
                 empty.style.display = 'block';
-                empty.textContent = currentLang === 'ko'
-                    ? '아직 예약된 방이 없어요. 첫 방을 예약해보세요!'
-                    : 'No circles scheduled yet. Be the first to reserve one!';
+                empty.textContent = scheduledRoomsCache.length === 0
+                    ? (currentLang === 'ko' ? '아직 예약된 방이 없어요. 첫 방을 예약해보세요!' : 'No circles scheduled yet. Be the first to reserve one!')
+                    : (currentLang === 'ko' ? '예약된 방이 모두 Discover에서 진행 중이에요.' : 'All scheduled circles are now live in Discover.');
             }
             return;
         }
         if (empty) empty.style.display = 'none';
-        scheduledRoomsCache.forEach(room => grid.appendChild(createScheduledCardEl(room)));
+        visibleRooms.forEach(room => grid.appendChild(createScheduledCardEl(room)));
     }
     function renderScheduledTab() {
         renderScheduledGrid();
@@ -3564,20 +3600,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             topLeft.appendChild(pp);
         }
         top.appendChild(topLeft);
+        // 실제로 열린 방(Discover에 뜬 방)은 renderScheduledGrid()에서 이미 걸러내고 넘어오므로,
+        // 여기 도달하는 isOpen 상태의 방은 항상 "아직 아무도 안 들어온" 상태임
         const isOpen = isWithinOperatingHours();
         const badge = document.createElement('span');
         badge.className = 'disco-status-badge ' + (room.joined ? 'joined' : 'waiting');
         badge.textContent = room.joined
             ? (currentLang === 'ko' ? '✓ 참여중' : "✓ YOU'RE IN")
             : (isOpen
-                ? (currentLang === 'ko' ? '🌙 진행중' : '🌙 LIVE NOW')
+                ? (currentLang === 'ko' ? '⏳ 시작 전' : '⏳ NOT STARTED')
                 : (currentLang === 'ko' ? '🔒 대기중' : '🔒 WAITING'));
         top.appendChild(badge);
         card.appendChild(top);
 
         const mid = document.createElement('div');
         mid.className = 'disco-card-mid';
-        mid.appendChild(buildDiscoRingEl(room.seatCount, room.maxPeople));
+        mid.appendChild(buildDiscoRingEl(isOpen ? 0 : room.seatCount, room.maxPeople));
         const titleWrap = document.createElement('div');
         titleWrap.className = 'disco-card-title-wrap';
         const title = document.createElement('h3');
@@ -3591,10 +3629,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         bottom.className = 'disco-card-bottom';
         const occ = document.createElement('span');
         occ.className = 'disco-occupancy';
-        const full = room.seatCount >= room.maxPeople;
-        occ.textContent = currentLang === 'ko'
-            ? (room.seatCount + '/' + room.maxPeople + (full ? '명 · 가득참' : '명 예약됨'))
-            : (room.seatCount + '/' + room.maxPeople + (full ? ' full' : ' reserved'));
+        if (isOpen) {
+            occ.textContent = currentLang === 'ko' ? '아직 아무도 입장하지 않았어요' : 'Nobody has joined yet';
+        } else {
+            const full = room.seatCount >= room.maxPeople;
+            occ.textContent = currentLang === 'ko'
+                ? (room.seatCount + '/' + room.maxPeople + (full ? '명 · 가득참' : '명 예약됨'))
+                : (room.seatCount + '/' + room.maxPeople + (full ? ' full' : ' reserved'));
+        }
         bottom.appendChild(occ);
         const openLabel = document.createElement('span');
         openLabel.className = 'disco-schedule-open-label';
@@ -3865,6 +3907,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             if (link) link.classList.toggle('active', t === tab);
             if (panel) panel.style.display = (t === tab) ? 'flex' : 'none';
         });
+        if (tab !== 'discover') stopDiscoCountdown();
         if (tab === 'trending') renderTrendingTab();
         if (tab === 'scheduled') renderScheduledTab();
         if (tab === 'mycircles') switchMyCirclesSubtab('recent');
@@ -4493,6 +4536,8 @@ database.ref('activeTopics').on('value', (snap) => {
     });
     discoRooms = discoRoomsBuilt;
     renderDiscoGrid();
+    // Scheduled 탭 카드는 10시 이후 이 실시간 데이터로 진짜 참여 인원을 보여주므로 같이 갱신
+    renderScheduledGrid();
 
     const bar = document.getElementById('live-topics-bar');
     const tagsEl = document.getElementById('live-topics-tags');
