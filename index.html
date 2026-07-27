@@ -728,6 +728,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #about-nav-btn { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #early50-promo-title { color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #early50-promo-sub { color: rgba(43,31,36,.55) !important; }
+        html[data-cute-mode="cute"] #early50-promo-count { color: rgba(43,31,36,.5) !important; background: rgba(0,0,0,.05) !important; border-color: rgba(0,0,0,.1) !important; }
         html[data-cute-mode="cute"] #inquiry-btn-hero,
         html[data-cute-mode="cute"] #about-nav-btn-hero { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #inquiry-btn:hover,
@@ -2846,10 +2847,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 첫 50명 프로모션 안내 팝업 (로그인 화면 진입 시) -->
     <div class="modal-overlay" id="early50-promo-modal" onclick="if(event.target===this) closeEarly50Promo()">
         <div class="modal-content" style="max-width:320px; text-align:center;">
-            <div style="font-size:28px; margin-bottom:10px;">🎙️✨</div>
             <div id="early50-promo-title" style="font-size:16px; font-weight:700; color:#fff; margin-bottom:8px; line-height:1.5;"></div>
             <div id="early50-promo-sub" style="font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:14px;"></div>
-            <div id="early50-promo-count" style="display:inline-block; font-size:12px; font-weight:700; color:#ffb020; background:rgba(255,176,32,0.1); border:1px solid rgba(255,176,32,0.3); border-radius:20px; padding:5px 12px; margin-bottom:20px;"></div>
+            <div id="early50-promo-count" style="display:inline-block; font-size:12px; font-weight:600; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:5px 12px; margin-bottom:20px;"></div>
             <button onclick="closeEarly50Promo()" id="early50-promo-btn" style="width:100%; padding:13px; background:var(--accent-color); color:#000; font-weight:700; border:none; border-radius:12px; font-size:14px; cursor:pointer;"></button>
         </div>
     </div>
@@ -7073,13 +7073,15 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             ? '\n\n언제든지 대화가 필요할 때 돌아오세요!\n늘 이곳에서 기다리고 있겠습니다. 😊'
             : '\n\nWe hope to see you again soon. You\'re always welcome back! 😊';
         try {
-            // 중복 요청 체크
+            // 중복 요청 체크 — 이미 '처리완료'된 이전 요청은 막지 않고, 아직 처리 안 된(pending) 요청이 있을 때만 막음
             const existingSnap = await database.ref('refundRequests').orderByChild('uid').equalTo(user.uid).once('value');
-            if (existingSnap.val()) {
+            const existingData = existingSnap.val();
+            const hasPending = existingData && Object.values(existingData).some(v => v.status === 'pending');
+            if (hasPending) {
                 document.getElementById('refund-modal').classList.remove('active');
                 alert((isKo
-                    ? '이미 환불(취소) 요청이 완료되었습니다.\n처리가 완료될 때까지 조금만 기다려 주세요!'
-                    : 'A refund or cancellation request has already been submitted.\nPlease wait while we process it.') + tail);
+                    ? '이미 환불(취소) 요청이 접수되어 있습니다.\n처리가 완료될 때까지 조금만 기다려 주세요!'
+                    : 'A refund or cancellation request is already pending.\nPlease wait while we process it.') + tail);
                 return;
             }
 
@@ -8833,15 +8835,15 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
             if (!remaining || remaining <= 0) return;
             const isKo = currentLang === 'ko';
             document.getElementById('early50-promo-title').innerHTML = isKo
-                ? '지금, 가장 흥미로운 목소리들.<br>지루한 오늘을 바꿀 라이브 그룹 통화'
-                : 'The most interesting voices, right now.<br>A live group call to shake up a boring day.';
+                ? '지루한 하루를 바꿀 라이브 통화.'
+                : 'A live call to shake up a boring day.';
             document.getElementById('early50-promo-sub').textContent = isKo
-                ? '선착순 50명 전용 프리미엄 혜택을 놓치지 마세요'
-                : "Don't miss the first-50 exclusive Premium perk";
+                ? '선착순 50명 전용 프리미엄 혜택'
+                : 'First-50 exclusive Premium perk';
             document.getElementById('early50-promo-count').textContent = isKo
-                ? `⚠️ 남은 수량 ${remaining}개`
-                : `⚠️ ${remaining} left`;
-            document.getElementById('early50-promo-btn').textContent = isKo ? '로그인하고 혜택 받기' : 'Log in & claim your gift';
+                ? `${remaining}자리 남음`
+                : `${remaining} spots left`;
+            document.getElementById('early50-promo-btn').textContent = isKo ? '혜택 받고 시작하기' : 'Claim your perk & start';
             document.getElementById('early50-promo-modal').classList.add('active');
         } catch (e) { console.warn('early50 promo fetch failed:', e); }
     }
