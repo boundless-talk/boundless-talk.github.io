@@ -1413,6 +1413,7 @@
         db.ref('refundRequests').once('value', snap => {
             const list = document.getElementById('refunds-list');
             const data = snap.val();
+            console.log('[loadRefunds] data:', data);
             if (!data) {
                 list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">환불 요청이 없습니다.</div>';
                 document.getElementById('refunds-count').textContent = '0건';
@@ -1446,6 +1447,10 @@
                     </div>` : ''}
                 </div>`;
             }).join('');
+        }, err => {
+            console.error('[loadRefunds] failed:', err);
+            document.getElementById('refunds-list').innerHTML =
+                `<div style="text-align:center;padding:40px;color:var(--danger);font-size:13px;">환불 목록을 불러오지 못했습니다: ${err.message}</div>`;
         });
     }
 
