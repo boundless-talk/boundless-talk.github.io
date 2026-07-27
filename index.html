@@ -387,6 +387,7 @@
         html[data-cute-mode="cute"] .settings-card-value.dim { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] .settings-card-sub { color: rgba(43,31,36,0.4); }
         html[data-cute-mode="cute"] #mycircles-withdrawal-link { color: rgba(43,31,36,0.3) !important; }
+        html[data-cute-mode="cute"] #mycircles-sub-id { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] .friend-item-box { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
         html[data-cute-mode="cute"] .friend-name { color: #2b1f24; }
         html[data-cute-mode="cute"] .friend-date { color: rgba(43,31,36,0.4); }
@@ -2270,6 +2271,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                 <div id="mycircles-recent-list"></div>
                 <div id="mycircles-subscription-panel" style="display:none;">
+                    <div id="mycircles-sub-id" style="font-size:11px; color:rgba(255,255,255,0.35); text-align:center; margin-bottom:8px;"></div>
                     <div class="settings-card" id="mycircles-sub-card" onclick="openMainPayModal()" style="cursor:pointer;">
                         <div class="settings-card-label" id="mycircles-sub-label">구독 현황</div>
                         <div class="settings-card-value" id="mycircles-sub-value" style="color:var(--accent-color);">--</div>
@@ -3093,8 +3095,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             topicInput.value = topic;
             topicInput.dispatchEvent(new Event('input'));
         }
-        const joinBtn = document.getElementById('join-btn');
-        if (joinBtn && !joinBtn.disabled) joinBtn.click();
+        // 로그인 직후엔 생년월일 확인 등 비동기 절차가 끝나야 입장 버튼이 활성화되므로,
+        // 그 타이밍에 딱 맞춰 한 번만 클릭을 시도하면 조용히 무시될 수 있어 준비될 때까지 재시도함
+        let attempts = 0;
+        (function tryClick() {
+            const joinBtn = document.getElementById('join-btn');
+            const talkControls = document.getElementById('talk-controls');
+            if (joinBtn && !joinBtn.disabled && talkControls && talkControls.style.display !== 'none') {
+                joinBtn.click();
+                return;
+            }
+            attempts++;
+            if (attempts < 30) setTimeout(tryClick, 300); // 최대 약 9초 대기
+        })();
     }
 
     // 2. Global State Management
@@ -3551,11 +3564,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             topLeft.appendChild(pp);
         }
         top.appendChild(topLeft);
+        const isOpen = isWithinOperatingHours();
         const badge = document.createElement('span');
         badge.className = 'disco-status-badge ' + (room.joined ? 'joined' : 'waiting');
         badge.textContent = room.joined
             ? (currentLang === 'ko' ? '✓ 참여중' : "✓ YOU'RE IN")
-            : (currentLang === 'ko' ? '🔒 대기중' : '🔒 WAITING');
+            : (isOpen
+                ? (currentLang === 'ko' ? '🌙 진행중' : '🌙 LIVE NOW')
+                : (currentLang === 'ko' ? '🔒 대기중' : '🔒 WAITING'));
         top.appendChild(badge);
         card.appendChild(top);
 
@@ -3582,18 +3598,33 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         bottom.appendChild(occ);
         const openLabel = document.createElement('span');
         openLabel.className = 'disco-schedule-open-label';
-        openLabel.textContent = currentLang === 'ko' ? '밤 10시 오픈' : 'Opens 10:00 PM';
+        openLabel.textContent = isOpen
+            ? (currentLang === 'ko' ? '지금 입장 가능' : 'Open now')
+            : (currentLang === 'ko' ? '밤 10시 오픈' : 'Opens 10:00 PM');
         bottom.appendChild(openLabel);
         card.appendChild(bottom);
 
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'disco-seat-btn' + (room.joined ? ' disco-seat-btn-ghost' : '');
-        btn.textContent = room.joined ? (currentLang === 'ko' ? '취소' : 'Cancel') : (currentLang === 'ko' ? '자리 예약' : 'Reserve seat');
-        btn.onclick = () => toggleScheduledSeat(room.id, room.joined);
+        if (isOpen) {
+            // 10시가 지나면 예약(자리 맡기)은 의미가 없으므로, 카드를 눌러 바로 그 대화방으로 입장하게 함
+            btn.className = 'disco-seat-btn';
+            btn.textContent = currentLang === 'ko' ? '입장하기' : 'Join now';
+            btn.onclick = () => enterScheduledRoom(room);
+        } else {
+            btn.className = 'disco-seat-btn' + (room.joined ? ' disco-seat-btn-ghost' : '');
+            btn.textContent = room.joined ? (currentLang === 'ko' ? '취소' : 'Cancel') : (currentLang === 'ko' ? '자리 예약' : 'Reserve seat');
+            btn.onclick = () => toggleScheduledSeat(room.id, room.joined);
+        }
         card.appendChild(btn);
 
         return card;
+    }
+    // 10시가 지난 예약방은 더 이상 좌석을 예약하는 게 아니라, 그 주제로 바로 실제 대화방에 들어감
+    // (알림을 못 받았거나 놓친 사람도 Scheduled 탭에서 같은 방식으로 합류할 수 있도록)
+    function enterScheduledRoom(room) {
+        if (!auth.currentUser) { promptGuestLogin(); return; }
+        autoJoinFromPush(room.title, room.style, room.pingpong ? '1' : '0');
     }
     // 인스타그램 등 인앱 브라우저는 Notification API 자체를 지원 안 하는 경우가 많아서,
     // 알림 등록이 안 돼도 예약 자체는 되게 하고 fcmToken만 없이 보냄 (10시 알림만 못 받음)
@@ -3797,6 +3828,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const uid = auth.currentUser ? auth.currentUser.uid : null;
         const isKo = currentLang === 'ko';
         const valueEl = document.getElementById('mycircles-sub-value');
+        const idEl = document.getElementById('mycircles-sub-id');
+        if (idEl) {
+            idEl.textContent = !auth.currentUser
+                ? ''
+                : (auth.currentUser.isAnonymous ? (isKo ? '게스트' : 'Guest') : (auth.currentUser.email || '-'));
+        }
         if (!valueEl) return;
         if (!uid) { valueEl.textContent = isKo ? '로그인 필요' : 'Login required'; return; }
         try {
@@ -4580,7 +4617,7 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                 const s = window._pushJoinStyle;
                 const p = window._pushJoinPP;
                 window._pushJoinTopic = null;
-                setTimeout(() => autoJoinFromPush(t, s, p), 800);
+                autoJoinFromPush(t, s, p);
             }
 
 
