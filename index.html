@@ -155,6 +155,12 @@
             background: radial-gradient(circle, rgba(var(--accent-rgb),0.18), transparent 70%);
             pointer-events: none;
         }
+        /* 큐트모드는 배경이 밝아서 카드 자체 그림자만으로 입체감이 나오지만, 다크모드는 배경이 검정이라
+           검정 그림자만으로는 카드 경계가 안 보여서 은은한 색 글로우 + 테두리를 더해 입체적으로 보이게 함 */
+        #intro-splash-video { box-shadow: 0 12px 40px rgba(0,0,0,0.35); }
+        html[data-cute-mode="dark"] #intro-splash-video {
+            box-shadow: 0 18px 50px rgba(0,0,0,0.6), 0 0 70px rgba(var(--accent-rgb),0.2), 0 0 0 1px rgba(255,255,255,0.08);
+        }
         .intro-wordmark {
             position: relative;
             font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
@@ -2009,7 +2015,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         -->
         <!-- src는 다크/큐트 테마에 따라 스크립트에서 splash-dark.mp4 / splash-cute.mp4 중 하나로 설정됨 -->
         <video id="intro-splash-video" autoplay muted playsinline webkit-playsinline
-               style="width:min(320px, 84vw); border-radius:20px; box-shadow:0 12px 40px rgba(0,0,0,0.35);"
+               style="width:min(320px, 84vw); border-radius:20px;"
                onended="startFromIntro()" onerror="startFromIntro()"></video>
         <div id="intro-footer">
             <button class="footer-link-btn" id="inquiry-btn-hero" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.22); font-size:11px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
@@ -2819,19 +2825,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <div class="modal-content" style="max-width:340px;">
             <div id="cp-title-row" style="font-size:15px; font-weight:700; color:#fff; margin-bottom:16px;"><span id="cp-title">플랜 변경</span></div>
             <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-                <button onclick="switchPlan('weekly')" id="cp-weekly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; cursor:pointer; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                    <div>
-                        <div id="cp-weekly-label" style="font-weight:600;">Weekly Plan으로 변경</div>
-                        <div id="cp-weekly-desc" style="font-size:11px; font-weight:400; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit + real-time translation</div>
-                    </div>
-                    <span style="color:rgba(255,255,255,0.4); font-size:13px; white-space:nowrap;" id="cp-weekly-price">$1.99/week</span>
-                </button>
-                <button onclick="switchPlan('monthly')" id="cp-monthly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; color:rgba(255,255,255,0.4); font-size:14px; cursor:default; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;" disabled>
+                <button onclick="switchPlan('monthly')" id="cp-monthly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; cursor:pointer; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;">
                     <div>
                         <div id="cp-monthly-label" style="font-weight:600;">Monthly Plan 유지</div>
                         <div id="cp-monthly-desc" style="font-size:11px; font-weight:400; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit + real-time translation</div>
                     </div>
                     <span style="color:rgba(255,255,255,0.4); font-size:13px; white-space:nowrap;" id="cp-monthly-price">$4.99/month</span>
+                </button>
+                <button onclick="switchPlan('weekly')" id="cp-weekly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; color:rgba(255,255,255,0.4); font-size:14px; cursor:default; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;" disabled>
+                    <div>
+                        <div id="cp-weekly-label" style="font-weight:600;">Weekly Plan으로 변경</div>
+                        <div id="cp-weekly-desc" style="font-size:11px; font-weight:400; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit + real-time translation</div>
+                    </div>
+                    <span style="color:rgba(255,255,255,0.4); font-size:13px; white-space:nowrap;" id="cp-weekly-price">$1.99/week</span>
                 </button>
             </div>
         </div>
@@ -4058,6 +4064,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     introEl.style.display = 'none';
                     document.body.classList.remove('intro-open');
                 }
+                // 로그인 확인이 늦게 끝나서 "로그인하고 혜택 받기" 팝업이 그 사이에 떠버렸을 수 있으니 닫아줌
+                const promoModal = document.getElementById('early50-promo-modal');
+                if (promoModal) promoModal.classList.remove('active');
                 document.getElementById("auth-section").style.display = "none";
                 if (logoutBtn) logoutBtn.style.display = "inline-block";
                 if (talkControls) talkControls.style.display = "block";
@@ -7106,6 +7115,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                     : 'Your request has been received.\n\nAs it has been over 14 days since purchase, a refund is not available.\nHowever, your subscription auto-renewal will be cancelled.\nYou retain access until the end of the current billing period.') + tail);
             }
         } catch(e) {
+            console.error('submitRefund error:', e);
             alert(isKo ? '요청 중 오류가 발생했습니다. 다시 시도해주세요.' : 'An error occurred. Please try again.');
         }
     }
@@ -7184,6 +7194,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.style.cursor = 'pointer';
+                btn.style.color = '#fff';
                 btn.style.borderColor = highlight ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)';
                 document.getElementById(labelId).textContent = text;
             }
@@ -7191,6 +7202,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 btn.disabled = true;
                 btn.style.opacity = '0.4';
                 btn.style.cursor = 'default';
+                btn.style.color = 'rgba(255,255,255,0.4)';
                 btn.style.borderColor = 'rgba(255,255,255,0.06)';
                 document.getElementById(labelId).textContent = text;
             }
@@ -8809,6 +8821,10 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     let early50PromoShown = false;
     async function showEarly50PromoIfEligible() {
         if (early50PromoShown) return;
+        // "로그인하고 혜택 받기" 팝업은 아직 로그인 안 한(또는 게스트인) 사람에게만 의미가 있음 —
+        // 1번 화면이 이제 자동으로 재생/전환되면서, 실제로는 이미 로그인된 사람에게도 이 타이머가
+        // 똑같이 돌게 되어 엉뚱하게 뜨는 문제가 있었음
+        if (auth.currentUser && !auth.currentUser.isAnonymous) return;
         early50PromoShown = true;
         try {
             const res = await fetch(TOKEN_SERVER_URL + '/early50-remaining');
@@ -8845,7 +8861,14 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
             splashVideo.style.transition = 'none';
             splashVideo.style.transform = '';
             splashVideo.style.opacity = '';
-            splashVideo.currentTime = 0;
+            // 그 사이에 다크/큐트 테마가 바뀌었을 수 있으므로 지금 테마에 맞는 영상으로 다시 설정
+            const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
+            const correctSrc = isCute ? 'splash-cute.mp4' : 'splash-dark.mp4';
+            if (!splashVideo.src.endsWith(correctSrc)) {
+                splashVideo.src = correctSrc;
+            } else {
+                splashVideo.currentTime = 0;
+            }
             splashVideo.play().catch(() => {});
         }
     }
