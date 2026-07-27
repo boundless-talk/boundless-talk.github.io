@@ -3471,10 +3471,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const reg = await navigator.serviceWorker.ready;
             const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
             if (!token) throw new Error('FCM token empty');
-            const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
-            const today = kst.toISOString().slice(0, 10);
-            const uid = auth.currentUser.uid;
-            await database.ref(`reservations/${today}/${uid}`).set({ title, fcmToken: token, createdAt: Date.now() });
+            const idToken = await auth.currentUser.getIdToken();
+            const res = await fetch(TOKEN_SERVER_URL + '/reserve-room', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, title, fcmToken: token })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'unknown');
             closeReserveModal();
             showBadgeToast(isKo ? '✅ 예약 완료! 밤 10시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 10 PM.');
         } catch (e) {

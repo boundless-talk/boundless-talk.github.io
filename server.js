@@ -223,6 +223,35 @@ app.post('/claim-early-access', async (req, res) => {
     }
 });
 
+// 운영시간 외 "밤 10시 대화방 예약" — Admin SDK로 대신 써서 클라이언트 DB 규칙에 안 걸리게 함
+app.post('/reserve-room', async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, title, fcmToken } = req.body;
+    if (!idToken || !title || !fcmToken) return res.status(400).json({ error: 'idToken, title, fcmToken required' });
+
+    let uid;
+    try {
+        const decoded = await admin.auth().verifyIdToken(idToken);
+        uid = decoded.uid;
+    } catch (e) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const today = kst.toISOString().slice(0, 10);
+        await admin.database().ref(`reservations/${today}/${uid}`).set({
+            title: String(title).slice(0, 200),
+            fcmToken,
+            createdAt: Date.now()
+        });
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[reserve-room] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // ── 회원탈퇴 ──
 // 신고/제재 이력(banned, suspendedUntil, warnedAt 등)은 남기고 나머지 개인 데이터만 지움.
 // Auth 계정 자체도 삭제하므로 같은 이메일로는 재가입해야 재이용 가능.
