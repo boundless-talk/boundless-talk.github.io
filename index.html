@@ -4754,7 +4754,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         if (document.getElementById('google-login-text')) {
             document.getElementById('google-login-text').innerText = (currentLang === 'en') ? "Continue with Google" : "구글로 계속하기";
         }
-        document.getElementById('logout-btn').innerText = (currentLang === 'en') ? "LOGOUT" : "로그아웃";
+        updateLogoutBtnLabel();
         document.getElementById('email-login-btn-main').innerText = (currentLang === 'en') ? "Continue with email" : "이메일로 계속하기";
         document.getElementById('email-signup-btn-main').innerText = (currentLang === 'en') ? "Sign up with email" : "이메일로 회원가입";
         document.getElementById('login-sheet-title').innerText = (currentLang === 'en') ? "Log in to continue" : "로그인하고 계속하기";
@@ -8082,11 +8082,23 @@ let _settingsDailyEnergyRef = null;
 let _settingsEnergyRef = null;
 let _settingsEnergyData = null; // 배터리 재렌더링용 캐시 (언어 토글 시 DB 재조회 없이 사용)
 let _settingsDailyEnergyData = null; // 오늘 받은 번개 재렌더링용 캐시
+// 게스트는 실제로는 계정이 없으므로 '로그아웃' 대신 '게스트체험끝내기'로 표시
+function updateLogoutBtnLabel() {
+    const btn = document.getElementById('logout-btn');
+    if (!btn) return;
+    const isKo = currentLang === 'ko';
+    if (isGuest) {
+        btn.textContent = isKo ? '게스트체험끝내기' : 'End guest trial';
+    } else {
+        btn.textContent = isKo ? '로그아웃' : 'LOGOUT';
+    }
+}
 function openSettingsModal() {
     const overlay = document.getElementById('settings-modal-overlay');
     overlay.classList.add('open');
     updateSettingsModalLang();
     loadSettingsMyPage();
+    updateLogoutBtnLabel();
     const adminBtn = document.getElementById('admin-push-btn');
     const adminDebugBtn = document.getElementById('admin-push-debug-btn');
     const user = auth.currentUser;
@@ -8187,7 +8199,7 @@ function renderSettingsBattery() {
         if (subEl) subEl.textContent = '';
         if (ctaEl) {
             ctaEl.style.display = 'flex';
-            ctaEl.textContent = isKo ? '대화충전량 확인하기' : 'Check my Talk Charge';
+            ctaEl.textContent = isKo ? '로그인후 대화충전량 확인하기' : 'Log in to check my Talk Charge';
         }
         if (cardsEl) cardsEl.classList.add('guest-order');
         return;
@@ -8219,9 +8231,8 @@ function renderSettingsDailyEnergy() {
 
 async function loadSettingsMyPage() {
     const uid = auth.currentUser ? auth.currentUser.uid : null;
-    const isKo = currentLang === 'ko';
     if (!uid) {
-        document.getElementById('settings-time-value').textContent = isKo ? '로그인 필요' : 'Login required';
+        document.getElementById('settings-time-value').textContent = '-';
         _settingsEnergyData = { pct: 0 };
         _settingsDailyEnergyData = 0;
         renderSettingsBattery();
