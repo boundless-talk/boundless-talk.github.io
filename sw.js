@@ -52,10 +52,13 @@ self.addEventListener('fetch', e => {
 // 백그라운드 FCM 푸시 수신
 messaging.onBackgroundMessage(payload => {
     const { title, body } = payload.notification || {};
+    // 포그라운드 핸들러(index.html)와 같은 tag를 써서, 혹시 둘 다 발생해도 중복이 아니라 하나로 합쳐지게 함
+    const tag = payload.messageId || payload.fcmMessageId || (payload.data && payload.data.id) || 'btalk-notify';
     self.registration.showNotification(title || '딩동! 🌌', {
         body: body || '',
         icon: '/icon-192.png',
         badge: '/icon-192.png',
+        tag,
         data: payload.data || {}
     });
 });

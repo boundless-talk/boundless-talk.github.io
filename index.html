@@ -729,6 +729,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #early50-promo-title { color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #early50-promo-sub { color: rgba(43,31,36,.55) !important; }
         html[data-cute-mode="cute"] #early50-promo-count { color: rgba(43,31,36,.5) !important; background: rgba(0,0,0,.05) !important; border-color: rgba(0,0,0,.1) !important; }
+        html[data-cute-mode="cute"] #welcome-modal-title { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #welcome-modal-desc { color: rgba(43,31,36,.55) !important; }
         html[data-cute-mode="cute"] #inquiry-btn-hero,
         html[data-cute-mode="cute"] #about-nav-btn-hero { color: rgba(43,31,36,0.4) !important; }
         html[data-cute-mode="cute"] #inquiry-btn:hover,
@@ -2854,6 +2856,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <!-- 회원가입 완료 환영 팝업 (첫 50명 혜택 적용 여부에 따라 문구가 달라짐) -->
+    <div class="modal-overlay" id="welcome-modal" onclick="if(event.target===this) closeWelcomeModal()">
+        <div class="modal-content" style="max-width:320px; text-align:center;">
+            <div id="welcome-modal-title" style="font-size:17px; font-weight:700; color:#fff; letter-spacing:0.2px; margin-bottom:8px; line-height:1.5;"></div>
+            <div id="welcome-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.8); margin-bottom:20px; line-height:1.6;"></div>
+            <button onclick="closeWelcomeModal()" id="welcome-modal-btn" style="width:78%; margin:0 auto; padding:13px; background:var(--accent-color); color:#000; font-weight:700; border:none; border-radius:12px; font-size:14px; cursor:pointer;"></button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="report-modal" onclick="if(event.target===this) closeReportModal()">
         <div class="modal-content">
             <h3 style="color: var(--danger-color);" id="rep-m-title">Report Toxic User</h3>
@@ -2901,13 +2912,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 const reg = await navigator.serviceWorker.register('/sw.js');
                 messaging = firebase.messaging();
                 await messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg });
-                // 앱이 열려있는(포그라운드) 상태에서는 sw.js의 onBackgroundMessage가 동작하지 않으므로,
-                // 여기서 직접 받아서 화면 안 토스트로만 띄워줌. (여기서도 system Notification을
-                // 띄우면, 백그라운드 핸들러와 겹쳐서 같은 알림이 두 번 뜨는 경우가 있어 토스트만 사용)
+                // 앱이 열려있는(포그라운드) 상태에서는 sw.js의 onBackgroundMessage가 동작하지 않아 알림이
+                // 아예 안 뜨는 문제가 있었음 — 화면 안 토스트뿐 아니라 실제 시스템 알림도 띄우되,
+                // 백그라운드 핸들러와 같은 tag를 써서 혹시 둘 다 발생해도 중복이 아니라 하나로 합쳐지게 함
                 messaging.onMessage(payload => {
                     const title = (payload.notification && payload.notification.title) || '';
                     const body = (payload.notification && payload.notification.body) || '';
                     if (title || body) showBadgeToast([title, body].filter(Boolean).join(': '));
+                    if (title && Notification.permission === 'granted') {
+                        const tag = payload.messageId || payload.fcmMessageId || (payload.data && payload.data.id) || 'btalk-notify';
+                        try { new Notification(title, { body, icon: '/icon-192.png', tag }); } catch (e) { console.warn('foreground Notification failed:', e.message); }
+                    }
                 });
             }
         } catch (e) {
@@ -4103,12 +4118,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                                     body: JSON.stringify({ idToken })
                                 });
                                 const data = await res.json();
-                                if (data.granted) {
-                                    alert(currentLang === 'ko'
-                                        ? `🎉 축하합니다! 초기 회원 50명 안에 드셔서\n30일간 대화 세션당 10분 제한 없이 자유롭게 통화할 수 있어요! (하루 최대 2시간)`
-                                        : `🎉 Congrats! You're one of our first 50 members —\nenjoy calls with no 10-minute session limit for the next 30 days! (up to 2 hrs/day)`);
-                                }
-                            } catch (e) { console.error('claim-early-access error:', e); }
+                                showWelcomeModal(data.granted ? 'early50' : 'regular');
+                            } catch (e) {
+                                console.error('claim-early-access error:', e);
+                                showWelcomeModal('regular');
+                            }
                         });
                     } else {
                         revealMainScreen();
@@ -6262,7 +6276,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function toggleSubtitles() {
         if (!isSubscribed && !subtitlesEnabled) {
             const isKo = currentLang === 'ko';
-            showBadgeToast(isKo ? '실시간 번역은 Premium 기능이에요. Go Premium에서 구독해보세요 ✨' : 'Real-time translation is a Premium feature. Subscribe via Go Premium ✨');
+            showBadgeToast(isKo ? '실시간 번역은 Premium 회원에게 제공됩니다.' : 'Real-time translation is available to Premium members.');
             return;
         }
         subtitlesEnabled = !subtitlesEnabled;
@@ -8849,6 +8863,31 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     }
     function closeEarly50Promo() {
         document.getElementById('early50-promo-modal').classList.remove('active');
+    }
+
+    // 회원가입 완료 직후 환영 팝업 — 첫 50명 혜택을 받았는지에 따라 문구가 달라짐
+    function showWelcomeModal(kind) {
+        const isKo = currentLang === 'ko';
+        const titleEl = document.getElementById('welcome-modal-title');
+        const descEl = document.getElementById('welcome-modal-desc');
+        const btnEl = document.getElementById('welcome-modal-btn');
+        if (kind === 'early50') {
+            titleEl.innerHTML = isKo
+                ? '<span style="margin-right:7px;">🎉</span>환영합니다!'
+                : '<span style="margin-right:7px;">🎉</span>Welcome!';
+            descEl.innerHTML = isKo
+                ? '초기 50명만을 위한<br>무제한 프리미엄 혜택이 적용되었습니다.<br><br>30일간 시간 제한 없이 대화를 즐겨보세요.'
+                : "You've unlocked unlimited Premium access, exclusive to our first 50 members.<br><br>Enjoy conversations with no time limit for the next 30 days.";
+            btnEl.textContent = isKo ? '바로 시작하기' : 'Start now';
+        } else {
+            titleEl.textContent = isKo ? '준비는 끝났습니다.' : "You're all set.";
+            descEl.textContent = isKo ? '지금 바로 새로운 대화를 시작해보세요.' : 'Start a new conversation right now.';
+            btnEl.textContent = isKo ? '입장하기' : 'Enter';
+        }
+        document.getElementById('welcome-modal').classList.add('active');
+    }
+    function closeWelcomeModal() {
+        document.getElementById('welcome-modal').classList.remove('active');
     }
 
     function backToIntroFromLogin() {
