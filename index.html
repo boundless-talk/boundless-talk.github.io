@@ -1627,6 +1627,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-wave { display: flex; align-items: center; gap: 2px; height: 20px; }
         .disco-wave span { width: 2px; background: var(--dr); border-radius: 1px; display: inline-block; }
         .disco-empty { padding: 28px 14px; text-align: center; color: rgba(255,255,255,0.35); font-size: 13px; }
+        .disco-empty.disco-empty-hero { display: flex; align-items: center; justify-content: center; min-height: 42vh; font-size: 14px; }
         /* ── Scheduled 탭: 상태 배지 / 오픈 시각 라벨 / 좌석 버튼 ── */
         .schedule-card { border-color: rgba(var(--accent-rgb),0.22); }
         .disco-status-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; border-radius: 8px; padding: 2px 6px; white-space: nowrap; flex: none; }
@@ -2975,7 +2976,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     if (title || body) showBadgeToast([title, body].filter(Boolean).join(': '));
                     if (title && Notification.permission === 'granted') {
                         const tag = payload.messageId || payload.fcmMessageId || (payload.data && payload.data.id) || 'btalk-notify';
-                        try { new Notification(title, { body, icon: '/icon-192.png', tag }); } catch (e) { console.warn('foreground Notification failed:', e.message); }
+                        try { new Notification(title, { body, icon: '/icon192.png', tag }); } catch (e) { console.warn('foreground Notification failed:', e.message); }
                     }
                 });
             }
@@ -3367,10 +3368,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 empty.style.display = 'block';
                 empty.innerHTML = '';
                 if (discoRooms.length === 0 && !isWithinOperatingHours()) {
+                    empty.classList.add('disco-empty-hero');
                     empty.textContent = currentLang === 'ko'
                         ? '🌙 오늘 밤 10시, 대화의 문이 열립니다.'
                         : '🌙 Doors open tonight at 10 PM.';
                 } else {
+                    empty.classList.remove('disco-empty-hero');
                     empty.textContent = discoRooms.length === 0
                         ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!' : 'No circles live right now. Start the first one!')
                         : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No circles match your filters.');
@@ -4255,7 +4258,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         pwaBannerDesc: "앱처럼 빠르게 실행되고, 한 번의 터치로 바로 접속할 수 있습니다.",
         pwaInstallBtn: "홈 화면에 추가",
         pwaLaterBtn: "나중에",
-        iosBannerTitle: "홈 화면에 추가하고 앱처럼 이용하세요",
+        iosBannerTitle: "첫 화면에서 바로,<br>놓치는 알림 없이.",
         iosBannerDesc: `하단 공유 버튼(⬆)을 누른 뒤<br><strong style="color:rgba(255,255,255,0.7);">"홈 화면에 추가"</strong>를 선택하세요.`,
         }
     };
@@ -4721,7 +4724,7 @@ function updateUI() {
         if (pwaLaterBtn) pwaLaterBtn.textContent = lang.pwaLaterBtn;
         const iosTitle = document.getElementById('ios-title');
         const iosDesc = document.getElementById('ios-desc');
-        if (iosTitle) iosTitle.textContent = lang.iosBannerTitle;
+        if (iosTitle) iosTitle.innerHTML = lang.iosBannerTitle;
         if (iosDesc) iosDesc.innerHTML = lang.iosBannerDesc;
         document.getElementById('topic-input').placeholder = lang.placeholder;
         
@@ -9360,10 +9363,10 @@ function showSuspendOverlay(until, reason, uid) {
 <div id="ios-banner" style="display:none; position:fixed; bottom:24px; left:50%; transform:translateX(-50%); width:calc(100% - 32px); max-width:400px; background:#161920; border:1px solid rgba(var(--accent-rgb),0.25); border-radius:16px; padding:16px 18px; z-index:9999; box-shadow:0 8px 30px rgba(0,0,0,0.5);">
   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
     <div style="flex:1;">
-      <div id="ios-title" style="font-size:14px; font-weight:600; color:#fff; margin-bottom:5px; line-height:1.4;">홈 화면에 추가하고 앱처럼 이용하세요</div>
+      <div id="ios-title" style="font-size:14px; font-weight:600; color:#fff; margin-bottom:5px; line-height:1.4;">첫 화면에서 바로,<br>놓치는 알림 없이.</div>
       <div id="ios-desc" style="font-size:12px; color:rgba(255,255,255,0.45); line-height:1.6;">하단 공유 버튼(⬆)을 누른 뒤<br><strong style="color:rgba(255,255,255,0.7);">"홈 화면에 추가"</strong>를 선택하세요.</div>
     </div>
-    <button onclick="document.getElementById('ios-banner').style.display='none'; localStorage.setItem('iosBannerDismissed','1')" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:18px; cursor:pointer; padding:0; margin:0; width:auto; line-height:1; flex-shrink:0;">✕</button>
+    <button onclick="document.getElementById('ios-banner').style.display='none'" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:18px; cursor:pointer; padding:0; margin:0; width:auto; line-height:1; flex-shrink:0;">✕</button>
   </div>
 </div>
 
@@ -9371,8 +9374,8 @@ function showSuspendOverlay(until, reason, uid) {
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isInStandaloneMode = window.navigator.standalone === true;
 
-  // iOS Safari 배너
-  if (isIOS && !isInStandaloneMode && !localStorage.getItem('iosBannerDismissed')) {
+  // iOS Safari 배너 — 아이폰에서는 놓치지 않도록 방문할 때마다 다시 보여줌 (닫아도 다음 방문엔 또 뜸)
+  if (isIOS && !isInStandaloneMode) {
     const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : (navigator.language || '').startsWith('ko') ? 'ko' : 'en';
     if (lang === 'en') {
       document.getElementById('ios-title').textContent = 'Add to Home Screen for quick and easy chatting.';

@@ -56,8 +56,8 @@ messaging.onBackgroundMessage(payload => {
     const tag = payload.messageId || payload.fcmMessageId || (payload.data && payload.data.id) || 'btalk-notify';
     self.registration.showNotification(title || '딩동! 🌌', {
         body: body || '',
-        icon: '/icon-192.png',
-        badge: '/icon-192.png',
+        icon: '/icon192.png',
+        badge: '/icon192.png',
         tag,
         data: payload.data || {}
     });
