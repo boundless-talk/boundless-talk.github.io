@@ -304,6 +304,7 @@
         #appeal-textarea:focus { border-color: rgba(255,59,48,0.5); box-shadow: 0 0 12px rgba(255,59,48,0.15); }
 
         .lang-container { position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 9000; display: flex; align-items: center; gap: 3px; }
+        #bgm-toggle-btn { position: fixed; top: calc(64px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 150; font-size: 20px; }
         .settings-gear-btn {
             width: 40px; height: 40px; border-radius: 50%; margin: 0; padding: 0;
             background: transparent; border: none; outline: none;
@@ -311,7 +312,10 @@
             color: rgba(255,255,255,0.45); font-size: 20px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
-        .settings-gear-btn:hover { color: var(--accent-color); }
+        /* hover:hover 가드 없이 :hover만 쓰면 터치 기기에서 탭 후에도 강조색이 눌어붙어 꺼짐 상태가 안 보임 */
+        @media (hover: hover) and (pointer: fine) {
+            .settings-gear-btn:hover { color: var(--accent-color); }
+        }
         /* 설정 모달 */
         #settings-modal-overlay {
             position: fixed; inset: 0; z-index: 9800;
@@ -1755,7 +1759,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             #main-container { min-height: calc(100vh - 24px); }
             .lang-container { top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
             #login-back-btn { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
-            #bgm-toggle-btn { top: calc(60px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
+            #bgm-toggle-btn { top: calc(56px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
             .disco-brand-fixed { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
 
             .intro-title { font-size: 24px; letter-spacing: 4px; }
@@ -2004,8 +2008,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <!-- 배경음악 — 1번 화면(스플래시 영상)에는 노출 안 하고, 2번 화면(로그인 대기)부터 켤 수 있게 하며,
          로그인 후 3번 화면(메인)으로 넘어가도 재생은 끊지 않고 그대로 이어감(버튼만 감춤). 브라우저 자동재생
          정책상 사용자가 직접 눌러야 처음 재생이 시작되므로, 아이콘은 클릭해서 켜는 토글 버튼임 -->
-    <audio id="bgm-audio" src="japanese.mp3" loop preload="none"></audio>
-    <button id="bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="display:none; position:fixed; top:calc(68px + env(safe-area-inset-top, 0px)); right:20px; z-index:150; font-size:20px;">♫</button>
+    <audio id="bgm-audio" src="pretty.mp3" loop preload="none"></audio>
+    <button id="bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="display:none;">♫</button>
 
     <div id="intro-screen" style="display:none;">
         <!-- 로고+워드마크+태그라인+버튼을 브랜드 프로모 영상(splash.mp4)으로 교체 — 영상이 끝나면 자동으로 2번 화면(로그인)으로 전환됨.
@@ -4425,7 +4429,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             // 로그인 직후 곧바로 화면을 열지 않고, 생년월일 확인이 끝난 뒤에만 공개함
             // (그렇지 않으면 DOB 조회가 끝나기 전 잠깐 대화 화면이 노출되는 깜빡임이 생김)
             function revealMainScreen() {
-                hideBgmToggle(); // 배경음악은 인트로/로그인 대기 화면 전용
+                // 배경음악 토글 버튼은 2번 화면부터 3번 화면(메인)까지 계속 노출되어 언제든 끌 수 있음
                 // 이미 로그인된 상태로 새로고침한 경우, 인트로 화면(1번)을 거치지 않고 바로 Discover(3번)로
                 const introEl = document.getElementById('intro-screen');
                 if (introEl && introEl.style.display !== 'none') {
@@ -5799,6 +5803,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             document.getElementById('waiting-count-bar').style.display = 'none';
             roomParticipants = [];
             sessionParticipants = [];
+            refreshRoomAloneBgm(); // 방금 입장한 방에 아직 아무도 없으면 잔잔하게 배경음악 시작
             agoraToFirebaseUid = {};
             uidToBatteryEmoji = {};
             uidToNickname = {};
@@ -5977,6 +5982,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (!roomParticipants.includes(user.uid)) {
                 roomParticipants.push(user.uid);
                 renderParticipantsUI();
+                refreshRoomAloneBgm(); // 상대가 들어왔으니 잔잔한 배경음악은 멈춤
                 if (roomParticipants.length === 1) {
                     startFreeTimer();
                     // 핑퐁 매칭 성공 → 지연 팝업 취소
@@ -6045,6 +6051,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
     client.on("user-left", (user) => {
         roomParticipants = roomParticipants.filter(uid => uid !== user.uid);
+        refreshRoomAloneBgm(); // 다시 혼자 남았으면 잔잔한 배경음악 재개
 
         // 핑퐁 큐에서 퇴장한 유저 제거 (fade-out 후 업데이트)
         if (isPingpong && ppTurnRef) {
@@ -7845,6 +7852,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
             isJoined = false;
             isJoining = false;
+            // 방을 나가면 혼자였을 때 틀어주던 잔잔한 배경음악도 멈춤
+            const roomBgmAudio = document.getElementById('bgm-audio');
+            const roomBgmBtn = document.getElementById('bgm-toggle-btn');
+            if (roomBgmAudio) roomBgmAudio.pause();
+            if (roomBgmBtn) roomBgmBtn.style.color = '';
             // 대화방 나가기 → 다시 대기자로 등록
             const _cu = auth.currentUser;
             if (_cu) database.ref('waiting/' + _cu.uid).set(true);
@@ -9286,6 +9298,9 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         if (intro2LangBtn) intro2LangBtn.innerText = currentLang === 'ko' ? 'EN' : 'KO';
     }
 
+    // 배경음악은 전체적으로 거슬리지 않게 아주 작은 볼륨으로만 재생
+    const BGM_BASE_VOLUME = 0.1;
+
     // 인트로/로그인 대기 화면 배경음악 토글 — 브라우저 자동재생 정책상 사용자가 직접 눌러야 재생이 시작됨.
     // 아이콘(♫)은 고정, 재생 중일 때만 강조색으로 바뀜
     function toggleBgm() {
@@ -9293,19 +9308,31 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         const btn = document.getElementById('bgm-toggle-btn');
         if (!audio || !btn) return;
         if (audio.paused) {
-            audio.volume = 0.35;
+            audio.volume = BGM_BASE_VOLUME;
             audio.play().then(() => { btn.style.color = 'var(--accent-color)'; }).catch(() => {});
         } else {
             audio.pause();
             btn.style.color = '';
         }
     }
-    // 로그인 후 메인 화면으로 넘어갈 때 토글 버튼만 감추고, 재생 중이던 음악은 끊지 않고 그대로 이어감
-    function hideBgmToggle() {
-        const btn = document.getElementById('bgm-toggle-btn');
-        if (btn) btn.style.display = 'none';
-    }
 
+    // 대화방에 혼자 남아 있는 동안(상대가 아직 없거나 방금 나간 경우) 그보다도 더 작은 볼륨으로 배경음악을
+    // 재생해 정적을 채워줌 — 상대가 들어오면 즉시 멈춰서 실제 대화에 방해되지 않게 함
+    const ROOM_ALONE_BGM_VOLUME = 0.04;
+    function refreshRoomAloneBgm() {
+        const audio = document.getElementById('bgm-audio');
+        const btn = document.getElementById('bgm-toggle-btn');
+        if (!audio) return;
+        if (isJoined && roomParticipants.length === 0) {
+            audio.volume = ROOM_ALONE_BGM_VOLUME;
+            if (audio.paused) {
+                audio.play().then(() => { if (btn) btn.style.color = 'var(--accent-color)'; }).catch(() => {});
+            }
+        } else if (isJoined && roomParticipants.length > 0) {
+            audio.pause();
+            if (btn) btn.style.color = '';
+        }
+    }
     function showIntro2() {
         document.getElementById('intro-screen-2').classList.add('active');
     }
@@ -9318,9 +9345,15 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         const intro = document.getElementById('intro-screen');
         intro.classList.add('hide');
         document.body.classList.remove('intro-open');
-        // 2번 화면(로그인 대기)부터는 배경음악을 켤 수 있도록 토글 버튼 노출
+        // 2번 화면(로그인 대기)부터는 배경음악을 켤 수 있도록 토글 버튼 노출 + 기본으로 자동 재생 시도
+        // (브라우저 자동재생 정책상 막힐 수 있음 — 그 경우 사용자가 버튼을 눌러 직접 켜면 됨)
         const bgmBtn = document.getElementById('bgm-toggle-btn');
         if (bgmBtn) bgmBtn.style.display = '';
+        const bgmAudio = document.getElementById('bgm-audio');
+        if (bgmAudio && bgmAudio.paused) {
+            bgmAudio.volume = BGM_BASE_VOLUME;
+            bgmAudio.play().then(() => { if (bgmBtn) bgmBtn.style.color = 'var(--accent-color)'; }).catch(() => {});
+        }
         // 인트로(1번 화면)가 완전히 사라진 뒤에 팝업을 띄워서, 1번 화면 위에 겹쳐 보이지 않게 함
         setTimeout(() => {
             intro.style.display = 'none';
