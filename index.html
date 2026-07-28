@@ -2450,7 +2450,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <div id="post-login-footer">
         <button class="footer-link-btn" id="inquiry-btn" onclick="openInquiryModal()" style="color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto;">문의하기</button>
         <button class="footer-link-btn" onclick="openAboutModal()" id="about-nav-btn" style="color:rgba(255,255,255,0.35); font-size:12px; padding:4px 8px; margin:0; width:auto;">About</button>
-        <button class="footer-link-btn" onclick="openMainPayModal()" id="subscribe-btn" style="color:rgba(var(--accent-rgb),0.6); font-size:12px; padding:4px 8px; margin:0; width:auto; font-weight:600;">Go Premium ✨</button>
+        <button class="footer-link-btn" onclick="openMainPayModal()" id="subscribe-btn" style="color:rgba(var(--accent-rgb),0.6); font-size:12px; padding:4px 8px; margin:0; width:auto; font-weight:600;">Pass ✨</button>
     </div>
 
 
@@ -3908,7 +3908,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
             if (subValid) {
                 if (sub.plan === 'early50') {
-                    valueEl.textContent = isKo ? '첫 유저 50명 프리미엄 혜택 이용 중' : 'On the first-50-members Premium perk';
+                    valueEl.textContent = isKo ? '첫 유저 50명 패스권 혜택 이용 중' : 'On the first-50-members Pass perk';
                 } else {
                     const planName = sub.plan === 'monthly' ? 'Monthly' : 'Weekly';
                     valueEl.textContent = isKo ? `${planName} 플랜 이용 중` : `On the ${planName} Plan`;
@@ -4226,7 +4226,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCtaSuffix: "",
         payCtaMain: "Start my pass",
         payRefundNote: "Up to 2 hours a day, for a comfortable experience.<br>Full refund within 14 days, cancel anytime.",
-        payRefundNoteMain: "Request a refund within 14 days of subscribing for a full refund and immediate cancellation.",
+        payRefundNoteMain: "Up to 2 hours a day, for a comfortable experience.<br>Full refund within 14 days, cancel anytime.",
         payCountdown: "Call ends in",
         intro2S1: `<strong>Pick a Topic</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span>`,
         intro2S2: `<strong>Fuel the Chat</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span>`,
@@ -4351,7 +4351,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCtaSuffix: "로 대화 이어가기",
         payCtaMain: "패스 시작하기",
         payRefundNote: "쾌적한 환경을 위해 일 최대 2시간까지 이용 가능합니다.<br>구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
-        payRefundNoteMain: "구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
+        payRefundNoteMain: "쾌적한 환경을 위해 일 최대 2시간까지 이용 가능합니다.<br>구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
         payCountdown: "통화 종료까지",
         intro2S1: `<strong>주제 던지기</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">지금 하고 싶은 이야기를 입력하거나, 이미 활기찬 대화방에 바로 조인하세요!</span>`,
         intro2S2: `<strong>10분의 몰입</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">매 세션 10분은 완전히 무료! 대화 흐름을 끊고 싶지 않다면 언제든 구독해보세요.</span>`,
@@ -4970,7 +4970,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         const rrInput = document.getElementById('report-reason-input');
         if (rrInput) rrInput.placeholder = currentLang === 'ko' ? '신고 사유를 적어주세요.' : 'Please describe the reason for your report.';
         const subBtn = document.getElementById('subscribe-btn');
-        if (subBtn) subBtn.textContent = currentLang === 'ko' ? '프리미엄 시작 ✨' : 'Go Premium ✨';
+        if (subBtn) subBtn.textContent = 'Pass ✨'; // 다른 disco-navbar 라벨처럼 언어와 무관하게 항상 영어로 표시
         const aboutNavBtn = document.getElementById('about-nav-btn');
         if (aboutNavBtn) aboutNavBtn.textContent = currentLang === 'ko' ? '서비스소개' : 'About';
         const aboutNavBtnHero = document.getElementById('about-nav-btn-hero');
@@ -6650,7 +6650,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function toggleSubtitles() {
         if (!isSubscribed && !subtitlesEnabled) {
             const isKo = currentLang === 'ko';
-            showBadgeToast(isKo ? '실시간 번역은 Premium 회원에게 제공됩니다.' : 'Real-time translation is available to Premium members.');
+            showBadgeToast(isKo ? '실시간 번역은 패스권 회원에게 제공됩니다.' : 'Real-time translation is available to Pass members.');
             return;
         }
         subtitlesEnabled = !subtitlesEnabled;
@@ -6927,7 +6927,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 + (currentLang === 'ko' ? ' (나)' : ' (me)') + '</div>'
                 + '<div class="subtitle-self-text">' + original + '</div>';
         } else if (!isSubscribed) {
-            const lockedLabel = currentLang === 'ko' ? '🔒 번역 보기 (Premium)' : '🔒 View translation (Premium)';
+            const lockedLabel = currentLang === 'ko' ? '🔒 번역 보기 (패스권)' : '🔒 View translation (Pass)';
             item.innerHTML =
                 '<div class="subtitle-speaker">' + (uidToBatteryEmoji[uid] || '👋') + ' ' + nickname + '</div>'
                 + '<div class="subtitle-original">' + original + '</div>'
@@ -6946,7 +6946,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
 
     function updateSubtitleTranslation(uid, original, translated) {
-        if (!isSubscribed) return; // 번역 "보기"는 프리미엄 전용 — 잠금 표시를 덮어쓰지 않음
+        if (!isSubscribed) return; // 번역 "보기"는 패스권 전용 — 잠금 표시를 덮어쓰지 않음
         const list = document.getElementById('subtitle-list');
         if (!list) return;
         const items = list.querySelectorAll('.subtitle-item');
@@ -7627,8 +7627,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     const PREMIUM_LIVE = true;
     function showPremiumComingSoon() {
         alert(currentLang === 'ko'
-            ? '프리미엄이 곧 찾아옵니다! 🎉\n\n지금은 준비 중이라 조금만 더 기다려 주세요.\n그동안은 무료로 계속 대화를 즐겨보세요 😊'
-            : 'Premium is almost here! 🎉\n\nWe\'re putting on the finishing touches — hang tight.\nIn the meantime, keep enjoying free conversations 😊');
+            ? '패스권이 곧 찾아옵니다! 🎉\n\n지금은 준비 중이라 조금만 더 기다려 주세요.\n그동안은 무료로 계속 대화를 즐겨보세요 😊'
+            : 'The Pass is almost here! 🎉\n\nWe\'re putting on the finishing touches — hang tight.\nIn the meantime, keep enjoying free conversations 😊');
     }
 
     async function openMainPayModal() {
@@ -7665,7 +7665,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const validDates = !isNaN(expiresDate) && !isNaN(startedDate);
 
             document.getElementById('sub-modal-title').textContent = isEarly50
-                ? (isKo ? '첫 유저 50명 프리미엄 혜택을 이용중입니다! 🎉' : "You're enjoying our first 50 members' Premium perk! 🎉")
+                ? (isKo ? '첫 유저 50명 패스권 혜택을 이용중입니다! 🎉' : "You're enjoying our first 50 members' Pass perk! 🎉")
                 : (isKo ? `${planName} Plan을 이용 중입니다 ✨` : `You're on the ${planName} Plan ✨`);
             document.getElementById('sub-modal-desc').textContent = isKo ? '플랜을 변경하시겠어요?' : 'Would you like to change your plan?';
             document.getElementById('sub-label-benefit').textContent = isKo ? '혜택' : 'Benefits';
@@ -7784,8 +7784,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const user = auth.currentUser;
         if (!user || user.isAnonymous) {
             alert(currentLang === 'ko'
-                ? '프리미엄 기능을 이용하려면 로그인해 주세요.\n\n프리미엄 기능을 이용하시면 더 넉넉한 통화 시간과 함께\n더 깊은 대화를 나누실 수 있습니다!'
-                : 'Please sign in to unlock Premium features.\n\nWith Premium, enjoy extended talk time\nand deeper conversations!');
+                ? '제한 없는 대화의 시작.\n로그인 후 패스권 혜택으로 더 넉넉하게 대화하세요.'
+                : 'The start of unlimited conversation.\nSign in to enjoy more with a Pass.');
             return;
         }
         try {
@@ -9124,7 +9124,7 @@ B-TALK은 이용자 간 연결을 위한 플랫폼만을 제공합니다. 대화
 ─── What You Can Do ───
 • Type a topic you want to talk about right now, or jump straight into an already-active room
 • Join a live group voice conversation (real-time voice, not text) with multiple participants
-• Use real-time auto-translation to talk across languages (Premium feature)
+• Use real-time auto-translation to talk across languages (Pass feature)
 • Save people you enjoyed talking to, and send/receive ⚡ lightning to top up your Talk Charge
 
 ─── Who It's For ───
@@ -9146,7 +9146,7 @@ Every session starts with 10 free minutes. To keep talking longer, you can subsc
 ─── 무엇을 할 수 있나요 ───
 • 지금 이야기하고 싶은 주제를 직접 입력하거나, 이미 열려 있는 대화방에 바로 참여
 • 여러 명이 함께 참여하는 실시간 그룹 음성 채팅 (텍스트가 아닌 실제 음성 대화)
-• 실시간 자동 번역으로 언어가 달라도 대화 가능 (Premium 기능)
+• 실시간 자동 번역으로 언어가 달라도 대화 가능 (패스권 기능)
 • 마음에 맞았던 대화 상대를 저장하고, 번개(⚡)를 주고받아 대화충전량 충전
 
 ─── 이런 분들에게 ───
@@ -9405,8 +9405,8 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
                 ? '지루한 하루를 바꿀 라이브 통화.'
                 : 'A live call to shake up a boring day.';
             document.getElementById('early50-promo-sub').textContent = isKo
-                ? '선착순 50명 전용 프리미엄 혜택'
-                : 'First-50 exclusive Premium perk';
+                ? '선착순 50명 전용 패스권 혜택'
+                : 'First-50 exclusive Pass perk';
             document.getElementById('early50-promo-count').textContent = isKo
                 ? `${remaining}자리 남음`
                 : `${remaining} spots left`;
@@ -9429,8 +9429,8 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
                 ? '<span style="margin-right:7px;">🎉</span>환영합니다!'
                 : '<span style="margin-right:7px;">🎉</span>Welcome!';
             descEl.innerHTML = isKo
-                ? '초기 50명만을 위한<br>무제한 프리미엄 혜택이 적용되었습니다.<br><br>30일간 시간 제한 없이 대화를 즐겨보세요.'
-                : "You've unlocked unlimited Premium access, exclusive to our first 50 members.<br><br>Enjoy conversations with no time limit for the next 30 days.";
+                ? '초기 50명만을 위한<br>무제한 패스권 혜택이 적용되었습니다.<br><br>30일간 시간 제한 없이 대화를 즐겨보세요.'
+                : "You've unlocked unlimited Pass access, exclusive to our first 50 members.<br><br>Enjoy conversations with no time limit for the next 30 days.";
             btnEl.textContent = isKo ? '바로 시작하기' : 'Start now';
         } else {
             titleEl.textContent = isKo ? '준비는 끝났습니다.' : "You're all set.";
