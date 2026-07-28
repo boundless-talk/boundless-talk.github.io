@@ -3667,17 +3667,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
     // 인스타그램 등 인앱 브라우저는 Notification API 자체를 지원 안 하는 경우가 많아서,
     // 알림 등록이 안 돼도 예약 자체는 되게 하고 fcmToken만 없이 보냄 (10시 알림만 못 받음)
+    // reason을 같이 반환해서, 알림 권한을 거부한 경우엔 "브라우저가 지원 안 함"이 아니라
+    // "설정에서 알림을 허용해달라"는 실제로 도움이 되는 안내를 보여줄 수 있게 함
     async function tryGetFcmToken() {
         try {
-            if (!('Notification' in window)) return null;
+            if (!('Notification' in window)) return { token: null, reason: 'unsupported' };
             const perm = await Notification.requestPermission();
-            if (perm !== 'granted') return null;
+            if (perm !== 'granted') return { token: null, reason: 'denied' };
             await initMessaging();
             const reg = await navigator.serviceWorker.ready;
-            return await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg }) || null;
+            const token = await firebase.messaging().getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg }) || null;
+            return { token, reason: token ? null : 'token_failed' };
         } catch (e) {
             console.warn('tryGetFcmToken failed:', e.message);
-            return null;
+            return { token: null, reason: 'error' };
         }
     }
     async function toggleScheduledSeat(roomId, alreadyJoined) {
@@ -3695,7 +3698,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 if (!data.success) throw new Error(data.error || 'unknown');
                 showBadgeToast(isKo ? '예약을 취소했어요.' : 'Reservation cancelled.');
             } else {
-                const token = await tryGetFcmToken();
+                const { token, reason } = await tryGetFcmToken();
                 const res = await fetch(TOKEN_SERVER_URL + '/join-scheduled-room', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -3708,6 +3711,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     throw new Error(data.error || 'unknown');
                 } else if (token) {
                     showBadgeToast(isKo ? '✅ 자리를 예약했어요! 밤 10시에 알려드릴게요.' : '✅ Seat reserved! We\'ll notify you at 10 PM.');
+                } else if (reason === 'denied') {
+                    showBadgeToast(isKo ? '10시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 10.<br><br>Keep notifications on so you don\'t miss it.');
                 } else {
                     showBadgeToast(isKo ? '✅ 자리를 예약했어요! 이 브라우저는 알림을 지원하지 않아서, 밤 10시에 직접 앱에 들어와 확인해주세요.' : '✅ Seat reserved! This browser can\'t send notifications — please check back at 10 PM.');
                 }
@@ -3757,7 +3762,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const btn = document.getElementById('schedule-create-submit-btn');
         if (btn) btn.disabled = true;
         try {
-            const token = await tryGetFcmToken();
+            const { token, reason } = await tryGetFcmToken();
             const idToken = await auth.currentUser.getIdToken();
             const res = await fetch(TOKEN_SERVER_URL + '/create-scheduled-room', {
                 method: 'POST',
@@ -3769,7 +3774,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             closeScheduleCreateModal();
             showBadgeToast(token
                 ? (isKo ? '✅ 예약 완료! 밤 10시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 10 PM.')
-                : (isKo ? '✅ 예약 완료! 이 브라우저는 알림을 지원하지 않아서, 밤 10시에 직접 앱에 들어와 확인해주세요.' : '✅ Reserved! This browser can\'t send notifications — please check back at 10 PM.'));
+                : reason === 'denied'
+                    ? (isKo ? '10시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 10.<br><br>Keep notifications on so you don\'t miss it.')
+                    : (isKo ? '✅ 예약 완료! 이 브라우저는 알림을 지원하지 않아서, 밤 10시에 직접 앱에 들어와 확인해주세요.' : '✅ Reserved! This browser can\'t send notifications — please check back at 10 PM.'));
             switchDiscoTab('scheduled');
         } catch (e) {
             console.warn('submitScheduledRoomCreate failed:', e.message);
@@ -8128,10 +8135,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (!toast) {
             toast = document.createElement('div');
             toast.id = 'badge-toast';
-            toast.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(20,18,32,0.97);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;z-index:99999;white-space:nowrap;pointer-events:none;transition:opacity 0.3s;';
+            toast.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(20,18,32,0.97);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:13px;padding:10px 18px;border-radius:20px;z-index:99999;white-space:nowrap;text-align:center;pointer-events:none;transition:opacity 0.3s;';
             document.body.appendChild(toast);
         }
-        toast.textContent = msg;
+        toast.innerHTML = msg;
         toast.style.opacity = '1';
         clearTimeout(toast._t);
         toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
