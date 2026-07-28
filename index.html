@@ -7600,10 +7600,17 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const startedDate = new Date(expiresDate.getTime() - daysInPlan * 86400000);
             const validDates = !isNaN(expiresDate) && !isNaN(startedDate);
 
-            document.getElementById('sub-modal-title').textContent = isEarly50
-                ? (isKo ? '첫 유저 50명 패스권 혜택을 이용중입니다! 🎉' : "You're enjoying our first 50 members' Pass perk! 🎉")
-                : (isKo ? `${planName} Plan을 이용 중입니다 ✨` : `You're on the ${planName} Plan ✨`);
-            document.getElementById('sub-modal-desc').textContent = isKo ? '플랜을 변경하시겠어요?' : 'Would you like to change your plan?';
+            const subTitleEl = document.getElementById('sub-modal-title');
+            const subDescEl = document.getElementById('sub-modal-desc');
+            if (isEarly50) {
+                subTitleEl.textContent = isKo ? '첫 50인에 오신것을 환영합니다.' : 'Welcome, one of our first 50.';
+                subDescEl.innerHTML = isKo
+                    ? '당신만을 위해 준비된 패스권이 활성화되었습니다.<br><br>이제 제한없이 생각을 나눠보세요.'
+                    : 'Your personal Pass has been activated.<br><br>Now, share your thoughts without limits.';
+            } else {
+                subTitleEl.textContent = isKo ? `${planName} Plan을 이용 중입니다 ✨` : `You're on the ${planName} Plan ✨`;
+                subDescEl.textContent = isKo ? '플랜을 변경하시겠어요?' : 'Would you like to change your plan?';
+            }
             document.getElementById('sub-label-benefit').textContent = isKo ? '혜택' : 'Benefits';
             document.getElementById('sub-benefit-value').innerHTML = isKo ? '세션당 10분 제한 없이 대화 <br>+ 실시간 번역' : 'No 10-min session limit <br>+ real-time translation';
             document.getElementById('sub-label-period').textContent = isKo ? '이용 기간' : 'Active period';
