@@ -3714,7 +3714,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 } else if (reason === 'denied') {
                     showBadgeToast(isKo ? '10시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 10.<br><br>Keep notifications on so you don\'t miss it.');
                 } else {
-                    showBadgeToast(isKo ? '✅ 자리를 예약했어요! 이 브라우저는 알림을 지원하지 않아서, 밤 10시에 직접 앱에 들어와 확인해주세요.' : '✅ Seat reserved! This browser can\'t send notifications — please check back at 10 PM.');
+                    showBadgeToast(isKo ? '10시의 완벽한 자리, 놓치지 않도록.<br><br>공유버튼 누르고 홈화면추가를 터치해보세요.' : 'Your perfect seat at 10 — don\'t miss it.<br><br>Tap Share, then Add to Home Screen.');
                 }
             }
         } catch (e) {
@@ -3776,7 +3776,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 ? (isKo ? '✅ 예약 완료! 밤 10시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 10 PM.')
                 : reason === 'denied'
                     ? (isKo ? '10시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 10.<br><br>Keep notifications on so you don\'t miss it.')
-                    : (isKo ? '✅ 예약 완료! 이 브라우저는 알림을 지원하지 않아서, 밤 10시에 직접 앱에 들어와 확인해주세요.' : '✅ Reserved! This browser can\'t send notifications — please check back at 10 PM.'));
+                    : (isKo ? '10시의 완벽한 자리, 놓치지 않도록.<br><br>공유버튼 누르고 홈화면추가를 터치해보세요.' : 'Your perfect seat at 10 — don\'t miss it.<br><br>Tap Share, then Add to Home Screen.'));
             switchDiscoTab('scheduled');
         } catch (e) {
             console.warn('submitScheduledRoomCreate failed:', e.message);
