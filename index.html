@@ -7146,6 +7146,32 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
     }
 
+    // 전화 수신/거절이나 백그라운드 전환 등으로 OS가 마이크 캡처를 강제로 끊어버리면
+    // (트랙이 ended/muted 상태가 됨) 앱으로 돌아왔을 때 자동으로 마이크를 다시 가져와
+    // 기존 트랙에 이어붙임 — 방을 나갔다 재입장할 필요 없이 대화가 이어지도록 함
+    let _micRecoveryInFlight = false;
+    async function ensureMicAlive() {
+        if (!isJoined || !localAudioTrack || _micRecoveryInFlight) return;
+        try {
+            const raw = localAudioTrack.getMediaStreamTrack ? localAudioTrack.getMediaStreamTrack() : null;
+            const dead = !raw || raw.readyState === 'ended' || raw.muted;
+            if (!dead) return;
+            _micRecoveryInFlight = true;
+            const newStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            const newTrack = newStream.getAudioTracks()[0];
+            await localAudioTrack.replaceTrack(newTrack);
+            localAudioTrack.setEnabled(!isMicMuted);
+        } catch (e) {
+            console.warn('마이크 트랙 복구 실패:', e.message);
+        } finally {
+            _micRecoveryInFlight = false;
+        }
+    }
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') ensureMicAlive();
+    });
+    window.addEventListener('focus', ensureMicAlive);
+
     // Talk Tips 패널 (데스크톱: 상시 사이드바 / 모바일: 버튼 눌러 여는 모달)
     function toggleTalkTipsPanel() {
         const open = document.getElementById('room-side-panel').classList.toggle('open');
@@ -7261,6 +7287,13 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             } else {
                 showPaymentModal();
             }
+            return;
+        }
+
+        // 패스권(구독) 유저는 세션당 10분 제한이 없음 — "첫 10분 무료" 타이머를 거치지 않고
+        // 처음부터 구독자 타이머(하루 총 2시간 한도만 적용)로 바로 진행
+        if (isSubscribed) {
+            startSubTimer();
             return;
         }
 
@@ -9299,7 +9332,7 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     }
 
     // 배경음악은 전체적으로 거슬리지 않게 아주 작은 볼륨으로만 재생
-    const BGM_BASE_VOLUME = 0.04;
+    const BGM_BASE_VOLUME = 0.01;
 
     // 인트로/로그인 대기 화면 배경음악 토글 — 브라우저 자동재생 정책상 사용자가 직접 눌러야 재생이 시작됨.
     // 아이콘(♫)은 고정, 재생 중일 때만 강조색으로 바뀜
@@ -9318,7 +9351,7 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
 
     // 대화방에 혼자 남아 있는 동안(상대가 아직 없거나 방금 나간 경우) 그보다도 더 작은 볼륨으로 배경음악을
     // 재생해 정적을 채워줌 — 상대가 들어오면 즉시 멈춰서 실제 대화에 방해되지 않게 함
-    const ROOM_ALONE_BGM_VOLUME = 0.015;
+    const ROOM_ALONE_BGM_VOLUME = 0.003;
     function refreshRoomAloneBgm() {
         const audio = document.getElementById('bgm-audio');
         const btn = document.getElementById('bgm-toggle-btn');
