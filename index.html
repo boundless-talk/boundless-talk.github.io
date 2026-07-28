@@ -9299,7 +9299,7 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     }
 
     // 배경음악은 전체적으로 거슬리지 않게 아주 작은 볼륨으로만 재생
-    const BGM_BASE_VOLUME = 0.1;
+    const BGM_BASE_VOLUME = 0.04;
 
     // 인트로/로그인 대기 화면 배경음악 토글 — 브라우저 자동재생 정책상 사용자가 직접 눌러야 재생이 시작됨.
     // 아이콘(♫)은 고정, 재생 중일 때만 강조색으로 바뀜
@@ -9318,7 +9318,7 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
 
     // 대화방에 혼자 남아 있는 동안(상대가 아직 없거나 방금 나간 경우) 그보다도 더 작은 볼륨으로 배경음악을
     // 재생해 정적을 채워줌 — 상대가 들어오면 즉시 멈춰서 실제 대화에 방해되지 않게 함
-    const ROOM_ALONE_BGM_VOLUME = 0.04;
+    const ROOM_ALONE_BGM_VOLUME = 0.015;
     function refreshRoomAloneBgm() {
         const audio = document.getElementById('bgm-audio');
         const btn = document.getElementById('bgm-toggle-btn');
