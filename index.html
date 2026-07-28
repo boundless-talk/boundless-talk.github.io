@@ -857,6 +857,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #sub-benefit-value,
         html[data-cute-mode="cute"] #sub-period-value,
         html[data-cute-mode="cute"] #sub-price-value { color: #2b1f24 !important; }
+        html[data-cute-mode="cute"] #sub-modal-desc { color: rgba(43,31,36,0.55) !important; }
         html[data-cute-mode="cute"] #sub-plan-box { background: rgba(0,0,0,0.03) !important; }
         html[data-cute-mode="cute"] #sub-btn-change-plan { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; color: #2b1f24 !important; }
         html[data-cute-mode="cute"] #sub-btn-refund { color: rgba(43,31,36,0.35) !important; }
@@ -2821,9 +2822,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <div class="modal-overlay" id="subscription-modal" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="modal-content" style="max-width:340px;">
             <!-- 헤더 -->
-            <div style="margin-bottom:4px;">
-                <div id="sub-modal-title" style="font-size:18px; font-weight:700; color:#fff; margin-bottom:4px;">You're subscribed</div>
-                <p id="sub-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.45); margin-bottom:16px;"></p>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:10px;">
+                <div id="sub-modal-title" style="font-size:18px; font-weight:700; color:#fff; margin:0;">You're subscribed</div>
+                <p id="sub-modal-desc" style="font-size:13px; color:rgba(255,255,255,0.45); margin:0;"></p>
             </div>
             <!-- 플랜 정보 -->
             <div id="sub-plan-box" style="background:rgba(255,255,255,0.05); border-radius:12px; padding:14px 16px; margin-bottom:16px;">
@@ -7605,8 +7606,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (isEarly50) {
                 subTitleEl.textContent = isKo ? '첫 50인에 오신것을 환영합니다.' : 'Welcome, one of our first 50.';
                 subDescEl.innerHTML = isKo
-                    ? '당신만을 위해 준비된 패스권이 활성화되었습니다.<br><br>이제 제한없이 생각을 나눠보세요.'
-                    : 'Your personal Pass has been activated.<br><br>Now, share your thoughts without limits.';
+                    ? '당신만을 위해 준비된 패스권이 활성화되었습니다.<br>이제 제한없이 생각을 나눠보세요.'
+                    : 'Your personal Pass has been activated.<br>Now, share your thoughts without limits.';
             } else {
                 subTitleEl.textContent = isKo ? `${planName} Plan을 이용 중입니다 ✨` : `You're on the ${planName} Plan ✨`;
                 subDescEl.textContent = isKo ? '플랜을 변경하시겠어요?' : 'Would you like to change your plan?';
