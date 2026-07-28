@@ -1765,6 +1765,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             #main-container { min-height: calc(100vh - 24px); }
             .lang-container { top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
             #login-back-btn { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
+            #bgm-toggle-btn { top: calc(60px + env(safe-area-inset-top, 0px)); right: calc(12px + env(safe-area-inset-right, 0px)); }
             .disco-brand-fixed { top: calc(12px + env(safe-area-inset-top, 0px)); left: calc(12px + env(safe-area-inset-left, 0px)); }
 
             .intro-title { font-size: 24px; letter-spacing: 4px; }
@@ -2010,6 +2011,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
 
     <!-- 인트로 화면 -->
+    <!-- 인트로/로그인 대기 화면 전용 배경음악 — 로그인하면(revealMainScreen) 꺼짐. 브라우저 자동재생 정책상
+         사용자가 직접 눌러야 처음 재생이 시작되므로, 아이콘은 클릭해서 켜는 토글 버튼임 -->
+    <audio id="bgm-audio" src="bgm.mp3" loop preload="none"></audio>
+    <button id="bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="position:fixed; top:calc(68px + env(safe-area-inset-top, 0px)); right:20px; z-index:150; font-size:20px;">♫</button>
+
     <div id="intro-screen" style="display:none;">
         <!-- 로고+워드마크+태그라인+버튼을 브랜드 프로모 영상(splash.mp4)으로 교체 — 영상이 끝나면 자동으로 2번 화면(로그인)으로 전환됨.
              기존 요소(app-logo-dark/cute, intro-wordmark, intro-desc, intro-pulse)는 지우지 않고 주석으로 보존 -->
@@ -2762,34 +2768,48 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <span id="free-time-banner-text">🎁 첫 10분은 무료입니다. 마음껏 대화를 즐겨보세요.</span>
     </div>
 
+    <!-- 무료회원 전용: 종료 1분 전 연장 유도 카드 (소리 + 연장하기 버튼) -->
+    <div id="extend-prompt-card" style="display:none; position:fixed; bottom:calc(100px + env(safe-area-inset-bottom, 0px)); left:50%; transform:translateX(-50%); z-index:9000; width:calc(100% - 40px); max-width:340px; background:rgba(20,20,35,0.97); border:1px solid rgba(255,255,255,0.14); border-radius:16px; padding:16px; box-shadow:0 10px 30px rgba(0,0,0,0.4);">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+            <div>
+                <div id="extend-prompt-main" style="font-size:14px; font-weight:700; color:#fff; margin-bottom:5px;">이 목소리를 조금 더 듣고 싶다면.</div>
+                <div id="extend-prompt-sub" style="font-size:12px; color:rgba(255,255,255,0.55); line-height:1.45;">남은 시간 1분.<br>대화는 계속될 수 있습니다.</div>
+            </div>
+            <span onclick="dismissExtendPrompt()" style="flex:none; color:rgba(255,255,255,0.3); font-size:16px; cursor:pointer; padding:4px;">✕</span>
+        </div>
+        <button id="extend-prompt-btn" onclick="extendConversationNow()" style="width:100%; margin-top:12px; padding:11px; background:var(--accent-color); color:#041025; font-weight:700; font-size:13px; border:none; border-radius:10px; cursor:pointer;">대화 이어가기</button>
+    </div>
+
     <!-- 구독 시간 코너 위젯 -->
     <span id="sub-time-text" style="display:none;"></span>
 
     <!-- 7분 결제 모달 -->
     <div id="payment-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
         <div class="glass-card" style="border-radius:10px; padding:28px 24px 20px; width:90%; max-width:340px; margin:auto; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
-            <div style="font-size:17px; font-weight:700; color:rgba(255,255,255,0.92); text-align:center; margin-bottom:6px;" id="pay-modal-title">Too good to stop now?</div>
-            <div style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; margin-bottom:20px;" id="pay-modal-sub">Keep the conversation going</div>
+            <div style="font-size:17px; font-weight:700; color:rgba(255,255,255,0.92); text-align:center; margin-bottom:22px;" id="pay-modal-title">✦ Uninterrupted.</div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; margin-bottom:20px; display:none;" id="pay-modal-sub"></div>
 
             <!-- Monthly Plan -->
-            <div class="pay-plan-btn" id="pay-monthly" style="border:1.5px solid var(--accent-color); background:rgba(var(--accent-rgb),0.06); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; box-shadow:0 0 16px rgba(var(--accent-rgb),0.15);">
-                <div>
-                    <div id="pay-popular-badge" style="font-size:10px; background:rgba(var(--accent-rgb),0.15); color:var(--accent-color); border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:4px;">Popular</div>
-                    <div id="pay-monthly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9);">Monthly Plan</div>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;" id="pay-monthly-desc">No 10-min session limit — talk freely</div>
-                    <div id="pay-event-badge" style="font-size:10px; color:#ffcc00; margin-top:5px;"></div>
+            <div class="pay-plan-btn" id="pay-monthly" onclick="selectPayPlan('monthly')" style="border:1.5px solid var(--accent-color); background:rgba(var(--accent-rgb),0.06); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:flex-start; justify-content:space-between; box-shadow:0 0 16px rgba(var(--accent-rgb),0.15);">
+                <div style="display:flex; align-items:flex-start; gap:9px;">
+                    <span id="pay-monthly-dot" style="flex:none; font-size:11px; color:var(--accent-color); line-height:1.6;">●</span>
+                    <div>
+                        <div id="pay-monthly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9);">Monthly Pass</div>
+                        <div style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:3px; line-height:1.6;" id="pay-monthly-desc">No session limit — talk as long as you want<br>Real-time AI voice translation</div>
+                        <div id="pay-event-badge" style="font-size:10px; color:#ffcc00; margin-top:5px;"></div>
+                    </div>
                 </div>
-                <div style="text-align:right;">
+                <div style="text-align:right; flex:none;">
                     <div style="font-size:16px; font-weight:700; color:var(--accent-color);">$4.99</div>
                     <div id="pay-monthly-period" style="font-size:10px; color:rgba(255,255,255,0.35);">/ mo</div>
                 </div>
             </div>
 
             <!-- Weekly Plan -->
-            <div class="pay-plan-btn" id="pay-weekly" style="border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 16px; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
-                <div>
-                    <div id="pay-weekly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.88);">Weekly Plan</div>
-                    <div id="pay-weekly-desc" style="font-size:11px; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit — talk freely</div>
+            <div class="pay-plan-btn" id="pay-weekly" onclick="selectPayPlan('weekly')" style="border:1px solid rgba(255,255,255,0.1); border-radius:14px; padding:14px 16px; margin-bottom:14px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:9px;">
+                    <span id="pay-weekly-dot" style="flex:none; font-size:11px; color:rgba(255,255,255,0.3);">○</span>
+                    <div id="pay-weekly-title" style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.88);">Weekly Pass</div>
                 </div>
                 <div style="text-align:right;">
                     <div style="font-size:16px; font-weight:700; color:rgba(255,255,255,0.9);">$1.99</div>
@@ -2797,14 +2817,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
             </div>
 
-
+            <button id="pay-cta-btn" onclick="confirmPaySelection()" style="width:100%; padding:13px; background:var(--accent-color); color:#041025; font-weight:700; font-size:14px; border:none; border-radius:12px; cursor:pointer; margin-bottom:4px;">Continue for $4.99</button>
 
             <hr id="pay-modal-hr" style="border:none; border-top:1px solid rgba(255,255,255,0.07); margin:6px 0 8px;">
             <button id="pay-modal-close" onclick="document.getElementById('payment-modal').style.display='none'" style="width:100%; padding:11px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; cursor:pointer; border-radius:10px;">닫기</button>
             <div id="pay-countdown-row" style="font-size:11px; color:rgba(255,255,255,0.2); text-align:center; margin-top:6px;">
                 Call ends in <span id="pay-countdown">60</span>s
             </div>
-            <p id="pay-refund-note" style="font-size:10.5px; color:rgba(255,255,255,0.25); text-align:center; margin:10px 0 0; line-height:1.5;"></p>
+            <p id="pay-refund-note" style="font-size:10.5px; color:rgba(255,255,255,0.25); text-align:center; margin:10px 0 0; line-height:1.6; word-break:keep-all;"></p>
         </div>
     </div>
 
@@ -3184,13 +3204,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     // ══════════════════ Discover 화면 ══════════════════
     const DISCO_CATEGORIES = [
-        { id: 'debate',    ko: '토론',   en: 'Debate',     kws: ['토론','논쟁','정치','시사','찬반'] },
-        { id: 'tech',      ko: '테크',   en: 'Tech',       kws: ['테크','기술','개발','코딩','프로그래밍','ai','인공지능','it'] },
-        { id: 'latenight', ko: '심야',   en: 'Late Night', kws: ['심야','새벽','밤','불면','고민'] },
-        { id: 'music',     ko: '음악',   en: 'Music',      kws: ['음악','노래','플레이리스트','밴드','아이돌'] },
-        { id: 'life',      ko: '일상',   en: 'Life',       kws: ['일상','연애','썸','데이트','자취','직장','취준'] },
-        { id: 'gaming',    ko: '게임',   en: 'Gaming',     kws: ['게임','롤','배그','발로란트','오버워치','스팀'] },
-        { id: 'general',   ko: '기타',   en: 'General',    kws: [] }
+        { id: 'maskoff',    ko: '가면오프', en: 'Mask Off',   kws: ['가면','솔직','본심','가식','민낯'] },
+        { id: 'burnout',    ko: '번아웃',   en: 'Burnout',    kws: ['번아웃','무기력','소진','지침','슬럼프'] },
+        { id: 'vent',       ko: '대나무숲', en: 'Vent',       kws: ['대나무숲','하소연','뒷담','비밀','털어놓'] },
+        { id: 'worries',    ko: '고민',     en: 'Worries',    kws: ['고민','걱정','불안','진로','선택'] },
+        { id: 'comfort',    ko: '위로',     en: 'Comfort',    kws: ['위로','힘들','토닥','슬픔','우울','지쳤'] },
+        { id: 'failure',    ko: '실패',     en: 'Failure',    kws: ['실패','좌절','망함','포기','낙방'] },
+        { id: 'praise',     ko: '칭찬',     en: 'Praise',     kws: ['칭찬','자랑','뿌듯','성취','칭찬해'] },
+        { id: 'life',       ko: '일상',     en: 'Life',       kws: ['일상','연애','썸','데이트','자취','직장','취준'] },
+        { id: 'taste',      ko: '취향',     en: 'Taste',      kws: ['취향','최애','취미','좋아하는'] },
+        { id: 'philosophy', ko: '철학',     en: 'Philosophy', kws: ['철학','인생','가치관','존재','의미'] },
+        { id: 'general',    ko: '기타',     en: 'General',    kws: [] }
     ];
     function discoCatLabel(id) {
         const c = DISCO_CATEGORIES.find(c => c.id === id) || DISCO_CATEGORIES[DISCO_CATEGORIES.length - 1];
@@ -4188,17 +4212,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2Btn: "Shall We Pick a Topic?",
         intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "A TOPIC-DRIVEN GLOBAL VOICE DISCUSSION PLATFORM",
-        payModalTitle: "Too good to stop now? 😊",
-        payModalSub: "Enjoy plenty of time, well beyond 10 minutes",
+        payModalTitle: "✦ Uninterrupted.",
+        payModalSub: "",
         payModalClose: "Not now",
         payPopular: "Popular",
-        payMonthlyTitle: "Monthly Plan  +  Real-time Translation",
-        payMonthlyDesc: "No 10-min session limit — talk freely",
+        payMonthlyTitle: "Monthly Pass",
+        payMonthlyDesc: "No session limit — talk as long as you want<br>Real-time AI voice translation",
         payMonthlyPeriod: "/ mo",
-        payWeeklyTitle: "Weekly Plan  +  Real-time Translation",
-        payWeeklyDesc: "No 10-min session limit — talk freely",
+        payWeeklyTitle: "Weekly Pass",
+        payWeeklyDesc: "",
         payWeeklyPeriod: "/ wk",
-        payRefundNote: "Request a refund within 14 days of subscribing for a full refund and immediate cancellation.",
+        payCtaPrefix: "Continue for ",
+        payCtaSuffix: "",
+        payCtaMain: "Start my pass",
+        payRefundNote: "Up to 2 hours a day, for a comfortable experience.<br>Full refund within 14 days, cancel anytime.",
+        payRefundNoteMain: "Request a refund within 14 days of subscribing for a full refund and immediate cancellation.",
         payCountdown: "Call ends in",
         intro2S1: `<strong>Pick a Topic</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Got something to say? Type your topic or jump right into an active room!</span>`,
         intro2S2: `<strong>Fuel the Chat</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">Enjoy 10 free minutes every session. Want to keep the vibe going? Upgrade anytime!</span>`,
@@ -4309,17 +4337,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         intro2Btn: "입장하기",
         intro2Title: "WELCOME TO<br>BOUNDLESS TALK",
         intro2Subheader: "전 세계와 연결되는 주제 기반 라이브 음성 토론 플랫폼",
-        payModalTitle: "대화가 너무 좋았나요? 😊",
-        payModalSub: "10분 이상 여유있게 대화 가능합니다",
-        payModalClose: "다음에 할게요",
+        payModalTitle: "✦ 아무런 방해없이",
+        payModalSub: "",
+        payModalClose: "나중에 하기",
         payPopular: "인기",
-        payMonthlyTitle: "월간 구독권  +  실시간번역 포함",
-        payMonthlyDesc: "세션당 10분 제한 없이 자유롭게 대화",
+        payMonthlyTitle: "월간 패스",
+        payMonthlyDesc: "세션 제한 없는 대화 연장<br>실시간 AI 음성 번역",
         payMonthlyPeriod: "/ 월",
-        payWeeklyTitle: "주간 구독권  +  실시간번역 포함",
-        payWeeklyDesc: "세션당 10분 제한 없이 자유롭게 대화",
+        payWeeklyTitle: "주간 패스",
+        payWeeklyDesc: "",
         payWeeklyPeriod: "/ 주",
-        payRefundNote: "구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
+        payCtaPrefix: "",
+        payCtaSuffix: "로 대화 이어가기",
+        payCtaMain: "패스 시작하기",
+        payRefundNote: "쾌적한 환경을 위해 일 최대 2시간까지 이용 가능합니다.<br>구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
+        payRefundNoteMain: "구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
         payCountdown: "통화 종료까지",
         intro2S1: `<strong>주제 던지기</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">지금 하고 싶은 이야기를 입력하거나, 이미 활기찬 대화방에 바로 조인하세요!</span>`,
         intro2S2: `<strong>10분의 몰입</strong><br><span style="font-size:13px;color:rgba(255,255,255,0.5);">매 세션 10분은 완전히 무료! 대화 흐름을 끊고 싶지 않다면 언제든 구독해보세요.</span>`,
@@ -4420,6 +4452,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             // 로그인 직후 곧바로 화면을 열지 않고, 생년월일 확인이 끝난 뒤에만 공개함
             // (그렇지 않으면 DOB 조회가 끝나기 전 잠깐 대화 화면이 노출되는 깜빡임이 생김)
             function revealMainScreen() {
+                hideBgmToggle(); // 배경음악은 인트로/로그인 대기 화면 전용
                 // 이미 로그인된 상태로 새로고침한 경우, 인트로 화면(1번)을 거치지 않고 바로 Discover(3번)로
                 const introEl = document.getElementById('intro-screen');
                 if (introEl && introEl.style.display !== 'none') {
@@ -4797,16 +4830,13 @@ function updateUI() {
         const intro2StartBtn = document.getElementById('intro2-start-btn');
         if (intro2StartBtn) intro2StartBtn.textContent = lang.intro2Btn;
         const pmTitle = document.getElementById('pay-modal-title'); if (pmTitle) pmTitle.textContent = lang.payModalTitle;
-        const pmSub = document.getElementById('pay-modal-sub'); if (pmSub) pmSub.textContent = lang.payModalSub;
         const pmClose = document.getElementById('pay-modal-close'); if (pmClose) pmClose.textContent = lang.payModalClose;
-        const pmPopular = document.getElementById('pay-popular-badge'); if (pmPopular) pmPopular.textContent = lang.payPopular;
         const pmMonthlyTitle = document.getElementById('pay-monthly-title'); if (pmMonthlyTitle) pmMonthlyTitle.textContent = lang.payMonthlyTitle;
-        const pmMonthlyDesc = document.getElementById('pay-monthly-desc'); if (pmMonthlyDesc) pmMonthlyDesc.textContent = lang.payMonthlyDesc;
+        const pmMonthlyDesc = document.getElementById('pay-monthly-desc'); if (pmMonthlyDesc) pmMonthlyDesc.innerHTML = lang.payMonthlyDesc;
         const pmWeeklyTitle = document.getElementById('pay-weekly-title'); if (pmWeeklyTitle) pmWeeklyTitle.textContent = lang.payWeeklyTitle;
-        const pmWeeklyDesc = document.getElementById('pay-weekly-desc'); if (pmWeeklyDesc) pmWeeklyDesc.textContent = lang.payWeeklyDesc;
+        updatePaySelectionUI();
         const pmMonthlyPeriod = document.getElementById('pay-monthly-period'); if (pmMonthlyPeriod) pmMonthlyPeriod.textContent = lang.payMonthlyPeriod;
         const pmWeeklyPeriod = document.getElementById('pay-weekly-period'); if (pmWeeklyPeriod) pmWeeklyPeriod.textContent = lang.payWeeklyPeriod;
-        const pmRefundNote = document.getElementById('pay-refund-note'); if (pmRefundNote) pmRefundNote.textContent = lang.payRefundNote;
         const s1 = document.getElementById('intro2-s1'); if (s1) s1.innerHTML = lang.intro2S1;
         const s2 = document.getElementById('intro2-s2'); if (s2) s2.innerHTML = lang.intro2S2;
         const s3 = document.getElementById('intro2-s3'); if (s3) s3.innerHTML = lang.intro2S3;
@@ -7278,11 +7308,16 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             }
 
             // ② 종료 1분 전 — 딱 한 번 안내 (세션이 1분보다 짧으면 생략)
+            // 게스트는 구독이 불가능하므로 기존처럼 조용한 배너만, 회원은 소리+연장하기 카드로 더 확실히 알림
             if (TOTAL > 60 && elapsed === TOTAL - 60) {
-                bannerText.textContent = currentLang === 'ko'
-                    ? '💬 무료 대화가 1분 후 종료됩니다.'
-                    : '💬 Your free time ends in 1 minute.';
-                banner.style.display = 'block';
+                if (isGuest) {
+                    bannerText.textContent = currentLang === 'ko'
+                        ? '💬 무료 대화가 1분 후 종료됩니다.'
+                        : '💬 Your free time ends in 1 minute.';
+                    banner.style.display = 'block';
+                } else {
+                    showExtendPrompt();
+                }
             }
             if (TOTAL > 30 && elapsed === TOTAL - 30) {
                 banner.style.display = 'none';
@@ -7323,6 +7358,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         clearPayCountdown();
         clearSubTimer();
         document.getElementById('free-time-banner').style.display = 'none';
+        dismissExtendPrompt();
         document.getElementById('payment-modal').style.display = 'none';
     }
 
@@ -7605,6 +7641,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const hr = document.getElementById('pay-modal-hr');
             if (countdownRow) countdownRow.style.display = 'none';
             if (hr) hr.style.display = 'none';
+            paymentModalContext = 'main';
+            paySelectedPlan = 'monthly';
+            updatePaySelectionUI();
             modal.style.display = 'flex';
             return;
         }
@@ -7650,6 +7689,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const hr = document.getElementById('pay-modal-hr');
         if (countdownRow) countdownRow.style.display = 'none';
         if (hr) hr.style.display = 'none';
+        paymentModalContext = 'main';
+        paySelectedPlan = 'monthly';
+        updatePaySelectionUI();
         modal.style.display = 'flex';
         modal.onclick = (e) => {
             if (e.target === modal) {
@@ -7658,6 +7700,51 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 if (hr) hr.style.display = '';
             }
         };
+    }
+
+    // 잔잔한 두 음 차임 — 별도 오디오 파일 없이 Web Audio API로 합성해서 재생.
+    // 로컬 스피커로만 들리고 Agora 오디오 트랙에는 실리지 않으므로 상대방에게는 들리지 않음
+    function playGentleChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [880, 659.25].forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                const startAt = ctx.currentTime + i * 0.16;
+                gain.gain.setValueAtTime(0, startAt);
+                gain.gain.linearRampToValueAtTime(0.12, startAt + 0.03);
+                gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.5);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(startAt);
+                osc.stop(startAt + 0.5);
+            });
+        } catch (e) { /* Web Audio 미지원 브라우저는 그냥 무음 */ }
+    }
+    function showExtendPrompt() {
+        const card = document.getElementById('extend-prompt-card');
+        if (!card) return;
+        playGentleChime();
+        const isKo = currentLang === 'ko';
+        const mainEl = document.getElementById('extend-prompt-main');
+        const subEl = document.getElementById('extend-prompt-sub');
+        const btnEl = document.getElementById('extend-prompt-btn');
+        if (mainEl) mainEl.textContent = isKo ? '이 목소리를 조금 더 듣고 싶다면.' : "If you'd like to hear this voice a little longer.";
+        if (subEl) subEl.innerHTML = isKo
+            ? '남은 시간 1분.<br>대화는 계속될 수 있습니다.'
+            : '1 minute left.<br>The conversation can go on.';
+        if (btnEl) btnEl.textContent = isKo ? '대화 이어가기' : 'Continue the conversation';
+        card.style.display = 'block';
+    }
+    function dismissExtendPrompt() {
+        const card = document.getElementById('extend-prompt-card');
+        if (card) card.style.display = 'none';
+    }
+    function extendConversationNow() {
+        dismissExtendPrompt();
+        if (freeTimerInterval) { clearInterval(freeTimerInterval); freeTimerInterval = null; }
+        showPaymentModal();
     }
 
     function showPaymentModal() {
@@ -7671,6 +7758,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
         const modal = document.getElementById('payment-modal');
         modal.style.display = 'flex';
+        paymentModalContext = 'call';
+        paySelectedPlan = 'monthly';
+        updatePaySelectionUI();
         let sec = 60;
         document.getElementById('pay-countdown').innerText = sec;
         payCountdownInterval = setInterval(() => {
@@ -7714,9 +7804,51 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
     }
 
-    ['pay-monthly', 'pay-weekly'].forEach(id => {
-        document.getElementById(id).onclick = () => startDodoCheckout(id === 'pay-monthly' ? 'monthly' : 'weekly');
-    });
+    // 결제 모달: 플랜 행은 선택만 하고, 실제 결제는 아래 큰 CTA 버튼을 눌러야 진행됨.
+    // 같은 모달을 두 군데서 씀 — 'call'(무료 대화 종료 시점) / 'main'(메인화면 Go Premium) —
+    // CTA 문구와 하단 안내 문구가 그 진입 경로에 따라 달라짐
+    let paySelectedPlan = 'monthly';
+    let paymentModalContext = 'call';
+    function selectPayPlan(plan) {
+        paySelectedPlan = plan;
+        updatePaySelectionUI();
+    }
+    function updatePaySelectionUI() {
+        const lang = textData[currentLang];
+        const monthlyEl = document.getElementById('pay-monthly');
+        const weeklyEl = document.getElementById('pay-weekly');
+        const monthlyDot = document.getElementById('pay-monthly-dot');
+        const weeklyDot = document.getElementById('pay-weekly-dot');
+        const ctaBtn = document.getElementById('pay-cta-btn');
+        const refundNoteEl = document.getElementById('pay-refund-note');
+        const isMonthly = paySelectedPlan === 'monthly';
+        if (monthlyEl) {
+            monthlyEl.style.border = isMonthly ? '1.5px solid var(--accent-color)' : '1px solid rgba(255,255,255,0.1)';
+            monthlyEl.style.background = isMonthly ? 'rgba(var(--accent-rgb),0.06)' : 'transparent';
+            monthlyEl.style.boxShadow = isMonthly ? '0 0 16px rgba(var(--accent-rgb),0.15)' : 'none';
+        }
+        if (weeklyEl) {
+            weeklyEl.style.border = !isMonthly ? '1.5px solid var(--accent-color)' : '1px solid rgba(255,255,255,0.1)';
+            weeklyEl.style.background = !isMonthly ? 'rgba(var(--accent-rgb),0.06)' : 'transparent';
+            weeklyEl.style.boxShadow = !isMonthly ? '0 0 16px rgba(var(--accent-rgb),0.15)' : 'none';
+        }
+        if (monthlyDot) { monthlyDot.textContent = isMonthly ? '●' : '○'; monthlyDot.style.color = isMonthly ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)'; }
+        if (weeklyDot) { weeklyDot.textContent = !isMonthly ? '●' : '○'; weeklyDot.style.color = !isMonthly ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)'; }
+        if (ctaBtn) {
+            if (paymentModalContext === 'main') {
+                ctaBtn.textContent = lang.payCtaMain;
+            } else {
+                const price = isMonthly ? '$4.99' : '$1.99';
+                ctaBtn.textContent = (lang.payCtaPrefix || '') + price + (lang.payCtaSuffix || '');
+            }
+        }
+        if (refundNoteEl) {
+            refundNoteEl.innerHTML = paymentModalContext === 'main' ? lang.payRefundNoteMain : lang.payRefundNote;
+        }
+    }
+    function confirmPaySelection() {
+        startDodoCheckout(paySelectedPlan);
+    }
 
     // Dodo 결제 페이지에서 return_url로 돌아왔을 때 완료 안내
     (function checkDodoReturn() {
@@ -9193,6 +9325,27 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         document.getElementById('intro-lang-btn').innerText = currentLang === 'ko' ? 'EN' : 'KO';
         const intro2LangBtn = document.getElementById('intro2-lang-btn');
         if (intro2LangBtn) intro2LangBtn.innerText = currentLang === 'ko' ? 'EN' : 'KO';
+    }
+
+    // 인트로/로그인 대기 화면 배경음악 토글 — 브라우저 자동재생 정책상 사용자가 직접 눌러야 재생이 시작됨.
+    // 아이콘(♫)은 고정, 재생 중일 때만 강조색으로 바뀜
+    function toggleBgm() {
+        const audio = document.getElementById('bgm-audio');
+        const btn = document.getElementById('bgm-toggle-btn');
+        if (!audio || !btn) return;
+        if (audio.paused) {
+            audio.volume = 0.35;
+            audio.play().then(() => { btn.style.color = 'var(--accent-color)'; }).catch(() => {});
+        } else {
+            audio.pause();
+            btn.style.color = '';
+        }
+    }
+    function hideBgmToggle() {
+        const audio = document.getElementById('bgm-audio');
+        const btn = document.getElementById('bgm-toggle-btn');
+        if (audio) audio.pause();
+        if (btn) btn.style.display = 'none';
     }
 
     function showIntro2() {
