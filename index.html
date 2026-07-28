@@ -7707,18 +7707,19 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function playGentleChime() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            [880, 659.25].forEach((freq, i) => {
+            // 차분한 느낌: 낮은 음으로 하행(5도), 어택을 늘려 부드럽게 시작, 두 음이 겹치도록 함
+            [523.25, 392].forEach((freq, i) => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
                 osc.frequency.value = freq;
-                const startAt = ctx.currentTime + i * 0.16;
+                const startAt = ctx.currentTime + i * 0.26;
                 gain.gain.setValueAtTime(0, startAt);
-                gain.gain.linearRampToValueAtTime(0.12, startAt + 0.03);
-                gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.5);
+                gain.gain.linearRampToValueAtTime(0.1, startAt + 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.9);
                 osc.connect(gain).connect(ctx.destination);
                 osc.start(startAt);
-                osc.stop(startAt + 0.5);
+                osc.stop(startAt + 0.9);
             });
         } catch (e) { /* Web Audio 미지원 브라우저는 그냥 무음 */ }
     }
