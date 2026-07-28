@@ -871,17 +871,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #refund-r6 {
             background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.08) !important; color: rgba(43,31,36,0.75) !important;
         }
-        html[data-cute-mode="cute"] #cp-title-row { color: #2b1f24 !important; }
-        html[data-cute-mode="cute"] #cp-weekly-btn {
-            background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; color: #2b1f24 !important;
-        }
-        html[data-cute-mode="cute"] #cp-weekly-price { color: rgba(43,31,36,0.5) !important; }
-        html[data-cute-mode="cute"] #cp-weekly-desc { color: rgba(43,31,36,0.5) !important; }
-        html[data-cute-mode="cute"] #cp-monthly-btn {
-            background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.06) !important; color: rgba(43,31,36,0.4) !important;
-        }
-        html[data-cute-mode="cute"] #cp-monthly-price { color: rgba(43,31,36,0.35) !important; }
-        html[data-cute-mode="cute"] #cp-monthly-desc { color: rgba(43,31,36,0.35) !important; }
         html[data-cute-mode="cute"] #logout-btn,
         html[data-cute-mode="cute"] #admin-push-btn,
         html[data-cute-mode="cute"] #admin-push-debug-btn {
@@ -2891,28 +2880,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
-    <!-- 플랜 변경 모달 -->
-    <div class="modal-overlay" id="change-plan-modal" onclick="if(event.target===this) this.classList.remove('active')">
-        <div class="modal-content" style="max-width:340px;">
-            <div id="cp-title-row" style="font-size:15px; font-weight:700; color:#fff; margin-bottom:16px;"><span id="cp-title">플랜 변경</span></div>
-            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
-                <button onclick="switchPlan('monthly')" id="cp-monthly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#fff; font-size:14px; cursor:pointer; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-                    <div>
-                        <div id="cp-monthly-label" style="font-weight:600;">Monthly Plan 유지</div>
-                        <div id="cp-monthly-desc" style="font-size:11px; font-weight:400; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit + real-time translation</div>
-                    </div>
-                    <span style="color:rgba(255,255,255,0.4); font-size:13px; white-space:nowrap;" id="cp-monthly-price">$4.99/month</span>
-                </button>
-                <button onclick="switchPlan('weekly')" id="cp-weekly-btn" style="width:100%; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); border-radius:12px; color:rgba(255,255,255,0.4); font-size:14px; cursor:default; text-align:left; display:flex; align-items:center; justify-content:space-between; gap:10px;" disabled>
-                    <div>
-                        <div id="cp-weekly-label" style="font-weight:600;">Weekly Plan으로 변경</div>
-                        <div id="cp-weekly-desc" style="font-size:11px; font-weight:400; color:rgba(255,255,255,0.4); margin-top:2px;">No 10-min session limit + real-time translation</div>
-                    </div>
-                    <span style="color:rgba(255,255,255,0.4); font-size:13px; white-space:nowrap;" id="cp-weekly-price">$1.99/week</span>
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- 첫 50명 프로모션 안내 팝업 (로그인 화면 진입 시) -->
     <div class="modal-overlay" id="early50-promo-modal" onclick="if(event.target===this) closeEarly50Promo()">
@@ -3204,7 +3171,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     // ══════════════════ Discover 화면 ══════════════════
     const DISCO_CATEGORIES = [
-        { id: 'maskoff',    ko: '가면오프', en: 'Mask Off',   kws: ['가면','솔직','본심','가식','민낯'] },
+        { id: 'maskoff',    ko: '언마스크', en: 'Unmask',     kws: ['가면','솔직','본심','가식','민낯'] },
         { id: 'burnout',    ko: '번아웃',   en: 'Burnout',    kws: ['번아웃','무기력','소진','지침','슬럼프'] },
         { id: 'vent',       ko: '대나무숲', en: 'Vent',       kws: ['대나무숲','하소연','뒷담','비밀','털어놓'] },
         { id: 'worries',    ko: '고민',     en: 'Worries',    kws: ['고민','걱정','불안','진로','선택'] },
@@ -4225,6 +4192,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCtaPrefix: "Continue for ",
         payCtaSuffix: "",
         payCtaMain: "Start my pass",
+        payCtaChangeToMonthly: "Switch to Monthly Pass",
+        payCtaChangeToWeekly: "Switch to Weekly Pass",
         payRefundNote: "Up to 2 hours a day, for a comfortable experience.<br>Full refund within 14 days, cancel anytime.",
         payRefundNoteMain: "Up to 2 hours a day, for a comfortable experience.<br>Full refund within 14 days, cancel anytime.",
         payCountdown: "Call ends in",
@@ -4350,6 +4319,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         payCtaPrefix: "",
         payCtaSuffix: "로 대화 이어가기",
         payCtaMain: "패스 시작하기",
+        payCtaChangeToMonthly: "월간 패스로 변경하기",
+        payCtaChangeToWeekly: "주간 패스로 변경하기",
         payRefundNote: "쾌적한 환경을 위해 일 최대 2시간까지 이용 가능합니다.<br>구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
         payRefundNoteMain: "쾌적한 환경을 위해 일 최대 2시간까지 이용 가능합니다.<br>구독 후 14일 이내 요청 시 전액 환불과 함께 즉시 해지됩니다.",
         payCountdown: "통화 종료까지",
@@ -7567,60 +7538,25 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             : 'Check your billing email to manage your subscription.');
     }
 
-    // preselect: 'monthly' | 'weekly' | undefined — My Circles의 "전환 가능한 플랜"에서 어떤 걸 눌렀는지
-    // (이미 유료 구독 중이면 어차피 반대쪽 플랜만 선택 가능하므로 preselect는 아직 구독이 없을 때만 강조 표시에 사용됨)
+    // preselect: 'monthly' | 'weekly' | undefined — 아직 유료 구독이 없을 때(early50 등) 어떤 플랜을 강조 표시할지
+    // (이미 유료 구독 중이면 현재 플랜은 선택 불가 처리되고 반대쪽 플랜이 자동으로 선택됨)
     function openChangePlanModal(preselect) {
-        const isKo = currentLang === 'ko';
         document.getElementById('subscription-modal').classList.remove('active');
-        // 현재 플랜 확인해서 변경 가능한 플랜만 활성화 (early50 프로모션은 유료 플랜이 아니므로 둘 다 선택 가능)
+        // 새로 디자인된 결제 모달(#payment-modal)을 'change' 컨텍스트로 재사용
         database.ref('users/' + auth.currentUser.uid + '/subscription').once('value').then(snap => {
             const sub = snap.val();
-            const currentPlan = sub ? sub.plan : null;
-            const weeklyBtn = document.getElementById('cp-weekly-btn');
-            const monthlyBtn = document.getElementById('cp-monthly-btn');
-            document.getElementById('cp-title').textContent = isKo ? '플랜 변경' : 'Change Plan';
-
-            const descText = isKo ? '세션당 10분 제한 없이 대화 + 실시간 번역' : 'No 10-min session limit + real-time translation';
-            document.getElementById('cp-weekly-desc').textContent = descText;
-            document.getElementById('cp-monthly-desc').textContent = descText;
-            document.getElementById('cp-weekly-price').textContent = isKo ? '$1.99 / 주' : '$1.99/week';
-            document.getElementById('cp-monthly-price').textContent = isKo ? '$4.99 / 월' : '$4.99/month';
-
-            function setEnabled(btn, labelId, text, highlight) {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-                btn.style.color = '#fff';
-                btn.style.borderColor = highlight ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)';
-                document.getElementById(labelId).textContent = text;
-            }
-            function setCurrent(btn, labelId, text) {
-                btn.disabled = true;
-                btn.style.opacity = '0.4';
-                btn.style.cursor = 'default';
-                btn.style.color = 'rgba(255,255,255,0.4)';
-                btn.style.borderColor = 'rgba(255,255,255,0.06)';
-                document.getElementById(labelId).textContent = text;
-            }
-
-            if (currentPlan === 'monthly') {
-                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan으로 변경' : 'Switch to Weekly Plan', false);
-                setCurrent(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan 유지' : 'Keep Monthly Plan');
-            } else if (currentPlan === 'weekly') {
-                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan으로 변경' : 'Switch to Monthly Plan', false);
-                setCurrent(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan 유지' : 'Keep Weekly Plan');
-            } else {
-                // early50 프로모션 등 — 아직 유료 구독 중이 아니므로 두 플랜 모두 선택 가능. 클릭해서 들어온 쪽을 강조 표시
-                setEnabled(weeklyBtn, 'cp-weekly-label', isKo ? 'Weekly Plan 시작하기' : 'Start Weekly Plan', preselect === 'weekly');
-                setEnabled(monthlyBtn, 'cp-monthly-label', isKo ? 'Monthly Plan 시작하기' : 'Start Monthly Plan', preselect === 'monthly');
-            }
-            document.getElementById('change-plan-modal').classList.add('active');
+            const currentPlan = (sub && sub.plan !== 'early50') ? sub.plan : null;
+            changePlanCurrentPlan = currentPlan;
+            paymentModalContext = 'change';
+            paySelectedPlan = currentPlan === 'monthly' ? 'weekly' : (currentPlan === 'weekly' ? 'monthly' : (preselect || 'monthly'));
+            const modal = document.getElementById('payment-modal');
+            const countdownRow = document.getElementById('pay-countdown-row');
+            const hr = document.getElementById('pay-modal-hr');
+            if (countdownRow) countdownRow.style.display = 'none';
+            if (hr) hr.style.display = 'none';
+            updatePaySelectionUI();
+            modal.style.display = 'flex';
         });
-    }
-
-    function switchPlan(plan) {
-        document.getElementById('change-plan-modal').classList.remove('active');
-        startDodoCheckout(plan);
     }
 
     // 실결제(라이브 모드) 준비되면 true로 변경
@@ -7809,8 +7745,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     // 같은 모달을 두 군데서 씀 — 'call'(무료 대화 종료 시점) / 'main'(메인화면 Go Premium) —
     // CTA 문구와 하단 안내 문구가 그 진입 경로에 따라 달라짐
     let paySelectedPlan = 'monthly';
-    let paymentModalContext = 'call';
+    let paymentModalContext = 'call'; // 'call' | 'main' | 'change' — 'change'는 이미 구독 중인 유저가 플랜 전환할 때
+    let changePlanCurrentPlan = null; // context가 'change'일 때만 사용: 지금 구독 중인 플랜(선택 불가 처리용)
     function selectPayPlan(plan) {
+        if (paymentModalContext === 'change' && plan === changePlanCurrentPlan) return; // 이미 쓰고 있는 플랜은 선택 불가
         paySelectedPlan = plan;
         updatePaySelectionUI();
     }
@@ -7823,20 +7761,31 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const ctaBtn = document.getElementById('pay-cta-btn');
         const refundNoteEl = document.getElementById('pay-refund-note');
         const isMonthly = paySelectedPlan === 'monthly';
+        const isChange = paymentModalContext === 'change';
         if (monthlyEl) {
             monthlyEl.style.border = isMonthly ? '1.5px solid var(--accent-color)' : '1px solid rgba(255,255,255,0.1)';
             monthlyEl.style.background = isMonthly ? 'rgba(var(--accent-rgb),0.06)' : 'transparent';
             monthlyEl.style.boxShadow = isMonthly ? '0 0 16px rgba(var(--accent-rgb),0.15)' : 'none';
+            const isCurrent = isChange && changePlanCurrentPlan === 'monthly';
+            monthlyEl.style.opacity = isCurrent ? '0.4' : '1';
+            monthlyEl.style.pointerEvents = isCurrent ? 'none' : 'auto';
+            monthlyEl.style.cursor = isCurrent ? 'default' : 'pointer';
         }
         if (weeklyEl) {
             weeklyEl.style.border = !isMonthly ? '1.5px solid var(--accent-color)' : '1px solid rgba(255,255,255,0.1)';
             weeklyEl.style.background = !isMonthly ? 'rgba(var(--accent-rgb),0.06)' : 'transparent';
             weeklyEl.style.boxShadow = !isMonthly ? '0 0 16px rgba(var(--accent-rgb),0.15)' : 'none';
+            const isCurrent = isChange && changePlanCurrentPlan === 'weekly';
+            weeklyEl.style.opacity = isCurrent ? '0.4' : '1';
+            weeklyEl.style.pointerEvents = isCurrent ? 'none' : 'auto';
+            weeklyEl.style.cursor = isCurrent ? 'default' : 'pointer';
         }
         if (monthlyDot) { monthlyDot.textContent = isMonthly ? '●' : '○'; monthlyDot.style.color = isMonthly ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)'; }
         if (weeklyDot) { weeklyDot.textContent = !isMonthly ? '●' : '○'; weeklyDot.style.color = !isMonthly ? 'var(--accent-color)' : 'rgba(255,255,255,0.3)'; }
         if (ctaBtn) {
-            if (paymentModalContext === 'main') {
+            if (isChange) {
+                ctaBtn.textContent = isMonthly ? lang.payCtaChangeToMonthly : lang.payCtaChangeToWeekly;
+            } else if (paymentModalContext === 'main') {
                 ctaBtn.textContent = lang.payCtaMain;
             } else {
                 const price = isMonthly ? '$4.99' : '$1.99';
@@ -7844,7 +7793,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             }
         }
         if (refundNoteEl) {
-            refundNoteEl.innerHTML = paymentModalContext === 'main' ? lang.payRefundNoteMain : lang.payRefundNote;
+            refundNoteEl.innerHTML = paymentModalContext === 'call' ? lang.payRefundNote : lang.payRefundNoteMain;
         }
     }
     function confirmPaySelection() {
