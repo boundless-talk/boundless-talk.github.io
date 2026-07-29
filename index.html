@@ -6136,14 +6136,18 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                     const snap = await database.ref(`channels/${safeAgoraChannelId}/members/${user.uid}`).once('value');
                     let fbUid = snap.val();
                     // fallback: channels/members 쓰기 실패(게스트 권한 등)시 activeTopics에서 Firebase UID 조회
+                    // myFbUid를 못 구했을 때 실행하면 "나 아닌 첫 번째 키"가 사실상 아무 키나 매칭돼서
+                    // 상대방 자리에 내 uid가 잘못 들어갈 수 있음(=상대 닉네임이 내 닉네임으로 보이는 버그의 원인) — 반드시 가드
                     if (!fbUid) {
                         const myFbUid = auth.currentUser ? auth.currentUser.uid : null;
-                        const atSnap = await database.ref(`activeTopics/${safeAgoraChannelId}`).once('value');
-                        const atData = atSnap.val() || {};
-                        fbUid = Object.keys(atData).find(uid => uid !== myFbUid) || null;
-                        if (fbUid && atData[fbUid]) {
-                            if (atData[fbUid].guest) uidToIsGuest[fbUid] = true;
-                            if (atData[fbUid].energyEmoji) uidToBatteryEmoji[fbUid] = atData[fbUid].energyEmoji;
+                        if (myFbUid) {
+                            const atSnap = await database.ref(`activeTopics/${safeAgoraChannelId}`).once('value');
+                            const atData = atSnap.val() || {};
+                            fbUid = Object.keys(atData).find(uid => uid !== myFbUid) || null;
+                            if (fbUid && atData[fbUid]) {
+                                if (atData[fbUid].guest) uidToIsGuest[fbUid] = true;
+                                if (atData[fbUid].energyEmoji) uidToBatteryEmoji[fbUid] = atData[fbUid].energyEmoji;
+                            }
                         }
                     }
                     if (fbUid) {
