@@ -681,10 +681,13 @@
 
         <!-- 정지·차단 회원 -->
         <div class="page" id="page-banned">
-            <div class="tabs">
-                <div class="tab active" onclick="switchTab('banned','tab-perm')">🚫 영구 정지</div>
-                <div class="tab" onclick="switchTab('banned','tab-temp')">⏸ 일시 정지</div>
-                <div class="tab" onclick="switchTab('banned','tab-warned')">⚠️ 경고 유저</div>
+            <div class="tabs" style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;">
+                    <div class="tab active" onclick="switchTab('banned','tab-perm')">🚫 영구 정지</div>
+                    <div class="tab" onclick="switchTab('banned','tab-temp')">⏸ 일시 정지</div>
+                    <div class="tab" onclick="switchTab('banned','tab-warned')">⚠️ 경고 유저</div>
+                </div>
+                <button onclick="loadUsers()" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;">↻ 새로고침</button>
             </div>
 
             <div id="tab-perm" class="tab-content">
@@ -711,7 +714,10 @@
         <div class="page" id="page-reports">
             <div class="section-header">
                 <div class="section-title">신고 내역</div>
-                <div class="section-count" id="reports-count"></div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="section-count" id="reports-count"></div>
+                    <button onclick="loadReports()" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;">↻ 새로고침</button>
+                </div>
             </div>
             <div class="table-wrap">
                 <table>
@@ -771,7 +777,10 @@
         <div class="page" id="page-appeals">
             <div class="section-header">
                 <div class="section-title">이의신청 목록</div>
-                <div class="section-count" id="appeals-count"></div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="section-count" id="appeals-count"></div>
+                    <button onclick="loadAppeals()" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;">↻ 새로고침</button>
+                </div>
             </div>
             <div id="appeals-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
         </div>
