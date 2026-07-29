@@ -636,7 +636,10 @@
         <div class="page" id="page-users">
             <div class="section-header">
                 <div class="section-title">전체 회원</div>
-                <div class="section-count" id="users-count"></div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="section-count" id="users-count"></div>
+                    <button onclick="loadUsers()" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;">↻ 새로고침</button>
+                </div>
             </div>
 
             <!-- 날짜별 신규 가입 현황 -->
