@@ -1421,7 +1421,11 @@
             }
             await db.ref('reports/' + reportId).update({ resolved: true, adminAction: type, actionAt: now });
             await loadAll();
-            alert(`${labels[type]} 완료!`);
+            // 방금 실제로 어느 UID에 뭐가 기록됐는지 그대로 다시 읽어서 보여줌 — 화면에 안 보이는 게
+            // "기록은 됐는데 목록에 안 뜨는 것"인지 "애초에 엉뚱한 UID에 기록된 것"인지 구분하기 위함
+            const verifySnap = await userRef.once('value');
+            const v = verifySnap.val() || {};
+            alert(`${labels[type]} 완료!\n\nUID: ${uid}\n이메일: ${v.email || '(이메일 없음/게스트)'}\nwarnedAt: ${v.warnedAt ? new Date(v.warnedAt).toLocaleString('ko-KR') : '없음'}\nbanned: ${v.banned ? '예' : '아니오'}`);
         } catch(e) {
             console.error('sanctionReport error:', e);
             alert('처리 실패: ' + e.message);
