@@ -749,12 +749,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #pay-modal-title,
         html[data-cute-mode="cute"] #pay-monthly-title,
         html[data-cute-mode="cute"] #pay-weekly-title,
-        html[data-cute-mode="cute"] #pp-slow-title { color: #241f1a !important; }
+        html[data-cute-mode="cute"] #pp-slow-title,
+        html[data-cute-mode="cute"] #pp-onboard-title { color: #241f1a !important; }
         html[data-cute-mode="cute"] #pay-modal-sub,
         html[data-cute-mode="cute"] #pay-monthly-desc,
         html[data-cute-mode="cute"] #pay-monthly-period,
         html[data-cute-mode="cute"] #pay-weekly-period,
-        html[data-cute-mode="cute"] #pp-slow-desc { color: rgba(36,31,26,0.55) !important; }
+        html[data-cute-mode="cute"] #pp-slow-desc,
+        html[data-cute-mode="cute"] #pp-onboard-desc { color: rgba(36,31,26,0.55) !important; }
         html[data-cute-mode="cute"] #pay-weekly-dot { color: rgba(36,31,26,0.35) !important; }
         html[data-cute-mode="cute"] #pay-weekly-price { color: #241f1a !important; }
         html[data-cute-mode="cute"] #pay-weekly { border-color: rgba(36,31,26,0.12) !important; }
@@ -2732,6 +2734,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <!-- 핑퐁 모드로 방에 들어간 순간 뜨는 안내 팝업 — 바깥을 누르면 닫힘 -->
+    <div id="pp-onboard-modal" onclick="if(event.target===this) this.style.display='none';" style="display:none; position:fixed; inset:0; z-index:9998; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+        <div class="glass-card" style="border-radius:10px; padding:28px 24px; width:90%; max-width:320px; text-align:center;">
+            <div style="font-size:15px; font-weight:700; color:rgba(255,255,255,0.9); margin-bottom:8px;" id="pp-onboard-title">🏓 핑퐁모드입니다</div>
+            <div style="font-size:12px; color:rgba(255,255,255,0.4); line-height:1.6;" id="pp-onboard-desc">90초는 말할 시간.<br>그다음은 들을 차례에요.</div>
+        </div>
+    </div>
+
     <!-- 약관 동의 모달 -->
     <!-- 생년월일 확인 모달 -->
     <div class="modal-overlay" id="dob-modal" onclick="if(event.target===this) cancelDob()">
@@ -4227,6 +4237,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let mediaRecorder = null;
     let audioSlices = []; // 10초 단위 녹음 슬라이스 관리 배열 (최대 6개 = 60초)
     let sliceInterval = null;
+    // Safari(특히 iOS)는 MediaRecorder에서 audio/webm을 지원 안 함 — 하드코딩하면 조용히
+    // 녹음 자체가 실패해서(try/catch로 묻힘) 신고/AI요약용 오디오가 항상 빈 파일이 됨
+    let rollingRecorderMimeType = '';
 
     // 다국어 데이터 사전 사전 정의
     const textData = {
@@ -4622,7 +4635,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 database.ref('activeTopics').on('value', (snap) => {
     const data = snap.val() || {};
     const topics = [];
-    const STALE_MS = 6 * 60 * 1000; // 6분 이상 업데이트 없으면 유령 방으로 간주 (화면 잠금 등으로 하트비트가 잠깐 지연되는 경우 대비 여유를 둠)
+    const STALE_MS = 65 * 1000; // 65초 이상 업데이트 없으면 유령 방으로 간주 (하트비트는 15초 간격 — 화면 잠금 등으로 몇 번 지연돼도 바로 유령 처리되지 않게 여유를 둠)
     const now = Date.now();
     const discoRoomsBuilt = [];
 
@@ -5715,7 +5728,11 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
                 localSource.connect(audioDest);
             }
 
-            mediaRecorder = new MediaRecorder(audioDest.stream, { mimeType: 'audio/webm' });
+            rollingRecorderMimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus'
+                                     : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                                     : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4'
+                                     : '';
+            mediaRecorder = new MediaRecorder(audioDest.stream, rollingRecorderMimeType ? { mimeType: rollingRecorderMimeType } : {});
             let currentChunks = [];
 
             mediaRecorder.ondataavailable = (e) => {
@@ -5723,7 +5740,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             };
 
             mediaRecorder.onstop = () => {
-                const blob = new Blob(currentChunks, { type: 'audio/webm' });
+                const blob = new Blob(currentChunks, { type: rollingRecorderMimeType || 'audio/webm' });
                 audioSlices.push(blob);
                 // [정밀 규칙 관리] 10초 단위 슬라이스 배열 관리, 최대 6개 블록 유지 (=총 1분 보관)
                 if (audioSlices.length > 6) {
@@ -5956,7 +5973,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
     window._heartbeatInterval = setInterval(() => {
         if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
         myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP });
-    }, 60 * 1000);
+    }, 15 * 1000);
                     } catch(e) { console.warn('activeTopics write failed (may be permission):', e.message); }
                 }
                 // 리스너는 토픽 종류와 무관하게 항상 등록 (상대방 Firebase UID 확보용)
@@ -6030,6 +6047,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 startPPSlowMatchTimer();
                 const ppSwitchBtn = document.getElementById('room-pp-switch-btn');
                 if (ppSwitchBtn) ppSwitchBtn.style.display = 'none';
+                // 핑퐁 모드로 들어온 순간, 90초 말하기/듣기 규칙을 짧게 안내
+                const ppOnboardModal = document.getElementById('pp-onboard-modal');
+                if (ppOnboardModal) ppOnboardModal.style.display = 'flex';
             } else if (!finalTopic.startsWith('🔒_')) {
                 const ppSwitchBtn = document.getElementById('room-pp-switch-btn');
                 if (ppSwitchBtn) {
@@ -7310,7 +7330,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (!selectedReportTarget) return;
 
         // 롤링 버퍼에 존재하는 최근 1분간의 축적용 오디오 청크들을 하나의 대형 파일로 병합 병합
-        const fullReportBlob = new Blob(audioSlices, { type: 'audio/webm' });
+        const fullReportBlob = new Blob(audioSlices, { type: rollingRecorderMimeType || 'audio/webm' });
 
         // 실제 운영 배포 단계용 FormData 전송부 인프라 설계 구성 제공
         const formData = new FormData();
@@ -8087,7 +8107,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     // AI 대화 요약 함수 — summarize.js Netlify Function 호출
     async function requestAISummary() {
         try {
-            const fullBlob = new Blob(audioSlices, { type: 'audio/webm' });
+            const fullBlob = new Blob(audioSlices, { type: rollingRecorderMimeType || 'audio/webm' });
             if (fullBlob.size === 0) {
                 document.getElementById('summary-headline').innerText = textData[currentLang].aiHeadline;
                 document.getElementById('summary-content').innerHTML = textData[currentLang].aiSample;
