@@ -732,7 +732,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .modal-overlay.active .modal-content { transform: scale(1) translateY(0); opacity: 1; }
         .modal-content h3 { margin-top: 0; font-weight: 400; letter-spacing: 1px; font-size: 20px; }
         .modal-content p { color: rgba(255,255,255,0.5); font-size: 13.5px; margin-bottom: 20px; line-height: 1.5; }
+        /* 뒤에 있는 예약 목록이 살짝 비치되, 모달 글씨 가독성은 해치지 않도록 은은한 블러+딤만 */
+        #scheduled-preopen-modal { background: rgba(0,0,0,0.45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
         html[data-cute-mode="cute"] .modal-overlay { background: rgba(36,31,26,0.25); }
+        html[data-cute-mode="cute"] #scheduled-preopen-modal { background: rgba(36,31,26,0.35); }
         html[data-cute-mode="cute"] .modal-content {
             background: #fffdfa; border-color: rgba(36,31,26,0.08); box-shadow: none;
             border-radius: 2px; color: #241f1a;
@@ -756,7 +759,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #pay-weekly-price { color: #241f1a !important; }
         html[data-cute-mode="cute"] #pay-weekly { border-color: rgba(36,31,26,0.12) !important; }
         html[data-cute-mode="cute"] #pay-monthly { box-shadow: none !important; }
-        html[data-cute-mode="cute"] #pay-cta-btn { border-radius: 2px !important; }
+        html[data-cute-mode="cute"] #pay-cta-btn,
+        html[data-cute-mode="cute"] #scheduled-preopen-btn { border-radius: 2px !important; }
         html[data-cute-mode="cute"] #pay-modal-hr { border-top-color: rgba(36,31,26,0.1) !important; }
         html[data-cute-mode="cute"] #pay-modal-close,
         html[data-cute-mode="cute"] #pay-countdown-row,
@@ -2375,6 +2379,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
         </div>
 
+        <!-- 10시 전에 Scheduled 탭에 들어왔을 때 한 번 보여주는 안내 모달 -->
+        <div class="modal-overlay" id="scheduled-preopen-modal" onclick="if(event.target===this) this.classList.remove('active')">
+            <div class="modal-content" style="max-width:320px;">
+                <h3 id="scheduled-preopen-title" style="font-size:17px; margin-bottom:10px;">10시에 시작됩니다.<br>원하는 테이블을 지금 만들어보세요.</h3>
+                <button onclick="document.getElementById('scheduled-preopen-modal').classList.remove('active'); openScheduleCreateModal();" id="scheduled-preopen-btn" style="width:100%; padding:13px; background:var(--accent-color); color:#041025; font-weight:700; font-size:14px; border:none; border-radius:12px; cursor:pointer;">내 테이블 만들기</button>
+            </div>
+        </div>
+
         <!-- ── 기존 '직접 주제 입력' 방식: Discover로 대체되어 화면엔 숨김, join-btn 등 내부 로직은 그대로 재사용 ── -->
         <div id="manual-entry-wrap" style="display:none;">
         <div id="live-topics-bar" style="display:none; margin-bottom:10px;">
@@ -3597,6 +3609,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     function renderScheduledTab() {
         renderScheduledGrid();
         fetchScheduledRooms();
+        maybeShowScheduledPreOpenModal();
+    }
+    // 10시 전(문 열리기 전)에 로그인한 상태로 Scheduled 탭에 들어오면, 세션당 한 번만
+    // "지금 바로 예약해보세요" 안내 모달을 띄움
+    let _scheduledPreOpenModalShown = false;
+    function maybeShowScheduledPreOpenModal() {
+        if (_scheduledPreOpenModalShown) return;
+        if (isWithinOperatingHours()) return;
+        if (!auth.currentUser) return;
+        _scheduledPreOpenModalShown = true;
+        const isKo = currentLang === 'ko';
+        document.getElementById('scheduled-preopen-title').innerHTML = isKo
+            ? '10시에 시작됩니다.<br>원하는 테이블을 지금 만들어보세요.'
+            : 'Doors open at 10 PM.<br>Create your table now.';
+        document.getElementById('scheduled-preopen-btn').textContent = isKo ? '내 테이블 만들기' : 'Create my table';
+        document.getElementById('scheduled-preopen-modal').classList.add('active');
     }
     function createScheduledCardEl(room) {
         const card = document.createElement('div');
