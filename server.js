@@ -262,6 +262,7 @@ app.post('/create-scheduled-room', async (req, res) => {
             style: style === 'polite' ? 'polite' : 'casual',
             pingpong: !!pingpong,
             createdAt: Date.now(),
+            createdBy: uid,
             seats: { [uid]: { fcmToken: fcmToken || null, joinedAt: Date.now() } }
         });
         res.json({ success: true, roomId });
@@ -368,6 +369,50 @@ app.post('/scheduled-rooms-today', async (req, res) => {
     } catch (e) {
         console.error('[scheduled-rooms-today] error:', e.message);
         res.json({ rooms: [] });
+    }
+});
+
+// 관리자 패널 전용 — 일반 유저용 /scheduled-rooms-today와 달리 누가 방을 만들었는지(createdBy)와
+// 참여예약한 사람들의 uid 목록(seats)까지 그대로 내려줌. 다른 유저의 uid가 노출되면 안 되므로
+// 반드시 관리자 인증을 거친 뒤에만 응답함
+app.post('/admin/scheduled-rooms-today', async (req, res) => {
+    if (!admin.apps.length) return res.json({ rooms: [] });
+    const { idToken } = req.body || {};
+    let decoded;
+    try {
+        decoded = await admin.auth().verifyIdToken(idToken);
+    } catch (e) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+    if (!ADMIN_UIDS.has(decoded.uid) && !ADMIN_EMAILS.has(decoded.email)) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    try {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        const today = kst.toISOString().slice(0, 10);
+        const snap = await admin.database().ref(`scheduledRooms/${today}`).once('value');
+        const data = snap.val() || {};
+        const rooms = Object.entries(data).map(([id, r]) => {
+            const seats = r.seats || {};
+            const seatEntries = Object.entries(seats).map(([uid, s]) => ({ uid, joinedAt: s.joinedAt || 0 }));
+            seatEntries.sort((a, b) => a.joinedAt - b.joinedAt);
+            // 예전 방(생성 당시 createdBy가 없던 방)은 가장 먼저 좌석을 채운 사람을 만든 사람으로 간주
+            const createdBy = r.createdBy || (seatEntries[0] && seatEntries[0].uid) || null;
+            return {
+                id,
+                title: r.title,
+                category: r.category || 'general',
+                style: r.style === 'polite' ? 'polite' : 'casual',
+                pingpong: !!r.pingpong,
+                maxPeople: 4,
+                createdBy,
+                seats: seatEntries
+            };
+        });
+        res.json({ rooms });
+    } catch (e) {
+        console.error('[admin/scheduled-rooms-today] error:', e.message);
+        res.status(500).json({ error: e.message });
     }
 });
 
