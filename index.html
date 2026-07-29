@@ -446,7 +446,7 @@
         .consent-view-btn:hover { color:var(--accent-color); }
         #consent-confirm-btn:not(:disabled) { background:rgba(var(--accent-rgb),0.15); color:var(--accent-color); border-color:rgba(var(--accent-rgb),0.5); cursor:pointer; }
         #consent-confirm-btn:not(:disabled):hover { background:rgba(var(--accent-rgb),0.25); }
-.speech-style-badge { font-size:10px; padding:2px 7px; border-radius:10px; margin-left:5px; background:rgba(var(--accent-rgb),0.1); color:rgba(var(--accent-rgb),0.7); border:1px solid rgba(var(--accent-rgb),0.2); vertical-align:middle; }
+.speech-style-badge { font-size:10px; padding:2px 7px; border-radius:10px; margin-left:5px; background:rgba(var(--accent-rgb),0.1); color:rgba(var(--accent-rgb),0.7); border:1px solid rgba(var(--accent-rgb),0.2); vertical-align:middle; white-space: nowrap; flex-shrink: 0; }
 select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; cursor: pointer; outline: none; font-size: 11px; }
         button { width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; border: none; transition: all 0.2s ease; }
 
@@ -1633,10 +1633,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .disco-card:hover { border-color: rgba(var(--accent-rgb),0.4); transform: translateY(-1px); }
         .disco-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-        .disco-card-top-left { display: flex; align-items: center; gap: 6px; }
-        .disco-card-cat { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+        .disco-card-top-left { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .disco-card-cat { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); white-space: nowrap; flex-shrink: 0; }
         .disco-card-badges { display: flex; align-items: center; gap: 6px; flex-none; }
-        .disco-pp-badge { font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; color: #ffd166; background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.35); border-radius: 8px; padding: 2px 6px; white-space: nowrap; }
+        .disco-pp-badge { font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; color: #ffd166; background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.35); border-radius: 8px; padding: 2px 6px; white-space: nowrap; cursor: pointer; flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
+        .pp-info-tip { position: fixed; z-index: 500; background: #1a1a1a; color: #fff; font-size: 11.5px; font-weight: 700; padding: 6px 10px; border-radius: 8px; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,0.35); pointer-events: none; opacity: 0; visibility: hidden; transition: opacity 0.15s ease; }
+        .pp-info-tip.active { opacity: 1; visibility: visible; }
+        .pp-info-tip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: #1a1a1a; }
+        html[data-cute-mode="cute"] .pp-info-tip { background: #241f1a; color: #fffdfa; }
+        html[data-cute-mode="cute"] .pp-info-tip::after { border-top-color: #241f1a; }
         .disco-live-badge { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--dr); }
         .disco-live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dr); animation: pulse-dot 1.4s infinite; }
         .disco-card-mid { display: flex; align-items: center; gap: 16px; }
@@ -2382,7 +2387,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <!-- 10시 전에 Scheduled 탭에 들어왔을 때 한 번 보여주는 안내 모달 -->
         <div class="modal-overlay" id="scheduled-preopen-modal" onclick="if(event.target===this) this.classList.remove('active')">
             <div class="modal-content" style="max-width:320px;">
-                <h3 id="scheduled-preopen-title" style="font-size:14px; line-height:1.8; margin-bottom:20px; white-space:nowrap;">10시, 완벽한 대화가 시작됩니다.<br>지금 당신만의 테이블을 직접 만들어보세요.</h3>
+                <h3 id="scheduled-preopen-title" style="font-size:12.5px; line-height:1.8; margin-bottom:20px; word-break:keep-all;">10시, 완벽한 대화가 시작됩니다.<br>지금 당신만의 테이블을 직접 만들어보세요.</h3>
                 <button onclick="document.getElementById('scheduled-preopen-modal').classList.remove('active'); openScheduleCreateModal();" id="scheduled-preopen-btn" style="width:100%; padding:13px; background:var(--accent-color); color:#041025; font-weight:700; font-size:14px; border:none; border-radius:12px; cursor:pointer;">내 테이블 만들기</button>
             </div>
         </div>
@@ -3225,6 +3230,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         { id: 'life',       ko: '일상',     en: 'Life',       kws: ['일상','연애','썸','데이트','자취','직장','취준'] },
         { id: 'taste',      ko: '취향',     en: 'Taste',      kws: ['취향','최애','취미','좋아하는'] },
         { id: 'philosophy', ko: '철학',     en: 'Philosophy', kws: ['철학','인생','가치관','존재','의미'] },
+        { id: 'books',      ko: '책이야기', en: 'Books',      kws: ['책','독서','소설','작가','서평','북토크','도서'] },
         { id: 'general',    ko: '기타',     en: 'General',    kws: [] }
     ];
     function discoCatLabel(id) {
@@ -3645,9 +3651,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             topLeft.appendChild(styleTag);
         }
         if (room.pingpong) {
+            // <button>으로 만들면 이모지+버튼 기본 렌더링 때문에 뱃지 폭이 두 배로 커지는 문제가
+            // 있어서, 기존 span 그대로 두고 클릭만 되게 함 (span도 onclick으로 충분히 버튼처럼 동작함)
             const pp = document.createElement('span');
             pp.className = 'disco-pp-badge';
             pp.textContent = '🏓 PP';
+            pp.setAttribute('role', 'button');
+            pp.setAttribute('tabindex', '0');
+            pp.onclick = (e) => togglePPInfoTip(e, pp);
             topLeft.appendChild(pp);
         }
         top.appendChild(topLeft);
@@ -3713,6 +3724,39 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         return card;
     }
+    // PP(핑퐁) 뱃지를 누르면 바로 위에 짧은 설명 말풍선을 띄움 — 같은 뱃지를 다시 누르면 닫힘,
+    // 다른 곳을 누르면 자동으로 닫힘
+    function togglePPInfoTip(e, btn) {
+        e.stopPropagation();
+        let tip = document.getElementById('pp-info-tip');
+        if (tip && tip._anchor === btn && tip.classList.contains('active')) {
+            tip.classList.remove('active');
+            tip._anchor = null;
+            return;
+        }
+        if (!tip) {
+            tip = document.createElement('div');
+            tip.id = 'pp-info-tip';
+            tip.className = 'pp-info-tip';
+            document.body.appendChild(tip);
+        }
+        tip.textContent = currentLang === 'ko' ? '90초씩 릴레이 토크' : 'Relay talk, 90 seconds each';
+        tip._anchor = btn;
+        tip.classList.add('active');
+        const rect = btn.getBoundingClientRect();
+        const tipRect = tip.getBoundingClientRect();
+        let left = rect.left + rect.width / 2 - tipRect.width / 2;
+        left = Math.max(8, Math.min(window.innerWidth - tipRect.width - 8, left));
+        tip.style.left = left + 'px';
+        tip.style.top = (rect.top - tipRect.height - 8) + 'px';
+    }
+    document.addEventListener('click', () => {
+        const tip = document.getElementById('pp-info-tip');
+        if (tip && tip.classList.contains('active')) {
+            tip.classList.remove('active');
+            tip._anchor = null;
+        }
+    });
     // 10시가 지난 예약방은 더 이상 좌석을 예약하는 게 아니라, 그 주제로 바로 실제 대화방에 들어감
     // (알림을 못 받았거나 놓친 사람도 Scheduled 탭에서 같은 방식으로 합류할 수 있도록)
     function enterScheduledRoom(room) {
@@ -9407,6 +9451,10 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     // 배경음악은 전체적으로 거슬리지 않게 아주 작은 볼륨으로만 재생
     const BGM_BASE_VOLUME = 0.01;
 
+    // 사용자가 토글 버튼으로 직접 껐는지 여부 — 껐을 땐 아래 "제스처 감지로 재생 재시도"가
+    // 다시 멋대로 켜지 않도록 구분해야 함
+    let bgmUserDisabled = false;
+
     // 인트로/로그인 대기 화면 배경음악 토글 — 브라우저 자동재생 정책상 사용자가 직접 눌러야 재생이 시작됨.
     // 아이콘(♫)은 고정, 재생 중일 때만 강조색으로 바뀜
     function toggleBgm() {
@@ -9414,13 +9462,40 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         const btn = document.getElementById('bgm-toggle-btn');
         if (!audio || !btn) return;
         if (audio.paused) {
+            bgmUserDisabled = false;
             audio.volume = BGM_BASE_VOLUME;
             audio.play().then(() => { btn.style.color = 'var(--accent-color)'; }).catch(() => {});
         } else {
+            bgmUserDisabled = true;
             audio.pause();
             btn.style.color = '';
         }
     }
+
+    // 지금 시점에 배경음악이 재생 중이어야 하는 상태인지 (통화 중에 상대가 이미 들어와 있으면 꺼져있어야 함)
+    function bgmShouldBePlaying() {
+        if (isJoined) return roomParticipants.length === 0;
+        return true;
+    }
+
+    // 1번 화면의 인트로 영상이 onended로 "자동" 전환되는 경우처럼, 사용자 제스처 없이
+    // startFromIntro()/refreshRoomAloneBgm()이 호출되면 브라우저(특히 iOS Safari) 자동재생
+    // 정책에 막혀 audio.play()가 실패할 수 있음. 그래서 화면 어디든 사용자가 처음
+    // 터치/클릭/키입력하는 순간, 배경음악이 꺼져있는데 원래는 켜져 있어야 할 상태라면
+    // (사용자가 직접 끈 게 아니라면) 그때 다시 재생을 시도함
+    function tryResumeBgmOnGesture() {
+        const bgmAudio = document.getElementById('bgm-audio');
+        const bgmBtn = document.getElementById('bgm-toggle-btn');
+        if (!bgmAudio || !bgmBtn || bgmUserDisabled) return;
+        if (bgmBtn.style.display === 'none') return; // 아직 1번 화면(인트로)
+        if (!bgmAudio.paused) return;
+        if (!bgmShouldBePlaying()) return;
+        bgmAudio.volume = (isJoined && roomParticipants.length === 0) ? ROOM_ALONE_BGM_VOLUME : BGM_BASE_VOLUME;
+        bgmAudio.play().then(() => { bgmBtn.style.color = 'var(--accent-color)'; }).catch(() => {});
+    }
+    ['pointerdown', 'touchend', 'keydown'].forEach(evt =>
+        document.addEventListener(evt, tryResumeBgmOnGesture, { capture: true })
+    );
 
     // 대화방에 혼자 남아 있는 동안(상대가 아직 없거나 방금 나간 경우) 그보다도 더 작은 볼륨으로 배경음악을
     // 재생해 정적을 채워줌 — 상대가 들어오면 즉시 멈춰서 실제 대화에 방해되지 않게 함
