@@ -4011,6 +4011,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             if (panel) panel.style.display = (t === tab) ? 'flex' : 'none';
         });
         if (tab !== 'discover') stopDiscoCountdown();
+        if (tab === 'discover') renderDiscoGrid();
         if (tab === 'trending') renderTrendingTab();
         if (tab === 'scheduled') renderScheduledTab();
         if (tab === 'mycircles') switchMyCirclesSubtab('recent');
