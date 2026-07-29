@@ -2382,7 +2382,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <!-- 10시 전에 Scheduled 탭에 들어왔을 때 한 번 보여주는 안내 모달 -->
         <div class="modal-overlay" id="scheduled-preopen-modal" onclick="if(event.target===this) this.classList.remove('active')">
             <div class="modal-content" style="max-width:320px;">
-                <h3 id="scheduled-preopen-title" style="font-size:17px; margin-bottom:10px;">10시에 시작됩니다.<br>원하는 테이블을 지금 만들어보세요.</h3>
+                <h3 id="scheduled-preopen-title" style="font-size:17px; margin-bottom:10px; word-break:keep-all;">10시, 완벽한 대화가 시작됩니다.<br>지금 당신의 테이블을 먼저 잡아두세요.</h3>
                 <button onclick="document.getElementById('scheduled-preopen-modal').classList.remove('active'); openScheduleCreateModal();" id="scheduled-preopen-btn" style="width:100%; padding:13px; background:var(--accent-color); color:#041025; font-weight:700; font-size:14px; border:none; border-radius:12px; cursor:pointer;">내 테이블 만들기</button>
             </div>
         </div>
@@ -3621,8 +3621,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         _scheduledPreOpenModalShown = true;
         const isKo = currentLang === 'ko';
         document.getElementById('scheduled-preopen-title').innerHTML = isKo
-            ? '10시에 시작됩니다.<br>원하는 테이블을 지금 만들어보세요.'
-            : 'Doors open at 10 PM.<br>Create your table now.';
+            ? '10시, 완벽한 대화가 시작됩니다.<br>지금 당신의 테이블을 먼저 잡아두세요.'
+            : 'At 10, the perfect conversation begins.<br>Claim your table now.';
         document.getElementById('scheduled-preopen-btn').textContent = isKo ? '내 테이블 만들기' : 'Create my table';
         document.getElementById('scheduled-preopen-modal').classList.add('active');
     }
