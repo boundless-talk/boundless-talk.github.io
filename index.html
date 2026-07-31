@@ -304,7 +304,7 @@
         #appeal-textarea:focus { border-color: rgba(255,59,48,0.5); box-shadow: 0 0 12px rgba(255,59,48,0.15); }
 
         .lang-container { position: fixed; top: calc(20px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 9000; display: flex; align-items: center; gap: 3px; }
-        #bgm-toggle-btn { position: fixed; top: calc(64px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 150; font-size: 20px; }
+        #bgm-toggle-btn { position: fixed; top: calc(64px + env(safe-area-inset-top, 0px)); right: calc(20px + env(safe-area-inset-right, 0px)); z-index: 8500; font-size: 20px; }
         .settings-gear-btn {
             width: 40px; height: 40px; border-radius: 50%; margin: 0; padding: 0;
             background: transparent; border: none; outline: none;
@@ -771,6 +771,30 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .frb-desc { color: rgba(36,31,26,0.6); }
         html[data-cute-mode="cute"] .frb-reject-btn { background: rgba(36,31,26,0.05) !important; color: rgba(36,31,26,0.5) !important; border-color: rgba(36,31,26,0.12) !important; }
         html[data-cute-mode="cute"] #pp-slow-cancel { color: rgba(36,31,26,0.4) !important; }
+        /* ── 신고 모달 / 영구정지·일시정지 화면: 큐트 모드 ── */
+        html[data-cute-mode="cute"] #report-reason-input,
+        html[data-cute-mode="cute"] #appeal-textarea,
+        html[data-cute-mode="cute"] #suspend-appeal-textarea {
+            background: rgba(0,0,0,0.03) !important; border-color: rgba(0,0,0,0.12) !important; color: #241f1a !important;
+        }
+        html[data-cute-mode="cute"] #report-reason-input::placeholder,
+        html[data-cute-mode="cute"] #appeal-textarea::placeholder,
+        html[data-cute-mode="cute"] #suspend-appeal-textarea::placeholder { color: rgba(36,31,26,0.35) !important; }
+        html[data-cute-mode="cute"] #ban-overlay,
+        html[data-cute-mode="cute"] #suspend-overlay { background: #f7f4ee !important; }
+        html[data-cute-mode="cute"] #ban-title,
+        html[data-cute-mode="cute"] #suspend-overlay h1 { color: #8a2f2a !important; }
+        html[data-cute-mode="cute"] #ban-desc,
+        html[data-cute-mode="cute"] #suspend-desc { color: rgba(36,31,26,0.6) !important; }
+        html[data-cute-mode="cute"] #suspend-timer { color: #8a2f2a !important; }
+        html[data-cute-mode="cute"] #appeal-form-wrap > p,
+        html[data-cute-mode="cute"] #suspend-overlay > div > p { color: rgba(36,31,26,0.5) !important; }
+        html[data-cute-mode="cute"] #appeal-submit-btn,
+        html[data-cute-mode="cute"] #suspend-overlay button {
+            background: rgba(138,47,42,0.08) !important; border-color: rgba(138,47,42,0.4) !important; color: #8a2f2a !important; border-radius: 2px !important;
+        }
+        html[data-cute-mode="cute"] #appeal-done-msg,
+        html[data-cute-mode="cute"] #suspend-appeal-done { color: #8a2f2a !important; }
         html[data-cute-mode="cute"] #inquiry-btn,
         html[data-cute-mode="cute"] #about-nav-btn { color: rgba(36,31,26,0.4) !important; }
         html[data-cute-mode="cute"] #early50-promo-title { color: #241f1a !important; }
@@ -7339,9 +7363,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         // 실제 운영 배포 단계용 FormData 전송부 인프라 설계 구성 제공
         const formData = new FormData();
         const reportReason = (document.getElementById('report-reason-input')?.value || '').trim();
+        // reporterUid는 반드시 Firebase UID여야 함 — 전역 myUid는 Agora 세션 번호(통화마다 바뀜)라
+        // 그걸 그대로 보내면 같은 사람을 신고해도 매번 다른 값이 돼서 중복신고 방지가 무의미해짐
         formData.append("audioData", fullReportBlob);
         formData.append("reportedUid", selectedReportTarget);
-        formData.append("reporterUid", myUid);
+        formData.append("reporterUid", auth.currentUser ? auth.currentUser.uid : '');
         formData.append("channel", currentChannelName);
         if (reportReason) formData.append("reason", reportReason);
 
@@ -7357,9 +7383,14 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 body: formData
             });
             if (!response.ok) throw new Error('HTTP ' + response.status);
+            const result = await response.json().catch(() => ({}));
 
             setTimeout(() => {
-                alert(textData[currentLang].reportSuccess);
+                if (result && result.alreadyReported) {
+                    alert(currentLang === 'ko' ? '이미 신고된 유저입니다.' : "You've already reported this user.");
+                } else {
+                    alert(textData[currentLang].reportSuccess);
+                }
             }, 1000);
 
         } catch (err) {
@@ -7378,6 +7409,13 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     let payCountdownInterval = null;
     let subTimerInterval = null;
     let subRemainingSeconds = 7200; // 기본 2시간
+    // 무료 타이머가 30초마다만 dailyUsage에 저장하다 보니, 그 사이(최대 29초)에 방을 나가면
+    // 그 시간이 하루 사용량에 전혀 반영되지 않던 문제가 있었음(짧게 들어갔다 나가기를 반복하면
+    // 사실상 2시간 한도를 무제한으로 우회 가능) — clearFreeTimer()에서 그 순간까지의 경과 시간을
+    // 바로 저장할 수 있도록 진행 상태를 여기 모듈 스코프에 같이 들고 있음
+    let _freeTimerUsageRef = null;
+    let _freeTimerBaseUsedSec = 0;
+    let _freeTimerElapsed = 0;
 
     // WakeLock — 통화 중 화면 꺼짐 방지
     let wakeLock = null;
@@ -7441,6 +7479,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         const TOTAL = Math.min(600, DAILY_MAX_SEC - dailyUsedSec);
         let elapsed = 0;
         let saveAccum = 0;
+        _freeTimerUsageRef = usageRef;
+        _freeTimerBaseUsedSec = dailyUsedSec;
+        _freeTimerElapsed = 0;
         const banner = document.getElementById('free-time-banner');
         const bannerText = document.getElementById('free-time-banner-text');
 
@@ -7454,6 +7495,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         freeTimerInterval = setInterval(() => {
             elapsed++;
             saveAccum++;
+            _freeTimerElapsed = elapsed;
 
             if (usageRef && saveAccum >= 30) {
                 usageRef.set(dailyUsedSec + elapsed);
@@ -7480,6 +7522,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 clearInterval(freeTimerInterval);
                 banner.style.display = 'none';
                 if (usageRef) usageRef.set(dailyUsedSec + elapsed);
+                _freeTimerUsageRef = null; // 이미 최종 저장했으니 clearFreeTimer()가 중복 저장 안 하게
 
                 // 게스트는 구독 불가 → 즉시 방 퇴장
                 if (isGuest) {
@@ -7508,6 +7551,14 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     function clearFreeTimer() {
         releaseWakeLock();
         if (freeTimerInterval) { clearInterval(freeTimerInterval); freeTimerInterval = null; }
+        // 30초 저장 주기 사이(최대 29초)에 방을 나가면 그 시간이 하루 사용량에 안 남던 문제 —
+        // 타이머를 멈추는 시점에 지금까지의 경과 시간을 바로 저장해서 짧게 들어갔다 나가기를
+        // 반복해도 2시간 한도를 우회할 수 없게 함
+        if (_freeTimerUsageRef && _freeTimerElapsed > 0) {
+            _freeTimerUsageRef.set(_freeTimerBaseUsedSec + _freeTimerElapsed);
+        }
+        _freeTimerUsageRef = null;
+        _freeTimerElapsed = 0;
         clearPayCountdown();
         clearSubTimer();
         document.getElementById('free-time-banner').style.display = 'none';

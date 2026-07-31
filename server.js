@@ -659,8 +659,10 @@ app.post('/reportUser', (req, res) => {
     const bb = Busboy({ headers: req.headers });
     const chunks = [];
     let fields = {};
+    let audioMime = 'audio/webm';
 
-    bb.on('file', (name, file) => {
+    bb.on('file', (name, file, info) => {
+        audioMime = (info && info.mimeType) || 'audio/webm';
         file.on('data', chunk => chunks.push(chunk));
     });
 
@@ -674,6 +676,26 @@ app.post('/reportUser', (req, res) => {
             return res.status(400).json({ error: 'Missing reportedUid' });
         }
 
+        // 같은 사람이 같은 상대를 반복 신고(신고 테러)하는 걸 막기 위해, 실제 오디오 업로드/AI 분석 전에
+        // 먼저 중복 여부부터 확인함 — 이미 신고한 적 있으면 여기서 바로 끝내고 안내만 내려줌.
+        // reportedBy에는 이 유저를 신고한 사람들을 모아둬서, 제재 단계 판단 시 "서로 다른 사람이
+        // 몇 명이나 신고했는지"를 셀 수 있게 함(같은 사람이 여러 번 눌러도 여기선 한 번만 잡힘)
+        let distinctReporterCount = null;
+        if (reporterUid && admin.apps.length) {
+            try {
+                const db0 = admin.database();
+                const pairRef = db0.ref(`reportPairs/${reporterUid}/${reportedUid}`);
+                const pairSnap = await pairRef.once('value');
+                if (pairSnap.exists()) {
+                    return res.json({ success: false, alreadyReported: true });
+                }
+                await pairRef.set(Date.now());
+                await db0.ref(`reportedBy/${reportedUid}/${reporterUid}`).set(Date.now());
+                const reportedBySnap = await db0.ref(`reportedBy/${reportedUid}`).once('value');
+                distinctReporterCount = Object.keys(reportedBySnap.val() || {}).length;
+            } catch (e) { console.error('[reportUser] dedup check failed:', e.message); }
+        }
+
         const hasAudio = audioBuffer.length > 0;
         let audioStorageUrl = null;
         let aiResult = null;
@@ -681,9 +703,10 @@ app.post('/reportUser', (req, res) => {
         // 1. Storage 저장 (실패해도 계속)
         if (hasAudio && storageBucket) {
             try {
-                const storagePath = `reports/${reportedUid}/${Date.now()}.webm`;
+                const ext = audioMime.includes('mp4') ? 'mp4' : 'webm';
+                const storagePath = `reports/${reportedUid}/${Date.now()}.${ext}`;
                 const file = storageBucket.file(storagePath);
-                await file.save(audioBuffer, { metadata: { contentType: 'audio/webm' } });
+                await file.save(audioBuffer, { metadata: { contentType: audioMime } });
                 const [signedUrl] = await file.getSignedUrl({
                     action: 'read',
                     expires: Date.now() + 7 * 24 * 60 * 60 * 1000
@@ -697,7 +720,7 @@ app.post('/reportUser', (req, res) => {
             try {
                 const prompt = '이 음성 채팅 대화에 심한 욕설, 성희롱, 혐오 발언이 포함되어 있는지 판별하세요. JSON으로만 응답: {"isToxic": true/false, "reason": "간단한 이유"}';
                 const geminiRes = await fetch(
-                    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+                    `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
                     {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -705,7 +728,7 @@ app.post('/reportUser', (req, res) => {
                             contents: [{
                                 parts: [
                                     { text: prompt },
-                                    { inline_data: { mime_type: 'audio/webm', data: audioBuffer.toString('base64') } }
+                                    { inline_data: { mime_type: audioMime, data: audioBuffer.toString('base64') } }
                                 ]
                             }]
                         })
@@ -736,20 +759,20 @@ app.post('/reportUser', (req, res) => {
                 resolved: false
             });
 
-            // 4. 유해성 감지 시 제재 (경고 → 24시간 정지 → 영구 정지)
-            if (aiResult && aiResult.isToxic) {
+            // 4. 서로 다른 사람이 신고한 횟수 기준으로 자동 제재 (경고 → 24시간 정지 → 영구 정지)
+            // AI 유해성 판정과 무관하게 진행 — 애매한 판정이라도 여러 명이 신고하면 우선 제재하고,
+            // 억울한 경우는 이의신청 들어오면 관리자가 검토해서 해제하는 방식(이의신청 전용 안전장치)
+            if (distinctReporterCount !== null) {
                 const userRef = db.ref('users/' + reportedUid);
-                const snap = await userRef.once('value');
-                const userData = snap.val() || {};
-                const reportCount = (userData.reportCount || 0) + 1;
                 const now = Date.now();
+                const escalationReason = reason || (aiResult ? aiResult.reason : null) || '반복 신고 누적';
 
-                if (reportCount === 1) {
-                    await userRef.update({ reportCount, warnedAt: now, lastReportReason: aiResult.reason });
-                } else if (reportCount === 2) {
-                    await userRef.update({ reportCount, suspendedUntil: now + 86400000, suspendReason: aiResult.reason, lastReportReason: aiResult.reason });
-                } else {
-                    await userRef.update({ reportCount, banned: true, bannedAt: now, banReason: aiResult.reason });
+                if (distinctReporterCount === 1) {
+                    await userRef.update({ reportCount: distinctReporterCount, warnedAt: now, lastReportReason: escalationReason });
+                } else if (distinctReporterCount === 2) {
+                    await userRef.update({ reportCount: distinctReporterCount, suspendedUntil: now + 86400000, suspendReason: escalationReason, lastReportReason: escalationReason });
+                } else if (distinctReporterCount >= 3) {
+                    await userRef.update({ reportCount: distinctReporterCount, banned: true, bannedAt: now, banReason: escalationReason });
                 }
             }
 
