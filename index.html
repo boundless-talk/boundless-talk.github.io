@@ -7667,6 +7667,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (splashVideo) {
             const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
             splashVideo.src = isCute ? 'splash-cute.mp4' : 'splash-dark.mp4';
+            // autoplay 속성만 믿지 않고 명시적으로 play()도 호출 — 일부 브라우저(저전력 모드,
+            // 특정 인앱 브라우저 등)는 속성만으로는 자동재생이 안 되고 JS로 직접 play()를
+            // 호출해야만 되는 경우가 있음. 그래도 막히면 "Start listening" 버튼으로 진행 가능
+            const tryPlaySplash = () => splashVideo.play().catch(() => {});
+            tryPlaySplash();
+            splashVideo.addEventListener('loadedmetadata', tryPlaySplash, { once: true });
         }
     })();
 
