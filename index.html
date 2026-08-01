@@ -2073,6 +2073,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <audio id="bgm-audio" src="pretty.mp3" loop preload="none"></audio>
     <button id="bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="display:none;">♫</button>
 
+    <!-- 대화방에 있는 동안 계속 재생되는 무음 오디오 — 배경음악(bgm-audio)은 상대가 들어오면 꺼지지만,
+         이건 방에서 나갈 때까지 계속 재생시켜서 iOS Safari가 "오디오 재생 중"인 탭으로 인식하게 함.
+         다른 앱으로 전환해도 탭이 곧바로 정지되지 않고, 마이크가 계속 붙어있을 확률이 올라감(100% 보장은 아님) -->
+    <audio id="keepalive-audio" src="data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==" loop preload="auto" style="display:none;"></audio>
+
     <div id="intro-screen" style="display:none;">
         <!-- 로고+워드마크+태그라인+버튼을 브랜드 프로모 영상(splash.mp4)으로 교체 — 영상이 끝나면 자동으로 2번 화면(로그인)으로 전환됨.
              기존 요소(app-logo-dark/cute, intro-wordmark, intro-desc, intro-pulse)는 지우지 않고 주석으로 보존 -->
@@ -2315,7 +2320,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div class="disco-head" style="margin-bottom:4px;">
                     <h2 class="disco-title" id="scheduled-title">Scheduled</h2>
                 </div>
-                <p class="mycircles-subtext" id="scheduled-subtext">예약하신 분들께 밤 10시에 알림을 보내드려요.</p>
+                <p class="mycircles-subtext" id="scheduled-subtext">예약하신 분들께 저녁 9시에 알림을 보내드려요.</p>
                 <div class="disco-grid" id="scheduled-grid"></div>
                 <div class="disco-empty" id="scheduled-empty" style="display:none;"></div>
             </div>
@@ -2411,10 +2416,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
         </div>
 
-        <!-- 10시 전에 Scheduled 탭에 들어왔을 때 한 번 보여주는 안내 모달 -->
+        <!-- 9시 전에 Scheduled 탭에 들어왔을 때 한 번 보여주는 안내 모달 -->
         <div class="modal-overlay" id="scheduled-preopen-modal" onclick="if(event.target===this) this.classList.remove('active')">
             <div class="modal-content" style="max-width:320px;">
-                <h3 id="scheduled-preopen-title" style="font-size:12.5px; line-height:1.8; margin-bottom:20px; word-break:keep-all;">10시, 완벽한 대화가 시작됩니다.<br>지금 당신만의 테이블을 직접 만들어보세요.</h3>
+                <h3 id="scheduled-preopen-title" style="font-size:12.5px; line-height:1.8; margin-bottom:20px; word-break:keep-all;">9시, 완벽한 대화가 시작됩니다.<br>지금 당신만의 테이블을 직접 만들어보세요.</h3>
                 <button onclick="document.getElementById('scheduled-preopen-modal').classList.remove('active'); openScheduleCreateModal();" id="scheduled-preopen-btn" style="width:100%; padding:13px; background:var(--accent-color); color:#041025; font-weight:700; font-size:14px; border:none; border-radius:12px; cursor:pointer;">내 테이블 만들기</button>
             </div>
         </div>
@@ -3429,7 +3434,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         });
     }
 
-    // ── 10시 전 Discover 빈 화면: 실시간 카운트다운 ──
+    // ── 9시 전 Discover 빈 화면: 실시간 카운트다운 ──
     let discoCountdownInterval = null;
     function stopDiscoCountdown() {
         if (discoCountdownInterval) { clearInterval(discoCountdownInterval); discoCountdownInterval = null; }
@@ -3437,9 +3442,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     function msUntilTonightOpen() {
         const now = Date.now();
         const kst = new Date(now + 9 * 60 * 60 * 1000);
-        // "+9h 시프트된 시계"의 UTC 필드로 오늘 KST 22:00을 만든 뒤, 다시 실제 UTC epoch로 되돌림
-        const kst2200Epoch = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate(), 22, 0, 0) - 9 * 60 * 60 * 1000;
-        return Math.max(0, kst2200Epoch - now);
+        // "+9h 시프트된 시계"의 UTC 필드로 오늘 KST 21:00을 만든 뒤, 다시 실제 UTC epoch로 되돌림
+        const kst2100Epoch = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate(), 21, 0, 0) - 9 * 60 * 60 * 1000;
+        return Math.max(0, kst2100Epoch - now);
     }
     function formatCountdown(ms) {
         const totalSec = Math.floor(ms / 1000);
@@ -3558,11 +3563,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         discoCreateStyle = discoCreateStyle === 'casual' ? 'polite' : 'casual';
         setDiscoCreateStyleUI(discoCreateStyle);
     }
-    // 운영시간: 밤 10시(22:00) ~ 자정(24:00) KST
+    // 운영시간: 저녁 9시(21:00) ~ 자정(24:00) KST
     function isWithinOperatingHours() {
         const now = new Date();
         const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours();
-        return kstHour >= 22;
+        return kstHour >= 21;
     }
 
     function openDiscoCreateModal() {
@@ -3580,7 +3585,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         document.getElementById('disco-create-modal').classList.remove('active');
     }
 
-    // ── Scheduled 탭: 여러 명이 같은 방에 좌석을 예약해두는 밤 10시 대화방 ──
+    // ── Scheduled 탭: 여러 명이 같은 방에 좌석을 예약해두는 저녁 9시 대화방 ──
     let scheduledRoomsCache = [];
     let scheduleCreateSelectedCat = 'general';
     let scheduleCreateStyle = 'casual'; // 'casual' | 'polite' — 예약할 때 정하는 방 전체의 말투
@@ -3652,7 +3657,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         fetchScheduledRooms();
         maybeShowScheduledPreOpenModal();
     }
-    // 10시 전(문 열리기 전)에 로그인한 상태로 Scheduled 탭에 들어오면, 세션당 한 번만
+    // 9시 전(문 열리기 전)에 로그인한 상태로 Scheduled 탭에 들어오면, 세션당 한 번만
     // "지금 바로 예약해보세요" 안내 모달을 띄움
     let _scheduledPreOpenModalShown = false;
     function maybeShowScheduledPreOpenModal() {
@@ -3662,7 +3667,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         _scheduledPreOpenModalShown = true;
         const isKo = currentLang === 'ko';
         document.getElementById('scheduled-preopen-title').innerHTML = isKo
-            ? '10시, 완벽한 대화가 시작됩니다.<br>지금 당신만의 테이블을 직접 만들어보세요.'
+            ? '9시, 완벽한 대화가 시작됩니다.<br>지금 당신만의 테이블을 직접 만들어보세요.'
             : 'At 10, the perfect conversation begins.<br>Create your own table, right now.';
         document.getElementById('scheduled-preopen-btn').textContent = isKo ? '내 테이블 만들기' : 'Create my table';
         document.getElementById('scheduled-preopen-modal').classList.add('active');
@@ -3739,14 +3744,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         openLabel.className = 'disco-schedule-open-label';
         openLabel.textContent = isOpen
             ? (currentLang === 'ko' ? '지금 입장 가능' : 'Open now')
-            : (currentLang === 'ko' ? '밤 10시 오픈' : 'Opens 10:00 PM');
+            : (currentLang === 'ko' ? '저녁 9시 오픈' : 'Opens 9:00 PM');
         bottom.appendChild(openLabel);
         card.appendChild(bottom);
 
         const btn = document.createElement('button');
         btn.type = 'button';
         if (isOpen) {
-            // 10시가 지나면 예약(자리 맡기)은 의미가 없으므로, 카드를 눌러 바로 그 대화방으로 입장하게 함
+            // 9시가 지나면 예약(자리 맡기)은 의미가 없으므로, 카드를 눌러 바로 그 대화방으로 입장하게 함
             btn.className = 'disco-seat-btn';
             btn.textContent = currentLang === 'ko' ? '입장하기' : 'Join now';
             btn.onclick = () => enterScheduledRoom(room);
@@ -3792,14 +3797,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             tip._anchor = null;
         }
     });
-    // 10시가 지난 예약방은 더 이상 좌석을 예약하는 게 아니라, 그 주제로 바로 실제 대화방에 들어감
+    // 9시가 지난 예약방은 더 이상 좌석을 예약하는 게 아니라, 그 주제로 바로 실제 대화방에 들어감
     // (알림을 못 받았거나 놓친 사람도 Scheduled 탭에서 같은 방식으로 합류할 수 있도록)
     function enterScheduledRoom(room) {
         if (!auth.currentUser) { promptGuestLogin(); return; }
         autoJoinFromPush(room.title, room.style, room.pingpong ? '1' : '0');
     }
     // 인스타그램 등 인앱 브라우저는 Notification API 자체를 지원 안 하는 경우가 많아서,
-    // 알림 등록이 안 돼도 예약 자체는 되게 하고 fcmToken만 없이 보냄 (10시 알림만 못 받음)
+    // 알림 등록이 안 돼도 예약 자체는 되게 하고 fcmToken만 없이 보냄 (9시 알림만 못 받음)
     // reason을 같이 반환해서, 알림 권한을 거부한 경우엔 "브라우저가 지원 안 함"이 아니라
     // "설정에서 알림을 허용해달라"는 실제로 도움이 되는 안내를 보여줄 수 있게 함
     async function tryGetFcmToken() {
@@ -3843,11 +3848,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 } else if (!data.success) {
                     throw new Error(data.error || 'unknown');
                 } else if (token) {
-                    showBadgeToast(isKo ? '✅ 자리를 예약했어요! 밤 10시에 알려드릴게요.' : '✅ Seat reserved! We\'ll notify you at 10 PM.');
+                    showBadgeToast(isKo ? '✅ 자리를 예약했어요! 저녁 9시에 알려드릴게요.' : '✅ Seat reserved! We\'ll notify you at 9 PM.');
                 } else if (reason === 'denied') {
-                    showBadgeToast(isKo ? '10시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 10.<br><br>Keep notifications on so you don\'t miss it.');
+                    showBadgeToast(isKo ? '9시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 9.<br><br>Keep notifications on so you don\'t miss it.');
                 } else {
-                    showBadgeToast(isKo ? '10시의 완벽한 자리, 놓치지 않도록.<br><br>공유버튼 누르고 홈화면추가를 터치해보세요.' : 'Your perfect seat at 10 — don\'t miss it.<br><br>Tap Share, then Add to Home Screen.');
+                    showBadgeToast(isKo ? '9시의 완벽한 자리, 놓치지 않도록.<br><br>공유버튼 누르고 홈화면추가를 터치해보세요.' : 'Your perfect seat at 9 — don\'t miss it.<br><br>Tap Share, then Add to Home Screen.');
                 }
             }
         } catch (e) {
@@ -3906,10 +3911,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             if (!data.success) throw new Error(data.error || 'unknown');
             closeScheduleCreateModal();
             showBadgeToast(token
-                ? (isKo ? '✅ 예약 완료! 밤 10시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 10 PM.')
+                ? (isKo ? '✅ 예약 완료! 저녁 9시에 알려드릴게요.' : '✅ Reserved! We\'ll notify you at 9 PM.')
                 : reason === 'denied'
-                    ? (isKo ? '10시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 10.<br><br>Keep notifications on so you don\'t miss it.')
-                    : (isKo ? '10시의 완벽한 자리, 놓치지 않도록.<br><br>공유버튼 누르고 홈화면추가를 터치해보세요.' : 'Your perfect seat at 10 — don\'t miss it.<br><br>Tap Share, then Add to Home Screen.'));
+                    ? (isKo ? '9시의 완벽한 자리.<br><br>놓치지 않게 알림을 켜두세요.' : 'Your perfect seat at 9.<br><br>Keep notifications on so you don\'t miss it.')
+                    : (isKo ? '9시의 완벽한 자리, 놓치지 않도록.<br><br>공유버튼 누르고 홈화면추가를 터치해보세요.' : 'Your perfect seat at 9 — don\'t miss it.<br><br>Tap Share, then Add to Home Screen.'));
             switchDiscoTab('scheduled');
         } catch (e) {
             console.warn('submitScheduledRoomCreate failed:', e.message);
@@ -3969,7 +3974,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('disco-create-mode-label', '모드', 'Mode');
         setText('disco-pp-row-label', '핑퐁 모드 (순서대로 1분 30초씩 발언)', 'Ping Pong mode (take 90s turns speaking in order)');
         setText('disco-create-submit-btn', '방 만들고 시작하기', 'Create and start');
-        setText('scheduled-subtext', '예약하신 분들께 밤 10시에 알림을 보내드려요.', 'We\'ll notify everyone who reserves a seat at 10 PM.');
+        setText('scheduled-subtext', '예약하신 분들께 저녁 9시에 알림을 보내드려요.', 'We\'ll notify everyone who reserves a seat at 9 PM.');
         setText('schedule-create-title', '🌙 테이블 예약하기', '🌙 Schedule a table');
         setText('schedule-create-topic-label', '주제', 'Topic');
         setPh('schedule-create-topic-input', '예: 오늘 하루 고생한 나에게 한마디...', 'e.g. A word for myself after a long day...');
@@ -4000,7 +4005,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     document.getElementById('lang-toggle-btn').addEventListener('click', () => {
         setTimeout(updateDiscoLangTexts, 0);
     });
-    // 앱을 밤 10시 경계 넘어 계속 켜두고 있어도 "방 만들기"/"예약하기" 버튼 라벨이 스스로 갱신되도록
+    // 앱을 저녁 9시 경계 넘어 계속 켜두고 있어도 "방 만들기"/"예약하기" 버튼 라벨이 스스로 갱신되도록
     setInterval(updateDiscoCtaLabel, 60000);
     // ── My Circles 탭 (구독 현황 카드는 그대로 재사용) ──
     async function loadMyCirclesSubStatus() {
@@ -4586,7 +4591,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 document.getElementById("auth-section").style.display = "none";
                 if (logoutBtn) logoutBtn.style.display = "inline-block";
                 if (talkControls) talkControls.style.display = "block";
-                // 밤 10시 전에는 Discover 대신 Scheduled 탭을 기본으로 보여줌 (한 번만 적용 — 이후엔 수동 전환 가능)
+                // 저녁 9시 전에는 Discover 대신 Scheduled 탭을 기본으로 보여줌 (한 번만 적용 — 이후엔 수동 전환 가능)
                 if (!_scheduledTabDefaultApplied && !isWithinOperatingHours()) {
                     _scheduledTabDefaultApplied = true;
                     switchDiscoTab('scheduled');
@@ -4690,7 +4695,7 @@ database.ref('activeTopics').on('value', (snap) => {
     });
     discoRooms = discoRoomsBuilt;
     renderDiscoGrid();
-    // Scheduled 탭 카드는 10시 이후 이 실시간 데이터로 진짜 참여 인원을 보여주므로 같이 갱신
+    // Scheduled 탭 카드는 9시 이후 이 실시간 데이터로 진짜 참여 인원을 보여주므로 같이 갱신
     renderScheduledGrid();
 
     const bar = document.getElementById('live-topics-bar');
@@ -4922,8 +4927,9 @@ window.closeTopicInfoModal = closeTopicInfoModal;
         });
     }
 
-    // 세션 유지 설정
-    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch((error) => {
+    // 로그인 유지 설정 — SESSION은 탭을 닫으면 로그인이 풀려서 매번 다시 로그인해야 했음.
+    // LOCAL로 바꿔서 브라우저에 로그인 상태가 남아있는 한(직접 로그아웃하기 전까지) 자동으로 로그인되게 함
+    auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch((error) => {
         console.error("Persistence configuration error:", error);
     });
 
@@ -6386,6 +6392,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         updateRoomParticipants();
         document.getElementById('room-screen').classList.add('active');
         document.body.classList.add('room-open');
+        startKeepAliveAudio();
         // guest/배터리/설정을 방 화면 상단 바 안으로 옮겨서, 방 내용(주제 등)과 함께
         // 한 덩어리로 스크롤되도록 함 (고정 위치로 두면 스크롤 시 내용이 그 밑으로 겹쳐 보임)
         const langContainerRoomEl = document.getElementById('lang-container');
@@ -6400,6 +6407,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     async function hideRoomScreen() {
         document.getElementById('room-screen').classList.remove('active');
         document.body.classList.remove('room-open');
+        stopKeepAliveAudio();
         // 방 상단 바에 옮겨뒀던 guest/배터리/설정을 원래 자리(body 최상단)로 복귀
         const langContainerBackEl = document.getElementById('lang-container');
         const langContainerAnchor = document.getElementById('lang-container-anchor');
@@ -7331,8 +7339,24 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             _micRecoveryInFlight = false;
         }
     }
+    // 대화방에 있는 동안 계속 재생되는 무음 오디오 — iOS Safari 등에서 다른 앱으로 전환해도
+    // 탭이 "오디오 재생 중"으로 인식돼 곧바로 정지되지 않게 하려는 목적. 100% 보장되진 않지만
+    // 현재 웹 기술로 시도해볼 수 있는 가장 확실한 방법
+    function startKeepAliveAudio() {
+        const audio = document.getElementById('keepalive-audio');
+        if (!audio) return;
+        audio.play().catch(() => {});
+    }
+    function stopKeepAliveAudio() {
+        const audio = document.getElementById('keepalive-audio');
+        if (!audio) return;
+        audio.pause();
+    }
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') ensureMicAlive();
+        if (document.visibilityState === 'visible') {
+            ensureMicAlive();
+            if (isJoined) startKeepAliveAudio();
+        }
     });
     window.addEventListener('focus', ensureMicAlive);
 

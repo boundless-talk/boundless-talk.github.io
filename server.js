@@ -35,7 +35,7 @@ if (!admin.apps.length && process.env.FIREBASE_SERVICE_ACCOUNT) {
     }
 }
 
-// 매일 밤 10시(22:00 KST)에 그날 예약된 대화방들의 좌석 예약자 전원에게 알림 발송
+// 매일 저녁 9시(21:00 KST)에 그날 예약된 대화방들의 좌석 예약자 전원에게 알림 발송
 // — 자리가 다 안 찼어도 예약한 사람들에게는 그대로 알림이 감. 1분마다 확인, 하루 한 번만 실행
 let _lastScheduledNotifyDate = null;
 setInterval(async () => {
@@ -45,7 +45,7 @@ setInterval(async () => {
         const kstHour = kst.getUTCHours();
         const kstMinute = kst.getUTCMinutes();
         const todayKey = kst.toISOString().slice(0, 10);
-        if (kstHour !== 22 || kstMinute > 1) return;
+        if (kstHour !== 21 || kstMinute > 1) return;
         if (_lastScheduledNotifyDate === todayKey) return;
         _lastScheduledNotifyDate = todayKey;
 
@@ -238,7 +238,7 @@ app.post('/claim-early-access', async (req, res) => {
     }
 });
 
-// 운영시간 외 "밤 10시 대화방 예약(Scheduled)" — Admin SDK로 대신 써서 클라이언트 DB 규칙에 안 걸리게 함
+// 운영시간 외 "저녁 9시 대화방 예약(Scheduled)" — Admin SDK로 대신 써서 클라이언트 DB 규칙에 안 걸리게 함
 app.post('/create-scheduled-room', async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
     const { idToken, title, category, style, pingpong, fcmToken } = req.body;
