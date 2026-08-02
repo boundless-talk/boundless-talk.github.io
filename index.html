@@ -1367,6 +1367,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             font-size: 20px; color: rgba(255,255,255,0.25);
         }
         .room-seat-open .room-seat-name { color: rgba(255,255,255,0.32); font-weight: 500; }
+        .room-seat-closed .room-seat-avatar-empty { border-style: solid; border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.15); }
+        .room-seat-closed .room-seat-name { color: rgba(255,255,255,0.2); font-weight: 500; }
+        .room-seat-host-toggle { cursor: pointer; transition: opacity 0.15s; }
+        .room-seat-host-toggle:hover { opacity: 0.7; }
+        html[data-cute-mode="cute"] .room-seat-closed .room-seat-avatar-empty { border-color: rgba(36,31,26,0.15); color: rgba(36,31,26,0.25); }
+        html[data-cute-mode="cute"] .room-seat-closed .room-seat-name { color: rgba(36,31,26,0.25); }
 
         /* ── 하단 컨트롤 (마이크 / 나가기 / 신고 / Talk Tips) ── */
         .room-bottom-controls {
@@ -3240,6 +3246,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     // 다중 참여자 목록 추적 (본인 제외)
     let roomParticipants = []; // 현재 방에 있는 참여자 (나간 사람은 제거됨)
     let sessionParticipants = []; // 세션 중 한번이라도 참여한 모든 사람 (평가용, 먼저 나간 사람 포함)
+    // 좌석 열고 닫기 — 방을 처음 연 사람(=activeTopics에 가장 먼저 들어온 사람)이 호스트가 되고,
+    // 호스트가 나가면 자동으로 다음으로 먼저 들어온 사람이 호스트가 됨(별도 인계 절차 없이,
+    // "지금 남아있는 사람 중 가장 먼저 들어온 사람" 규칙으로 매번 다시 계산하기 때문)
+    let currentMaxPeople = 4;   // 지금 이 방의 좌석 총 개수(호스트가 2~4 사이로 조절 가능)
+    let isRoomHost = false;     // 내가 지금 이 방의 호스트인지
+    let _maxPeopleRef = null;   // channels/{channel}/maxPeople 라이브 리스너 ref (방 나갈 때 해제용)
     let agoraToFirebaseUid = {}; // Agora UID → Firebase UID 매핑 테이블
     let uidToBatteryEmoji = {}; // Firebase UID → battery emoji
     let myBatteryEmoji = '🔋';
@@ -5995,7 +6007,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP, category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople });
+    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP, joinedAt: firebase.database.ServerValue.TIMESTAMP, category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople });
     pendingRoomCategory = null;
     myTopicRef.onDisconnect().remove();
     window._myTopicRef = myTopicRef;
@@ -6034,9 +6046,34 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             ppTurnRef.update(update);
         }
     });
+    // 호스트 = 지금 이 방(activeTopics)에 남아있는 사람 중 가장 먼저 들어온(joinedAt이 가장 이른) 사람.
+    // 별도 인계 절차 없이 매번 다시 계산하므로, 호스트가 나가서 activeTopics에서 빠지면
+    // 자동으로 다음 사람이 호스트가 됨
+    {
+        let earliestUid = null, earliestTs = Infinity;
+        Object.entries(data).forEach(([uid, val]) => {
+            const jt = (val && val.joinedAt) || Infinity;
+            if (jt < earliestTs) { earliestTs = jt; earliestUid = uid; }
+        });
+        isRoomHost = !!(myFbUid && earliestUid === myFbUid);
+    }
     updateRoomParticipants();
 });
                 } catch(e) { console.warn('activeTopics listen failed:', e.message); }
+            }
+            // 이 방의 좌석 총 개수(maxPeople)를 실시간으로 반영 — 호스트가 좌석을 열고 닫으면
+            // 여기로 즉시 바뀌어서 방에 있는 모든 사람의 화면이 같이 갱신됨
+            if (!finalTopic.startsWith('🔒_')) {
+                if (_maxPeopleRef) _maxPeopleRef.off();
+                _maxPeopleRef = database.ref(`channels/${safeAgoraChannelId}/maxPeople`);
+                _maxPeopleRef.on('value', snap => {
+                    currentMaxPeople = snap.val() || 4;
+                    // Discover 카드에 뜨는 정원 표시도 같이 맞춰줌(activeTopics 쪽 값을 내 항목에서 갱신)
+                    if (firebaseUser) {
+                        database.ref(`activeTopics/${safeAgoraChannelId}/${firebaseUser.uid}/maxPeople`).set(currentMaxPeople).catch(() => {});
+                    }
+                    updateRoomParticipants();
+                });
             }
 
             // 아고라 채널 퍼블리시
@@ -7159,15 +7196,45 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             list.appendChild(el);
         });
 
-        // 빈 자리 (원 슬롯 채우기)
+        // 빈 자리 / 닫힌 자리 (원 슬롯 채우기) — 열린 자리는 currentMaxPeople까지, 그 위로
+        // ROOM_RING_CAPACITY(4)까지는 "닫힘"으로 표시. 호스트는 둘 다 눌러서 열고 닫을 수 있음
         const occupied = roomParticipants.length + 1;
-        const openSeats = Math.max(0, ROOM_RING_CAPACITY - occupied);
+        const seatTotal = Math.max(occupied, Math.min(ROOM_RING_CAPACITY, currentMaxPeople));
+        const openSeats = Math.max(0, seatTotal - occupied);
+        const closedSeats = Math.max(0, ROOM_RING_CAPACITY - seatTotal);
         for (let i = 0; i < openSeats; i++) {
             const openEl = document.createElement('div');
-            openEl.className = 'room-seat room-seat-open';
+            openEl.className = 'room-seat room-seat-open' + (isRoomHost ? ' room-seat-host-toggle' : '');
             openEl.innerHTML = `<div class="room-seat-avatar room-seat-avatar-empty">+</div><div class="room-seat-name">${currentLang === 'ko' ? '빈 자리' : 'Open seat'}</div>`;
+            if (isRoomHost) {
+                openEl.title = currentLang === 'ko' ? '눌러서 이 자리 닫기' : 'Tap to close this seat';
+                openEl.onclick = () => adjustRoomCapacity(-1);
+            }
             list.appendChild(openEl);
         }
+        for (let i = 0; i < closedSeats; i++) {
+            const closedEl = document.createElement('div');
+            closedEl.className = 'room-seat room-seat-closed' + (isRoomHost ? ' room-seat-host-toggle' : '');
+            closedEl.innerHTML = `<div class="room-seat-avatar room-seat-avatar-empty">🔒</div><div class="room-seat-name">${currentLang === 'ko' ? '닫힘' : 'Closed'}</div>`;
+            if (isRoomHost) {
+                closedEl.title = currentLang === 'ko' ? '눌러서 이 자리 열기' : 'Tap to open this seat';
+                closedEl.onclick = () => adjustRoomCapacity(1);
+            }
+            list.appendChild(closedEl);
+        }
+    }
+
+    // 호스트가 빈 자리/닫힌 자리를 눌렀을 때 정원을 1씩 조절 — 이미 들어와 있는 사람 수보다
+    // 작게는 못 줄이고, 항상 최소 1자리는 열려있어야 하며, 4명을 넘길 수도 없음
+    async function adjustRoomCapacity(delta) {
+        if (!isRoomHost || !safeAgoraChannelId) return;
+        const occupied = roomParticipants.length + 1;
+        const minCap = occupied + 1; // 지금 인원 + 최소 1개는 열린 자리로 남겨둠
+        const target = Math.min(ROOM_RING_CAPACITY, Math.max(minCap, currentMaxPeople + delta));
+        if (target === currentMaxPeople) return;
+        try {
+            await database.ref(`channels/${safeAgoraChannelId}/maxPeople`).set(target);
+        } catch (e) { console.warn('좌석 조절 실패:', e.message); }
     }
 
     const roomLeaveBtnCircle = document.getElementById('room-leave-btn-circle');
@@ -8098,6 +8165,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             stopRollingAudioRecorder();
             if (window._heartbeatInterval) { clearInterval(window._heartbeatInterval); window._heartbeatInterval = null; }
             window._myTopicRef = null;
+            // 좌석 열고 닫기 관련 상태도 방을 나갈 때 초기화 — 안 그러면 다음에 새 방에 들어갔을 때
+            // 이전 방의 maxPeople 리스너가 계속 남아서 새 방 상태를 잘못 덮어쓸 수 있음
+            if (_maxPeopleRef) { _maxPeopleRef.off(); _maxPeopleRef = null; }
+            isRoomHost = false;
+            currentMaxPeople = 4;
             if (signalTimer) { clearInterval(signalTimer); signalTimer = null; }
             // 배지 신호 리스너는 여기서 끄지 않음 — 나간 뒤 Conversation Report 화면에서
             // 상대방이 보내는 배지를 계속 수신해야 하므로 다음 입장 시(startSignalPolling)에 정리됨
