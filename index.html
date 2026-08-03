@@ -1574,7 +1574,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── Discover 화면 (시안 1a 충실 재현: 레드 액센트 + 다크 카드) ── */
         #discover-screen {
             --dr: var(--accent-color); --dr-glow: rgba(var(--accent-rgb),.35); --dsurf: #141416; --dbord: rgba(255,255,255,.08);
-            width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; padding-bottom: 110px;
+            width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; padding: 12px 0 110px;
         }
         #discover-tab-discover, #discover-tab-trending, #discover-tab-scheduled, #discover-tab-mycircles {
             display: flex; flex-direction: column; gap: 16px;
@@ -4806,8 +4806,11 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                 }
                 // 마지막 로그인 시각 기록 — 게스트 포함 모든 유저, 접속할 때마다 갱신
                 database.ref('users/' + user.uid + '/lastLoginAt').set(Date.now());
-                // 오늘 다녀간 순 방문자 수 집계 — 게스트 포함, uid 키라 같은 사람 중복 카운트 안 됨
-                database.ref('dailyVisitors/' + getKstDateKey() + '/' + user.uid).set(true);
+                // 오늘 다녀간 순 방문자 수 집계 — 게스트 포함, uid 키라 같은 사람 중복 카운트 안 됨.
+                // stats/ 하위에 두는 이유: 이미 쓰기 권한이 확인된 stats/hourlyJoins와 같은 네임스페이스를
+                // 재사용해서, 새 경로에 대한 Firebase 보안 규칙 추가 없이도 바로 동작하게 하기 위함
+                database.ref('stats/dailyVisitors/' + getKstDateKey() + '/' + user.uid).set(true)
+                    .catch(e => console.warn('dailyVisitors write failed:', e.message));
 
             // [보안 핵심] 로그인 즉시 Realtime DB에서 제재 상태 실시간 리스닝
             database.ref('users/' + user.uid).on('value', (snapshot) => {
@@ -4889,10 +4892,10 @@ window.closeTopicInfoModal = closeTopicInfoModal;
 
             // 오늘 다녀간 순 방문자 수 실시간 리스닝 — 방이 하나도 없어 보일 때도
             // "그래도 사람들이 다녀갔다"는 걸 보여줘서 방을 만들지 망설이지 않게 함
-            database.ref('dailyVisitors/' + getKstDateKey()).on('value', (snap) => {
+            database.ref('stats/dailyVisitors/' + getKstDateKey()).on('value', (snap) => {
                 _dailyVisitorCount = snap.exists() ? Object.keys(snap.val()).length : 0;
                 updateDailyVisitorBadge();
-            });
+            }, (e) => console.warn('dailyVisitors read failed:', e.message));
 
             // 전체 대기자 수 실시간 리스닝
             database.ref('waiting').on('value', (snap) => {
