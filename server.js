@@ -179,6 +179,38 @@ app.use(express.json());
 // 클라이언트가 uid를 그냥 보내는 게 아니라 ID 토큰을 검증해서 본인 확인 후 서버가 직접 부여함
 const EARLY_ACCESS_LIMIT = 50;
 
+// 오늘 다녀간 순 방문자 수 — 클라이언트 쪽 DB 보안 규칙에 막힐 수 있어 Admin SDK로 읽고/씀
+function todayKstDateKey() {
+    const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}-${String(kst.getUTCDate()).padStart(2, '0')}`;
+}
+app.get('/dailyVisitors', async (req, res) => {
+    if (!admin.apps.length) return res.json({ count: 0 });
+    try {
+        const snap = await admin.database().ref('stats/dailyVisitors/' + todayKstDateKey()).once('value');
+        const val = snap.val();
+        res.json({ count: val ? Object.keys(val).length : 0 });
+    } catch (e) {
+        console.error('[dailyVisitors] error:', e.message);
+        res.status(500).json({ count: 0 });
+    }
+});
+app.post('/dailyVisitors/record', async (req, res) => {
+    if (!admin.apps.length) return res.json({ count: 0 });
+    const { uid } = req.body;
+    if (!uid) return res.status(400).json({ error: 'uid required' });
+    try {
+        const dateRef = admin.database().ref('stats/dailyVisitors/' + todayKstDateKey());
+        await dateRef.child(uid).set(true);
+        const snap = await dateRef.once('value');
+        const val = snap.val();
+        res.json({ count: val ? Object.keys(val).length : 0 });
+    } catch (e) {
+        console.error('[dailyVisitors/record] error:', e.message);
+        res.status(500).json({ count: 0 });
+    }
+});
+
 // 로그인 전 화면에서 "선착순 N명 남음" 안내에 쓰는 잔여 수량 조회 (인증 불필요, 숫자만 공개)
 app.get('/early50-remaining', async (req, res) => {
     if (!admin.apps.length) return res.json({ remaining: 0 });

@@ -3579,12 +3579,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         return kstHour >= 21;
     }
 
-    // "오늘"을 KST 자정 기준으로 나누기 위한 날짜 키 (예: 2026-08-03)
-    function getKstDateKey() {
-        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
-        return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}-${String(kst.getUTCDate()).padStart(2, '0')}`;
-    }
-
     function updateDailyVisitorBadge() {
         const el = document.getElementById('daily-visitors-text');
         if (el) el.textContent = textData[currentLang].dailyVisitorsText(_dailyVisitorCount);
@@ -4803,11 +4797,16 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                 }
                 // 마지막 로그인 시각 기록 — 게스트 포함 모든 유저, 접속할 때마다 갱신
                 database.ref('users/' + user.uid + '/lastLoginAt').set(Date.now());
-                // 오늘 다녀간 순 방문자 수 집계 — 게스트 포함, uid 키라 같은 사람 중복 카운트 안 됨.
-                // stats/ 하위에 두는 이유: 이미 쓰기 권한이 확인된 stats/hourlyJoins와 같은 네임스페이스를
-                // 재사용해서, 새 경로에 대한 Firebase 보안 규칙 추가 없이도 바로 동작하게 하기 위함
-                database.ref('stats/dailyVisitors/' + getKstDateKey() + '/' + user.uid).set(true)
-                    .catch(e => console.warn('dailyVisitors write failed:', e.message));
+                // 오늘 다녀간 순 방문자 수 집계 — 클라이언트에서 직접 쓰면 Firebase 보안 규칙에
+                // 막힐 수 있어(실제로 PERMISSION_DENIED 확인됨), 서버(Admin SDK)를 거쳐 기록함
+                fetch(TOKEN_SERVER_URL + '/dailyVisitors/record', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: user.uid })
+                }).then(r => r.json()).then(data => {
+                    _dailyVisitorCount = data.count || 0;
+                    updateDailyVisitorBadge();
+                }).catch(e => console.warn('dailyVisitors record failed:', e.message));
 
             // [보안 핵심] 로그인 즉시 Realtime DB에서 제재 상태 실시간 리스닝
             database.ref('users/' + user.uid).on('value', (snapshot) => {
@@ -4887,17 +4886,17 @@ window.closeTopicInfoModal = closeTopicInfoModal;
             document.getElementById('waiting-count-bar').style.display = 'flex';
             document.getElementById('waiting-count-text').textContent = textData[currentLang].waitingNone;
 
-            // 오늘 다녀간 순 방문자 수 실시간 리스닝 — 방이 하나도 없어 보일 때도
-            // "그래도 사람들이 다녀갔다"는 걸 보여줘서 방을 만들지 망설이지 않게 함
-            database.ref('stats/dailyVisitors/' + getKstDateKey()).on('value', (snap) => {
-                _dailyVisitorCount = snap.exists() ? Object.keys(snap.val()).length : 0;
-                updateDailyVisitorBadge();
-            }, (e) => {
-                // 콘솔을 확인하기 어려운 환경(특히 모바일)에서도 원인을 바로 알 수 있도록 화면에 직접 표시
-                console.warn('dailyVisitors read failed:', e.message);
-                const el = document.getElementById('daily-visitors-text');
-                if (el) el.textContent = '(방문자 수 집계 오류: ' + e.code + ')';
-            });
+            // 오늘 다녀간 순 방문자 수 — 방이 하나도 없어 보일 때도 "그래도 사람들이
+            // 다녀갔다"는 걸 보여줘서 방을 만들지 망설이지 않게 함. 서버(Admin SDK)에서
+            // 읽어오므로 60초마다 다시 불러와 갱신함 (실시간 리스너 아님)
+            function refreshDailyVisitorCount() {
+                fetch(TOKEN_SERVER_URL + '/dailyVisitors').then(r => r.json()).then(data => {
+                    _dailyVisitorCount = data.count || 0;
+                    updateDailyVisitorBadge();
+                }).catch(e => console.warn('dailyVisitors fetch failed:', e.message));
+            }
+            refreshDailyVisitorCount();
+            setInterval(refreshDailyVisitorCount, 60000);
 
             // 전체 대기자 수 실시간 리스닝
             database.ref('waiting').on('value', (snap) => {
