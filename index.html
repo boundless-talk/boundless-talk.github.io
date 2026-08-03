@@ -477,7 +477,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         html[data-cute-mode="cute"] #auth-section input { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #241f1a; }
         html[data-cute-mode="cute"] #guest-login-btn { color: rgba(36,31,26,0.6) !important; border-color: rgba(138,47,42,0.4) !important; border-radius: 2px !important; }
-        html[data-cute-mode="cute"] #browse-preview-btn { color: rgba(36,31,26,0.4) !important; }
         html[data-cute-mode="cute"] .auth-form-inner { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
         html[data-cute-mode="cute"] .auth-form-inner .form-title { color: rgba(36,31,26,0.5); }
         html[data-cute-mode="cute"] .form-hint { color: rgba(36,31,26,0.4); }
@@ -2270,8 +2269,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <button id="guest-login-btn" style="background:transparent; border:1px dashed rgba(255,255,255,0.18); color:rgba(255,255,255,0.55); font-size:12.5px; padding:12px 14px; font-weight:500; border-radius:12px; margin:0;"><span id="guest-login-text">계정 없이 게스트로 계속하기</span></button>
 
                 <p class="auth-signup-prompt"><span id="signup-prompt-text">계정이 없으신가요?</span> <span id="email-signup-btn-main">이메일로 회원가입</span></p>
-
-                <button id="browse-preview-btn" onclick="browseWithoutLogin()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; text-decoration:underline; padding:6px; margin:0; cursor:pointer;">그냥 둘러보기</button>
 
             </div>
 
@@ -4895,7 +4892,12 @@ window.closeTopicInfoModal = closeTopicInfoModal;
             database.ref('stats/dailyVisitors/' + getKstDateKey()).on('value', (snap) => {
                 _dailyVisitorCount = snap.exists() ? Object.keys(snap.val()).length : 0;
                 updateDailyVisitorBadge();
-            }, (e) => console.warn('dailyVisitors read failed:', e.message));
+            }, (e) => {
+                // 콘솔을 확인하기 어려운 환경(특히 모바일)에서도 원인을 바로 알 수 있도록 화면에 직접 표시
+                console.warn('dailyVisitors read failed:', e.message);
+                const el = document.getElementById('daily-visitors-text');
+                if (el) el.textContent = '(방문자 수 집계 오류: ' + e.code + ')';
+            });
 
             // 전체 대기자 수 실시간 리스닝
             database.ref('waiting').on('value', (snap) => {
@@ -4980,8 +4982,6 @@ function updateUI() {
 
         const guestLoginText = document.getElementById('guest-login-text');
         if (guestLoginText) guestLoginText.innerHTML = lang.guestLoginBtn.replace('👀 ', '');
-        const browsePreviewBtn = document.getElementById('browse-preview-btn');
-        if (browsePreviewBtn) browsePreviewBtn.textContent = currentLang === 'ko' ? '그냥 둘러보기' : 'Just browse';
         updateDailyVisitorBadge();
         // 인트로 화면 다국어
         const introDescEl = document.getElementById('intro-desc');
@@ -5371,15 +5371,9 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         if (pendingDobCancelAction) { pendingDobCancelAction(); pendingDobCancelAction = null; }
     }
 
+    // 게스트 로그인도 "그냥 둘러보기"와 동일하게 동의/생년월일 확인을 대화방 입장 시점으로 미룸
     document.getElementById('guest-login-btn').addEventListener('click', () => {
-        requireConsent(() => {
-            requireDob(() => {
-                auth.signInAnonymously().catch((e) => {
-                    console.error(e);
-                    alert(currentLang === 'ko' ? '게스트 로그인에 실패했습니다.' : 'Guest login failed.');
-                });
-            });
-        });
+        browseWithoutLogin();
     });
 
     // 구글 로그인 버튼(로그인 화면 + 바텀시트 둘 다 여기서 호출)
