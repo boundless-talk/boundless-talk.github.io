@@ -477,6 +477,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         html[data-cute-mode="cute"] #auth-section input { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.1); color: #241f1a; }
         html[data-cute-mode="cute"] #guest-login-btn { color: rgba(36,31,26,0.6) !important; border-color: rgba(138,47,42,0.4) !important; border-radius: 2px !important; }
+        html[data-cute-mode="cute"] #browse-preview-btn { color: rgba(36,31,26,0.4) !important; }
         html[data-cute-mode="cute"] .auth-form-inner { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.08); }
         html[data-cute-mode="cute"] .auth-form-inner .form-title { color: rgba(36,31,26,0.5); }
         html[data-cute-mode="cute"] .form-hint { color: rgba(36,31,26,0.4); }
@@ -2270,6 +2271,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                 <p class="auth-signup-prompt"><span id="signup-prompt-text">계정이 없으신가요?</span> <span id="email-signup-btn-main">이메일로 회원가입</span></p>
 
+                <button id="browse-preview-btn" onclick="browseWithoutLogin()" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:12px; text-decoration:underline; padding:6px; margin:0; cursor:pointer;">그냥 둘러보기</button>
+
             </div>
 
         </div>
@@ -2288,6 +2291,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <a class="active" id="nav-tab-discover" onclick="switchDiscoTab('discover')">Discover</a><a id="nav-tab-trending" onclick="switchDiscoTab('trending')">Trending</a><a id="nav-tab-scheduled" onclick="switchDiscoTab('scheduled')">Scheduled</a><a id="nav-tab-mycircles" onclick="switchDiscoTab('mycircles')">My Tables</a>
                 </div>
                 <button class="disco-navbar-cta" id="disco-navbar-cta-btn" onclick="openDiscoCreateModal()">Start a table</button>
+            </div>
+
+            <!-- 방이 하나도 없어 보여도 "아무도 없나?" 하는 불안감을 줄여주는 오늘 방문자 수 배지 -->
+            <div style="text-align:center; margin:2px 0 10px;">
+                <span class="disco-live-count" id="daily-visitors-text">Today: 0 visitors</span>
             </div>
 
             <div id="discover-tab-discover">
@@ -2795,29 +2803,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <div class="modal-overlay" id="consent-modal">
         <div class="modal-content" style="max-width:360px;">
             <h3 id="consent-title" style="font-size:17px; margin-bottom:6px; letter-spacing:1px;">시작하기 전에</h3>
-            <p id="consent-subtitle" style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:20px;">모두 동의하셔야 이용할 수 있어요.</p>
-            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:22px;">
-                <label class="consent-item">
-                    <input type="checkbox" id="consent-age" onchange="updateConsentBtn()">
-                    <span id="consent-age-label">만 18세 이상입니다</span>
-                </label>
-                <label class="consent-item">
-                    <input type="checkbox" id="consent-terms" onchange="updateConsentBtn()">
-                    <span><span id="consent-terms-label">이용약관</span><span id="consent-terms-suffix">에 동의합니다</span> <button class="consent-view-btn" onclick="openAboutPage('terms')" id="consent-terms-view">보기</button></span>
-                </label>
-                <label class="consent-item">
-                    <input type="checkbox" id="consent-privacy" onchange="updateConsentBtn()">
-                    <span><span id="consent-privacy-label">개인정보처리방침</span><span id="consent-privacy-suffix">에 동의합니다</span> <button class="consent-view-btn" onclick="openAboutPage('privacy')" id="consent-privacy-view">보기</button></span>
-                </label>
-                <label class="consent-item">
-                    <input type="checkbox" id="consent-guidelines" onchange="updateConsentBtn()">
-                    <span><span id="consent-guidelines-label">커뮤니티 가이드라인</span><span id="consent-guidelines-suffix">에 동의합니다</span> <button class="consent-view-btn" onclick="openAboutPage('guidelines')" id="consent-guidelines-view">보기</button></span>
-                </label>
-                <label class="consent-item">
-                    <input type="checkbox" id="consent-safety" onchange="updateConsentBtn()">
-                    <span><span id="consent-safety-label">안전 정책</span><span id="consent-safety-suffix">을 확인했습니다</span> <button class="consent-view-btn" onclick="openAboutPage('safety')" id="consent-safety-view">보기</button></span>
-                </label>
+            <p id="consent-subtitle" style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:16px;">아래 내용에 동의하셔야 이용할 수 있어요.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:18px; font-size:12px;">
+                <button class="consent-view-btn" onclick="openAboutPage('terms')" id="consent-terms-view">이용약관</button>
+                <button class="consent-view-btn" onclick="openAboutPage('privacy')" id="consent-privacy-view">개인정보처리방침</button>
+                <button class="consent-view-btn" onclick="openAboutPage('guidelines')" id="consent-guidelines-view">커뮤니티 가이드라인</button>
+                <button class="consent-view-btn" onclick="openAboutPage('safety')" id="consent-safety-view">안전 정책</button>
             </div>
+            <label class="consent-item" style="margin-bottom:22px;">
+                <input type="checkbox" id="consent-all" onchange="updateConsentBtn()">
+                <span id="consent-all-label">만 18세 이상이며, 위 약관/정책에 모두 동의합니다</span>
+            </label>
             <button id="consent-confirm-btn" onclick="confirmConsent()" disabled style="width:100%; padding:14px; border-radius:12px; background:rgba(var(--accent-rgb),0.15); color:rgba(255,255,255,0.3); border:1px solid rgba(var(--accent-rgb),0.2); font-size:15px; font-weight:600; cursor:not-allowed; transition:all 0.2s;" id="consent-confirm-label">동의하고 시작하기</button>
             <button onclick="document.getElementById('consent-modal').classList.remove('active')" style="width:100%; margin-top:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer; padding:8px;" id="consent-cancel-label">취소</button>
         </div>
@@ -3235,6 +3231,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let myUid = null;
     let myAnimalGlobal = null;
     let isGuest = false; // 게스트 모드 여부
+    // "그냥 둘러보기"로 들어온 경우 — 동의/생년월일 확인 없이 바로 화면부터 보여주고,
+    // 실제로 대화방에 들어가려고 할 때(join-btn) 그 시점에 한 번만 확인받음
+    let _previewMode = false;
+    let _dailyVisitorCount = 0; // 오늘 다녀간 순 방문자 수 (dailyVisitors/{날짜}/{uid} 노드 기준)
     let myNickname = ""; // 사용자 입력 닉네임
     let nicknameConfirmed = false; // 닉네임 입력 후 join 진행 플래그
     let uidToNickname = {}; // uid → nickname (Firebase에서 수신)
@@ -3580,6 +3580,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const now = new Date();
         const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours();
         return kstHour >= 21;
+    }
+
+    // "오늘"을 KST 자정 기준으로 나누기 위한 날짜 키 (예: 2026-08-03)
+    function getKstDateKey() {
+        const kst = new Date(Date.now() + 9 * 60 * 60 * 1000);
+        return `${kst.getUTCFullYear()}-${String(kst.getUTCMonth() + 1).padStart(2, '0')}-${String(kst.getUTCDate()).padStart(2, '0')}`;
+    }
+
+    function updateDailyVisitorBadge() {
+        const el = document.getElementById('daily-visitors-text');
+        if (el) el.textContent = textData[currentLang].dailyVisitorsText(_dailyVisitorCount);
     }
 
     function openDiscoCreateModal() {
@@ -4404,6 +4415,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         waitingNone: "No one is ready to chat right now.",
         waitingOne: "1 person is ready to chat!",
         waitingMany: (n) => `${n} people are ready to chat!`,
+        dailyVisitorsText: (n) => `Today: ${n} ${n === 1 ? 'visitor' : 'visitors'}`,
         pwaBannerTitle: "Add to Home Screen for a better experience",
         pwaBannerDesc: "Launches instantly like an app — one tap and you're in.",
         pwaInstallBtn: "Add to Home Screen",
@@ -4531,6 +4543,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         waitingNone: "아직 대화를 시작할 사람이 없어요.",
         waitingOne: "1명이 대화 준비가 되었어요!",
         waitingMany: (n) => `${n}명이 대화 준비가 되었어요!`,
+        dailyVisitorsText: (n) => `오늘 ${n}명이 다녀갔어요`,
         pwaBannerTitle: "홈 화면에 추가하고 앱처럼 이용하세요",
         pwaBannerDesc: "앱처럼 빠르게 실행되고, 한 번의 터치로 바로 접속할 수 있습니다.",
         pwaInstallBtn: "홈 화면에 추가",
@@ -4793,6 +4806,8 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                 }
                 // 마지막 로그인 시각 기록 — 게스트 포함 모든 유저, 접속할 때마다 갱신
                 database.ref('users/' + user.uid + '/lastLoginAt').set(Date.now());
+                // 오늘 다녀간 순 방문자 수 집계 — 게스트 포함, uid 키라 같은 사람 중복 카운트 안 됨
+                database.ref('dailyVisitors/' + getKstDateKey() + '/' + user.uid).set(true);
 
             // [보안 핵심] 로그인 즉시 Realtime DB에서 제재 상태 실시간 리스닝
             database.ref('users/' + user.uid).on('value', (snapshot) => {
@@ -4871,6 +4886,13 @@ window.closeTopicInfoModal = closeTopicInfoModal;
             // 로그인 즉시 bar 표시 (Firebase 응답 전에도 보이도록)
             document.getElementById('waiting-count-bar').style.display = 'flex';
             document.getElementById('waiting-count-text').textContent = textData[currentLang].waitingNone;
+
+            // 오늘 다녀간 순 방문자 수 실시간 리스닝 — 방이 하나도 없어 보일 때도
+            // "그래도 사람들이 다녀갔다"는 걸 보여줘서 방을 만들지 망설이지 않게 함
+            database.ref('dailyVisitors/' + getKstDateKey()).on('value', (snap) => {
+                _dailyVisitorCount = snap.exists() ? Object.keys(snap.val()).length : 0;
+                updateDailyVisitorBadge();
+            });
 
             // 전체 대기자 수 실시간 리스닝
             database.ref('waiting').on('value', (snap) => {
@@ -4955,6 +4977,9 @@ function updateUI() {
 
         const guestLoginText = document.getElementById('guest-login-text');
         if (guestLoginText) guestLoginText.innerHTML = lang.guestLoginBtn.replace('👀 ', '');
+        const browsePreviewBtn = document.getElementById('browse-preview-btn');
+        if (browsePreviewBtn) browsePreviewBtn.textContent = currentLang === 'ko' ? '그냥 둘러보기' : 'Just browse';
+        updateDailyVisitorBadge();
         // 인트로 화면 다국어
         const introDescEl = document.getElementById('intro-desc');
         const introBtnEl = document.getElementById('intro-start-btn');
@@ -5039,22 +5064,13 @@ function updateUI() {
         // 약관 동의 모달 다국어
         const isKo = currentLang === 'ko';
         const ct = document.getElementById('consent-title'); if(ct) ct.textContent = isKo ? '시작하기 전에' : 'Before You Start';
-        const cs = document.getElementById('consent-subtitle'); if(cs) cs.textContent = isKo ? '모두 동의하셔야 이용할 수 있어요.' : 'You must agree to all items to continue.';
-        const ca = document.getElementById('consent-age-label'); if(ca) ca.textContent = isKo ? '만 18세 이상입니다' : 'I am 18 years of age or older';
-        const ctl = document.getElementById('consent-terms-label'); if(ctl) ctl.textContent = isKo ? '이용약관' : 'Terms of Service';
-        const cpl = document.getElementById('consent-privacy-label'); if(cpl) cpl.textContent = isKo ? '개인정보처리방침' : 'Privacy Policy';
-        const cgl = document.getElementById('consent-guidelines-label'); if(cgl) cgl.textContent = isKo ? '커뮤니티 가이드라인' : 'Community Guidelines';
-        const csl = document.getElementById('consent-safety-label'); if(csl) csl.textContent = isKo ? '안전 정책' : 'Safety Policy';
+        const cs = document.getElementById('consent-subtitle'); if(cs) cs.textContent = isKo ? '아래 내용에 동의하셔야 이용할 수 있어요.' : 'You must agree to the following to continue.';
+        const cal = document.getElementById('consent-all-label'); if(cal) cal.textContent = isKo ? '만 18세 이상이며, 위 약관/정책에 모두 동의합니다' : 'I am 18 or older and agree to all of the above';
         const ccb = document.getElementById('consent-confirm-btn'); if(ccb) ccb.textContent = isKo ? '동의하고 시작하기' : 'Agree & Continue';
-        ['consent-terms-view','consent-privacy-view','consent-guidelines-view','consent-safety-view'].forEach(id => {
-            const el = document.getElementById(id); if(el) el.textContent = isKo ? '보기' : 'View';
-        });
-        const suffixAgree = isKo ? '에 동의합니다' : '';
-        const suffixConfirm = isKo ? '을 확인했습니다' : '';
-        ['consent-terms-suffix','consent-privacy-suffix','consent-guidelines-suffix'].forEach(id => {
-            const el = document.getElementById(id); if(el) el.textContent = suffixAgree;
-        });
-        const css = document.getElementById('consent-safety-suffix'); if(css) css.textContent = suffixConfirm;
+        const ctv = document.getElementById('consent-terms-view'); if(ctv) ctv.textContent = isKo ? '이용약관' : 'Terms of Service';
+        const cpv = document.getElementById('consent-privacy-view'); if(cpv) cpv.textContent = isKo ? '개인정보처리방침' : 'Privacy Policy';
+        const cgv = document.getElementById('consent-guidelines-view'); if(cgv) cgv.textContent = isKo ? '커뮤니티 가이드라인' : 'Community Guidelines';
+        const csv = document.getElementById('consent-safety-view'); if(csv) csv.textContent = isKo ? '안전 정책' : 'Safety Policy';
         const alProduct = document.getElementById('about-label-product'); if(alProduct) alProduct.textContent = isKo ? '서비스 소개' : 'About';
         const alPricing = document.getElementById('about-label-pricing'); if(alPricing) alPricing.textContent = isKo ? '요금제' : 'Pricing';
         const alPrivacy = document.getElementById('about-label-privacy'); if(alPrivacy) alPrivacy.textContent = isKo ? '개인정보처리방침' : 'Privacy Policy';
@@ -5248,16 +5264,13 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             return;
         }
         pendingLoginAction = action;
-        ['consent-age','consent-terms','consent-privacy','consent-guidelines','consent-safety'].forEach(id => {
-            document.getElementById(id).checked = false;
-        });
+        document.getElementById('consent-all').checked = false;
         updateConsentBtn();
         document.getElementById('consent-modal').classList.add('active');
     }
 
     function updateConsentBtn() {
-        const allChecked = ['consent-age','consent-terms','consent-privacy','consent-guidelines','consent-safety']
-            .every(id => document.getElementById(id).checked);
+        const allChecked = document.getElementById('consent-all').checked;
         const btn = document.getElementById('consent-confirm-btn');
         btn.disabled = !allChecked;
         if (allChecked) {
@@ -5819,6 +5832,17 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
 
 // 7. Agora RTC 소통 엔진 핵심 제어 로직
     document.getElementById('join-btn').onclick = async function() {
+        // "그냥 둘러보기"로 들어와서 동의/생년월일 확인을 아직 안 했다면, 실제로 대화방에
+        // 들어가려는 이 시점에 딱 한 번 확인받고 나서 방금 누른 걸 그대로 재시도함
+        if (_previewMode) {
+            requireConsent(() => {
+                requireDob(() => {
+                    _previewMode = false;
+                    document.getElementById('join-btn').click();
+                });
+            });
+            return;
+        }
         if (isJoined || isJoining ||
             client.connectionState === "CONNECTING" ||
             client.connectionState === "CONNECTED" ||
@@ -8814,6 +8838,20 @@ function promptGuestLogin() {
         openLoginSheet();
     } else {
         closeSettingsModal();
+    }
+}
+// 로그인 화면에서 "그냥 둘러보기" — 약관 동의/생년월일 확인 없이 바로 화면(Discover/Scheduled)부터
+// 보여줌. 익명 로그인은 그대로 하되(그래야 실시간 방 목록이 뜸), 동의/생년월일은 실제로 대화방에
+// 들어가려고 할 때(join-btn) 딱 한 번만 확인받음
+async function browseWithoutLogin() {
+    if (auth.currentUser) return;
+    try {
+        _previewMode = true;
+        await auth.signInAnonymously();
+    } catch (e) {
+        _previewMode = false;
+        console.error('둘러보기 진입 실패:', e);
+        alert(currentLang === 'ko' ? '둘러보기를 시작하지 못했어요. 다시 시도해 주세요.' : 'Could not start browsing. Please try again.');
     }
 }
 function openLoginSheet() {
