@@ -884,6 +884,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .summary-loading-text { color: rgba(36,31,26,0.4) !important; }
         html[data-cute-mode="cute"] #inquiry-modal-desc,
         html[data-cute-mode="cute"] #join-nick-desc { color: rgba(36,31,26,0.55) !important; }
+        html[data-cute-mode="cute"] #join-nick-preview-avatar {
+            background: rgba(36,31,26,0.04) !important; border-color: rgba(0,0,0,0.12) !important;
+        }
+        html[data-cute-mode="cute"] #join-nick-color-select,
+        html[data-cute-mode="cute"] #join-nick-animal-select {
+            background: #fff !important; border-color: rgba(0,0,0,0.15) !important; color: #241f1a !important; color-scheme: light !important;
+        }
         html[data-cute-mode="cute"] .nickname-modal-overlay { background: rgba(36,31,26,0.25) !important; }
         html[data-cute-mode="cute"] .nickname-modal-box {
             background: #fff !important; border-color: rgba(0,0,0,0.06) !important;
@@ -1198,6 +1205,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             .room-main-col { flex: 1; }
             #room-part-list { width: 420px; height: 420px; }
             .room-seat-avatar, .room-seat-avatar-empty { width: 84px; height: 84px; font-size: 32px; }
+            .avatar-icon-lg { font-size: 32px; }
             .room-seat { width: 110px; }
             .room-ring-wrap { padding: 70px 0 76px; }
         }
@@ -1344,13 +1352,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .room-seat.speaking .speaking-bar { opacity: 1; }
         .room-seat.speaking .animal-avatar { display: none; }
-        .animal-avatar.guest-avatar-text { font-size: 11px; font-weight: 700; letter-spacing: 0.2px; color: rgba(255,255,255,0.55); }
-        html[data-cute-mode="cute"] .animal-avatar.guest-avatar-text { color: rgba(36,31,26,0.5); }
         .room-seat-name {
             font-size: 11.5px; font-weight: 600; color: rgba(255,255,255,0.75);
             text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         .room-seat.speaking .room-seat-name { color: #fff; }
+        .room-seat-battery { font-size: 10px; opacity: 0.7; }
         .room-seat-icons { display: flex; gap: 10px; }
         .room-seat-icon {
             font-size: 13px; color: rgba(255,255,255,0.35); cursor: pointer; transition: color 0.15s;
@@ -1369,6 +1376,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .room-seat-host-toggle:hover { opacity: 0.7; }
         html[data-cute-mode="cute"] .room-seat-closed .room-seat-avatar-empty { border-color: rgba(36,31,26,0.15); color: rgba(36,31,26,0.25); }
         html[data-cute-mode="cute"] .room-seat-closed .room-seat-name { color: rgba(36,31,26,0.25); }
+
+        /* ── 색깔로 물들인 동물 아바타 아이콘 (filter로 명암/디테일은 살리고 색만 바꿈) ── */
+        .avatar-icon { display: inline-block; vertical-align: middle; line-height: 1; }
+        .avatar-icon-lg { font-size: 26px; }
+        .avatar-icon-sm { font-size: 15px; }
 
         /* ── 하단 컨트롤 (마이크 / 나가기 / 신고 / Talk Tips) ── */
         .room-bottom-controls {
@@ -2547,13 +2559,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
-    <!-- 닉네임 입력 모달 (대화 시작 전) -->
+    <!-- 닉네임 입력 모달 (대화 시작 전) — 색깔+동물을 골라서 "하얀 고양이" 같은 닉네임/아바타를 만듦 -->
     <div class="modal-overlay" id="join-nickname-modal" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="modal-content" style="max-width:340px;">
             <h3 style="font-size:17px; margin-bottom:6px;" id="join-nick-title">What's your nickname?</h3>
-            <p style="font-size:12px; margin-bottom:18px; color:rgba(255,255,255,0.35);" id="join-nick-desc">This is how others will see you in the conversation.</p>
-            <input type="text" id="join-nickname-input" placeholder="Enter nickname (max 16 chars)" maxlength="16" style="margin-bottom:16px;">
-            <button id="join-nick-confirm-btn" class="intro2-start-btn" style="margin:0;">Continue</button>
+            <p style="font-size:12px; margin-bottom:16px; color:rgba(255,255,255,0.35);" id="join-nick-desc">This is how others will see you in the conversation.</p>
+            <div style="display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:20px;">
+                <div id="join-nick-preview-avatar" style="width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.06); border:2px solid rgba(255,255,255,0.15); transition:all 0.15s ease; flex-shrink:0;"></div>
+                <div id="join-nick-preview-name" style="font-size:15px; font-weight:600; color:rgba(255,255,255,0.3);">—</div>
+            </div>
+            <!-- 생년월일 입력처럼 스크롤(휠)로 골라서 조합하는 방식 -->
+            <div style="display:flex; gap:8px; margin-bottom:20px;">
+                <select id="join-nick-color-select" style="flex:1; padding:12px 8px; background:#1a1d26; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer; color-scheme:dark;"></select>
+                <select id="join-nick-animal-select" style="flex:1; padding:12px 8px; background:#1a1d26; border:1px solid rgba(255,255,255,0.15); border-radius:12px; color:#fff; font-size:14px; outline:none; cursor:pointer; color-scheme:dark;"></select>
+            </div>
+            <button id="join-nick-confirm-btn" class="intro2-start-btn" style="margin:0;" disabled>Continue</button>
         </div>
     </div>
 
@@ -3252,10 +3272,54 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let isRoomHost = false;     // 내가 지금 이 방의 호스트인지
     let _maxPeopleRef = null;   // channels/{channel}/maxPeople 라이브 리스너 ref (방 나갈 때 해제용)
     let agoraToFirebaseUid = {}; // Agora UID → Firebase UID 매핑 테이블
-    let uidToBatteryEmoji = {}; // Firebase UID → battery emoji
+    let uidToBatteryEmoji = {}; // Firebase UID → battery emoji (닉네임 옆에 표시되는 대화 충전량 스탯, 아바타와 무관)
     let myBatteryEmoji = '🔋';
     let myEnergyPct = 0; // 배터리 라벨 재렌더링용 (언어 토글 시 DB 재조회 없이 사용)
     let isSubscribed = false; // 구독 여부 캐시
+
+    // ── 아바타(동그라미 원 안 아이콘) — 색깔 + 동물을 골라서 "하얀 고양이" 같은 닉네임을 만듦 ──
+    // 이모지를 실루엣으로 뭉개지 않고, CSS filter(hue-rotate 등)로 원본의 명암/디테일은
+    // 살리면서 색만 통째로 바꿈. key는 Firebase에 저장해서 상대방 화면에서도 같은 filter를
+    // 그대로 찾아 쓰기 위한 식별자 — filter 문자열 자체를 DB에 저장하면 다른 클라이언트가
+    // 임의 CSS를 그대로 주입받는 셈이라 key만 저장하고 filter는 로컬 테이블에서 찾음
+    const AVATAR_COLORS = [
+        { key: 'white',  ko: '하얀',  en: 'White',  filter: 'grayscale(0.6) brightness(1.55) contrast(0.85) saturate(0.3)' },
+        { key: 'black',  ko: '검은',  en: 'Black',  filter: 'brightness(0.42) saturate(0.7)' },
+        { key: 'brown',  ko: '갈색',  en: 'Brown',  filter: 'sepia(1) saturate(2) hue-rotate(-8deg) brightness(0.95)' },
+        { key: 'gray',   ko: '회색',  en: 'Gray',   filter: 'grayscale(1) brightness(1.05)' },
+        { key: 'orange', ko: '주황',  en: 'Orange', filter: 'sepia(1) saturate(4) hue-rotate(-14deg) brightness(1.05)' },
+        { key: 'yellow', ko: '노랑',  en: 'Yellow', filter: 'sepia(1) saturate(4) hue-rotate(20deg) brightness(1.2)' },
+        { key: 'pink',   ko: '분홍',  en: 'Pink',   filter: 'sepia(1) saturate(4) hue-rotate(300deg) brightness(1.15)' },
+        { key: 'blue',   ko: '파랑',  en: 'Blue',   filter: 'sepia(1) saturate(4) hue-rotate(180deg) brightness(1.05)' }
+    ];
+    const AVATAR_COLOR_FILTERS = {};
+    AVATAR_COLORS.forEach(c => { AVATAR_COLOR_FILTERS[c.key] = c.filter; });
+    const AVATAR_ANIMALS = [
+        { ko: '고양이',  en: 'Cat',      emoji: '🐱' },
+        { ko: '강아지',  en: 'Dog',      emoji: '🐶' },
+        { ko: '여우',    en: 'Fox',      emoji: '🦊' },
+        { ko: '토끼',    en: 'Rabbit',   emoji: '🐰' },
+        { ko: '곰',      en: 'Bear',     emoji: '🐻' },
+        { ko: '판다',    en: 'Panda',    emoji: '🐼' },
+        { ko: '사자',    en: 'Lion',     emoji: '🦁' },
+        { ko: '호랑이',  en: 'Tiger',    emoji: '🐯' },
+        { ko: '코알라',  en: 'Koala',    emoji: '🐨' },
+        { ko: '펭귄',    en: 'Penguin',  emoji: '🐧' },
+        { ko: '부엉이',  en: 'Owl',      emoji: '🦉' },
+        { ko: '다람쥐',  en: 'Squirrel', emoji: '🐿️' }
+    ];
+    let _pickedAvatarColorIdx = null;
+    let _pickedAvatarAnimalIdx = null;
+    let myAvatarEmoji = '👋';
+    let myAvatarColor = 'gray'; // AVATAR_COLORS의 key
+    let uidToAvatarEmoji = {}; // Firebase UID → 상대가 고른 동물 이모지
+    let uidToAvatarColor = {}; // Firebase UID → 상대가 고른 색상 key
+    // sizeClass는 px를 인라인으로 박지 않고 CSS 클래스로 넘겨서, 데스크톱 브레이크포인트에서
+    // room-seat-avatar가 커질 때 아이콘도 CSS만으로 같이 커지게 함
+    function avatarIconHtml(emoji, colorKey, sizeClass) {
+        const filter = AVATAR_COLOR_FILTERS[colorKey] || 'none';
+        return `<span class="avatar-icon avatar-icon-${sizeClass}" style="filter:${filter};">${emoji}</span>`;
+    }
 
     // ── 핑퐁 모드 상태 ──
     let pingpongMode = false;       // 토글 ON/OFF
@@ -5938,18 +6002,17 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             return;
         }
 
-        // 닉네임 입력 모달 표시 (닉네임 미확정 시)
+        // 닉네임(색깔+동물 선택) 모달 표시 (닉네임 미확정 시)
         if (!nicknameConfirmed) {
             const modal = document.getElementById('join-nickname-modal');
-            const input = document.getElementById('join-nickname-input');
             const titleEl = document.getElementById('join-nick-title');
             const descEl = document.getElementById('join-nick-desc');
             const btnEl = document.getElementById('join-nick-confirm-btn');
-            titleEl.textContent = currentLang === 'ko' ? '닉네임을 입력하세요' : "What's your nickname?";
-            descEl.textContent = currentLang === 'ko' ? '대화 상대에게 보여질 이름입니다.' : 'This is how others will see you in the conversation.';
-            btnEl.textContent = currentLang === 'ko' ? '계속' : 'Continue';
-            input.placeholder = currentLang === 'ko' ? '닉네임 입력 (최대 16자)' : 'Enter nickname (max 16 chars)';
-            if (myNickname) input.value = myNickname;
+            const isKo = currentLang === 'ko';
+            titleEl.textContent = isKo ? '색깔과 동물을 골라주세요' : 'Pick a color and an animal';
+            descEl.textContent = isKo ? '대화 상대에게 보여질 이름과 아바타가 됩니다.' : 'This becomes your name and avatar in the conversation.';
+            btnEl.textContent = isKo ? '계속' : 'Continue';
+            renderJoinNickPickers();
             modal.classList.add('active');
             return;
         }
@@ -6085,6 +6148,8 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             }
             agoraToFirebaseUid = {};
             uidToBatteryEmoji = {};
+            uidToAvatarEmoji = {};
+            uidToAvatarColor = {};
             uidToNickname = {};
             uidToIsGuest = {};
 
@@ -6119,7 +6184,7 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    const myTopicData = { topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', agoraUid: String(myUid), category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople };
+    const myTopicData = { topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', avatarEmoji: myAvatarEmoji || '👋', avatarColor: myAvatarColor || 'gray', agoraUid: String(myUid), category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople };
     await myTopicRef.set({ ...myTopicData, ts: firebase.database.ServerValue.TIMESTAMP, joinedAt: firebase.database.ServerValue.TIMESTAMP });
     pendingRoomCategory = null;
     myTopicRef.onDisconnect().remove();
@@ -6144,6 +6209,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         if (val && val.nickname) uidToNickname[uid] = val.nickname;
         if (val && val.guest) uidToIsGuest[uid] = true;
         if (val && val.energyEmoji) uidToBatteryEmoji[uid] = val.energyEmoji;
+        if (val && val.avatarEmoji) uidToAvatarEmoji[uid] = val.avatarEmoji;
+        if (val && val.avatarColor) uidToAvatarColor[uid] = val.avatarColor;
         // agoraUid 필드로 역방향 매핑 보강
         if (val && val.agoraUid) agoraToFirebaseUid[val.agoraUid] = uid;
         // user-published보다 activeTopics 쓰기가 늦을 수 있으므로 여기서도 보충
@@ -6329,6 +6396,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                             if (fbUid && atData[fbUid]) {
                                 if (atData[fbUid].guest) uidToIsGuest[fbUid] = true;
                                 if (atData[fbUid].energyEmoji) uidToBatteryEmoji[fbUid] = atData[fbUid].energyEmoji;
+                                if (atData[fbUid].avatarEmoji) uidToAvatarEmoji[fbUid] = atData[fbUid].avatarEmoji;
+                                if (atData[fbUid].avatarColor) uidToAvatarColor[fbUid] = atData[fbUid].avatarColor;
                             }
                         }
                     }
@@ -6650,15 +6719,16 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             item.id = 'pp-relay-' + uid;
 
             const isSpeaking = i === ppCurrentTurnIdx;
-            const emoji = (uid === myFbUid) ? myBatteryEmoji : (uidToBatteryEmoji[uid] || '👋');
             const isMe = uid === myFbUid;
+            const avatarEmoji = isMe ? myAvatarEmoji : (uidToAvatarEmoji[uid] || '👋');
+            const avatarColor = isMe ? myAvatarColor : (uidToAvatarColor[uid] || 'gray');
             const baseName = isMe
                 ? (currentLang === 'ko' ? '나' : 'Me')
                 : (uidToNickname[uid] || 'User');
             const isGuestUser = (!isMe && uidToIsGuest[uid]) || (isMe && isGuest);
 
             item.innerHTML = `
-                <div class="pp-relay-avatar ${isSpeaking ? 'speaking' : ''} ${isGuestUser ? 'guest' : ''}">${emoji}</div>
+                <div class="pp-relay-avatar ${isSpeaking ? 'speaking' : ''} ${isGuestUser ? 'guest' : ''}">${avatarIconHtml(avatarEmoji, avatarColor, 'sm')}</div>
                 <div class="pp-relay-name ${isSpeaking ? 'speaking' : ''}">${baseName}</div>`;
             bar.appendChild(item);
         });
@@ -7227,19 +7297,19 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
 
         if (isSelf) {
             item.innerHTML =
-                '<div class="subtitle-speaker">' + myBatteryEmoji + ' ' + nickname
+                '<div class="subtitle-speaker">' + myAvatarEmoji + ' ' + nickname
                 + (currentLang === 'ko' ? ' (나)' : ' (me)') + '</div>'
                 + '<div class="subtitle-self-text">' + original + '</div>';
         } else if (!isSubscribed) {
             const lockedLabel = currentLang === 'ko' ? '🔒 번역 보기 (패스권)' : '🔒 View translation (Pass)';
             item.innerHTML =
-                '<div class="subtitle-speaker">' + (uidToBatteryEmoji[uid] || '👋') + ' ' + nickname + '</div>'
+                '<div class="subtitle-speaker">' + (uidToAvatarEmoji[uid] || '👋') + ' ' + nickname + '</div>'
                 + '<div class="subtitle-original">' + original + '</div>'
                 + '<div class="subtitle-translated subtitle-locked" onclick="openMainPayModal()">' + lockedLabel + '</div>';
         } else {
             const showOriginal = translated && original !== translated;
             item.innerHTML =
-                '<div class="subtitle-speaker">' + (uidToBatteryEmoji[uid] || '👋') + ' ' + nickname + '</div>'
+                '<div class="subtitle-speaker">' + (uidToAvatarEmoji[uid] || '👋') + ' ' + nickname + '</div>'
                 + (showOriginal ? '<div class="subtitle-original">' + original + '</div>' : '')
                 + '<div class="subtitle-translated">' + (translated || '<span class="subtitle-loading">...</span>') + '</div>';
         }
@@ -7283,10 +7353,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             meEl.id = 'room-part-me';
             const meLabel = currentLang === 'ko' ? '(나)' : '(You)';
             const displayName = myNickname || 'Me';
-            const meAvatarInner = isGuest ? `<span class="animal-avatar guest-avatar-text">guest</span>` : `<span class="animal-avatar">${myBatteryEmoji}</span>`;
+            // 게스트도 색깔+동물 아바타를 고르므로 더 이상 "guest" 텍스트로 대체하지 않음.
+            // 배터리(대화 충전량)는 아바타 원이 아니라 닉네임 글자 옆에 표시
+            const meBatteryTag = isGuest ? '' : ` <span class="room-seat-battery">${myBatteryEmoji}</span>`;
             meEl.innerHTML = `
-                <div class="room-seat-avatar">${meAvatarInner}<span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
-                <div class="room-seat-name">${displayName} ${meLabel}</div>
+                <div class="room-seat-avatar"><span class="animal-avatar">${avatarIconHtml(myAvatarEmoji, myAvatarColor, 'lg')}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
+                <div class="room-seat-name">${displayName} ${meLabel}${meBatteryTag}</div>
                 <div class="pp-seat-timer" id="pp-seat-timer-me"></div>`;
             list.appendChild(meEl);
         }
@@ -7298,11 +7370,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const fbUid = agoraToFirebaseUid[uid] || uid;
             const nickname = uidToNickname[fbUid] || uidToNickname[uid] || `User ${index + 1}`;
             const guestFlag = uidToIsGuest[fbUid] || uidToIsGuest[uid];
-            const energyEmoji = uidToBatteryEmoji[fbUid] || '👋';
-            const avatarInner = guestFlag ? `<span class="animal-avatar guest-avatar-text">guest</span>` : `<span class="animal-avatar">${energyEmoji}</span>`;
+            const avatarEmoji = uidToAvatarEmoji[fbUid] || uidToAvatarEmoji[uid] || '👋';
+            const avatarColor = uidToAvatarColor[fbUid] || uidToAvatarColor[uid] || 'gray';
+            const batteryTag = guestFlag ? '' : ` <span class="room-seat-battery">${uidToBatteryEmoji[fbUid] || '👋'}</span>`;
             el.innerHTML = `
-                <div class="room-seat-avatar">${avatarInner}<span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
-                <div class="room-seat-name">${nickname}</div>
+                <div class="room-seat-avatar"><span class="animal-avatar">${avatarIconHtml(avatarEmoji, avatarColor, 'lg')}</span><span class="speaking-bar"><span></span><span></span><span></span><span></span></span></div>
+                <div class="room-seat-name">${nickname}${batteryTag}</div>
                 <div class="pp-seat-timer" id="pp-seat-timer-${uid}"></div>
                 <div class="room-seat-icons">
                     <span class="room-seat-icon" title="${currentLang === 'ko' ? '친구 추가' : 'Add friend'}" onclick="addFriendMidCall('${fbUid}')">＋</span>
@@ -7434,7 +7507,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             btn.className = "target-btn";
             btn.dataset.uid = uid;
             const nickname = uidToNickname[uid] || `User ${index + 1}`;
-            btn.innerText = `${uidToBatteryEmoji[uid] || '👋'} ${nickname}`;
+            btn.innerText = `${uidToAvatarEmoji[uid] || '👋'} ${nickname}`;
             btn.onclick = () => {
                 document.querySelectorAll('#report-target-container .target-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
@@ -8445,7 +8518,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             btn.className = "target-btn";
             btn.dataset.uid = uid;
             const nickname = uidToNickname[uid] || `User ${index + 1}`;
-            btn.innerText = `${uidToBatteryEmoji[uid] || '👋'} ${nickname}`;
+            btn.innerText = `${uidToAvatarEmoji[uid] || '👋'} ${nickname}`;
             btn.addEventListener('pointerdown', () => {
                 document.querySelectorAll('#vote-target-container .target-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
@@ -9721,20 +9794,62 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         }
     }
 
-    // 닉네임 모달 confirm
+    // 색깔/동물 선택 UI 그리기 — 생년월일 입력처럼 select(스크롤 휠)로 고름
+    function renderJoinNickPickers() {
+        const isKo = currentLang === 'ko';
+        if (_pickedAvatarColorIdx === null) _pickedAvatarColorIdx = 0;
+        if (_pickedAvatarAnimalIdx === null) _pickedAvatarAnimalIdx = 0;
+
+        const colorSel = document.getElementById('join-nick-color-select');
+        colorSel.innerHTML = '';
+        AVATAR_COLORS.forEach((c, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = isKo ? c.ko : c.en;
+            colorSel.appendChild(opt);
+        });
+        colorSel.value = _pickedAvatarColorIdx;
+        colorSel.onchange = () => { _pickedAvatarColorIdx = Number(colorSel.value); updateJoinNickPreview(); };
+
+        const animalSel = document.getElementById('join-nick-animal-select');
+        animalSel.innerHTML = '';
+        AVATAR_ANIMALS.forEach((a, i) => {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = `${a.emoji} ${isKo ? a.ko : a.en}`;
+            animalSel.appendChild(opt);
+        });
+        animalSel.value = _pickedAvatarAnimalIdx;
+        animalSel.onchange = () => { _pickedAvatarAnimalIdx = Number(animalSel.value); updateJoinNickPreview(); };
+
+        updateJoinNickPreview();
+    }
+
+    function updateJoinNickPreview() {
+        const btn = document.getElementById('join-nick-confirm-btn');
+        const avatarEl = document.getElementById('join-nick-preview-avatar');
+        const nameEl = document.getElementById('join-nick-preview-name');
+        const color = AVATAR_COLORS[_pickedAvatarColorIdx];
+        const animal = AVATAR_ANIMALS[_pickedAvatarAnimalIdx];
+        const isKo = currentLang === 'ko';
+        avatarEl.innerHTML = avatarIconHtml(animal.emoji, color.key, 'lg');
+        nameEl.textContent = isKo ? `${color.ko} ${animal.ko}` : `${color.en} ${animal.en}`;
+        nameEl.style.color = 'var(--accent-color)';
+        btn.disabled = false;
+    }
+
+    // 닉네임 모달 confirm — 고른 색깔+동물을 조합해 닉네임/아바타를 확정
     document.getElementById('join-nick-confirm-btn').addEventListener('click', function() {
-        const val = document.getElementById('join-nickname-input').value.trim();
-        if (!val) {
-            alert(currentLang === 'ko' ? '닉네임을 입력해 주세요.' : 'Please enter a nickname.');
-            return;
-        }
-        myNickname = val;
+        if (_pickedAvatarColorIdx === null || _pickedAvatarAnimalIdx === null) return;
+        const color = AVATAR_COLORS[_pickedAvatarColorIdx];
+        const animal = AVATAR_ANIMALS[_pickedAvatarAnimalIdx];
+        const isKo = currentLang === 'ko';
+        myNickname = isKo ? `${color.ko} ${animal.ko}` : `${color.en} ${animal.en}`;
+        myAvatarEmoji = animal.emoji;
+        myAvatarColor = color.key;
         document.getElementById('join-nickname-modal').classList.remove('active');
         nicknameConfirmed = true;
         document.getElementById('join-btn').click();
-    });
-    document.getElementById('join-nickname-input').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') document.getElementById('join-nick-confirm-btn').click();
     });
 
     function toggleLangFromIntro() {
