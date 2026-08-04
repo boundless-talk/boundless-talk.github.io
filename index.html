@@ -4989,7 +4989,39 @@ window.closeTopicInfoModal = closeTopicInfoModal;
                     last_changed: firebase.database.ServerValue.TIMESTAMP
                 }).catch(e => console.error("Presence write failed:", e));
             }).catch(e => console.error("onDisconnect setup failed:", e));
+
+            // 방을 열어두고 대기 중일 때 폰을 다른 앱으로 전환하거나 화면을 꺼두면 소켓이
+            // 끊겼다가 다시 붙는 경우가 있는데, 그 순간 서버가 이전 연결의 onDisconnect(방 삭제)를
+            // 실행해버려 방이 사라질 수 있음. 재연결될 때마다 방 데이터를 통째로 다시 써서
+            // "로그아웃/방 소멸"처럼 보이는 현상을 막음
+            reattachRoomPresence();
         });
+    }
+
+    // .info/connected가 다시 true가 될 때마다 호출됨 — 방 데이터가 사라졌으면 복구하고,
+    // 남아있으면 onDisconnect를 새 연결 기준으로 다시 걸어줌(이전 연결의 onDisconnect는 무효화됨)
+    function reattachRoomPresence() {
+        if (!isJoined) return;
+        if (window._myTopicRef && window._myTopicData) {
+            // 방이 아직 남아있으면 원래 joinedAt(호스트 판정 기준)을 그대로 유지하고,
+            // onDisconnect로 이미 삭제된 상태라면 그때만 새로 발급
+            window._myTopicRef.once('value').then(snap => {
+                const existing = snap.val();
+                const joinedAt = (existing && existing.joinedAt) || firebase.database.ServerValue.TIMESTAMP;
+                return window._myTopicRef.set({ ...window._myTopicData, ts: firebase.database.ServerValue.TIMESTAMP, joinedAt });
+            }).then(() => window._myTopicRef.onDisconnect().remove())
+              .catch(e => console.warn('room restore failed:', e.message));
+        }
+        if (window._myChannelMemberRef && window._myChannelMemberUid) {
+            window._myChannelMemberRef.set(window._myChannelMemberUid)
+                .then(() => window._myChannelMemberRef.onDisconnect().remove())
+                .catch(e => console.warn('channel member restore failed:', e.message));
+        }
+        if (window._myGuestFlagRef) {
+            window._myGuestFlagRef.set(true)
+                .then(() => window._myGuestFlagRef.onDisconnect().remove())
+                .catch(e => console.warn('guest flag restore failed:', e.message));
+        }
     }
 
     // 로그인 유지 설정 — SESSION은 탭을 닫으면 로그인이 풀려서 매번 다시 로그인해야 했음.
@@ -5291,8 +5323,8 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
     // Popup이 차단되는 인앱 브라우저(카카오, 인스타 등) WebView에서는 Redirect로 자동 전환.
     let pendingLoginAction = null;
 
-    function requireConsent(action) {
-        if (localStorage.getItem('btalk_consent_v1') === 'agreed') {
+    function requireConsent(action, forceShow) {
+        if (!forceShow && localStorage.getItem('btalk_consent_v1') === 'agreed') {
             action();
             return;
         }
@@ -5417,7 +5449,9 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
     }
 
     // 게스트 로그인 — 구글/이메일 로그인과 동일하게 클릭 즉시 동의+생년월일을 확인받고,
-    // 완료된 후에야 익명 계정을 생성함 (동의 취소 시 계정이 남아 재시도가 막히는 걸 방지)
+    // 완료된 후에야 익명 계정을 생성함 (동의 취소 시 계정이 남아 재시도가 막히는 걸 방지).
+    // 단, 게스트는 같은 기기를 여러 사람이 돌려가며 쓸 수 있으므로(로그인해서 넘어가는 게 아니라
+    // 매번 새로운 익명 세션) localStorage 동의 캐시를 건너뛰고(forceShow) 매번 약관 모달을 다시 띄움
     document.getElementById('guest-login-btn').addEventListener('click', () => {
         requireConsent(() => {
             requireDob(async (dobVal) => {
@@ -5433,7 +5467,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
                     alert(currentLang === 'ko' ? '게스트 로그인에 실패했습니다.' : 'Guest login failed.');
                 }
             });
-        });
+        }, true);
     });
 
     // 구글 로그인 버튼(로그인 화면 + 바텀시트 둘 다 여기서 호출)
@@ -6063,24 +6097,35 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             // 내 Agora UID → Firebase UID 매핑을 채널 경로에 등록 (상대방이 참조용)
             if (firebaseUser) {
                 try {
-                    await database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).set(firebaseUser.uid);
-                    database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`).onDisconnect().remove();
+                    const channelMemberRef = database.ref(`channels/${safeAgoraChannelId}/members/${myUid}`);
+                    await channelMemberRef.set(firebaseUser.uid);
+                    channelMemberRef.onDisconnect().remove();
+                    // 백그라운드 전환 등으로 연결이 끊겼다 돌아왔을 때 재등록할 수 있도록 참조 보관
+                    window._myChannelMemberRef = channelMemberRef;
+                    window._myChannelMemberUid = firebaseUser.uid;
                     if (!finalTopic.startsWith('🔒_')) {
                         // 이 방의 정원은 최초 입장자가 정함 (트랜잭션으로 이미 있으면 덮어쓰지 않음)
                         database.ref(`channels/${safeAgoraChannelId}/maxPeople`).transaction(cur => cur === null ? maxPeople : cur);
                     }
                     if (isGuest) {
-                        database.ref(`channels/${safeAgoraChannelId}/guestFlags/${firebaseUser.uid}`).set(true);
-                        database.ref(`channels/${safeAgoraChannelId}/guestFlags/${firebaseUser.uid}`).onDisconnect().remove();
+                        const guestFlagRef = database.ref(`channels/${safeAgoraChannelId}/guestFlags/${firebaseUser.uid}`);
+                        guestFlagRef.set(true);
+                        guestFlagRef.onDisconnect().remove();
+                        window._myGuestFlagRef = guestFlagRef;
+                    } else {
+                        window._myGuestFlagRef = null;
                     }
                 } catch(e) { console.warn('channels write failed (may be permission):', e.message); }
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    await myTopicRef.set({ topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', agoraUid: String(myUid), ts: firebase.database.ServerValue.TIMESTAMP, joinedAt: firebase.database.ServerValue.TIMESTAMP, category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople });
+    const myTopicData = { topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', agoraUid: String(myUid), category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople };
+    await myTopicRef.set({ ...myTopicData, ts: firebase.database.ServerValue.TIMESTAMP, joinedAt: firebase.database.ServerValue.TIMESTAMP });
     pendingRoomCategory = null;
     myTopicRef.onDisconnect().remove();
     window._myTopicRef = myTopicRef;
+    // 재연결 시(폰 백그라운드 전환 등) 방 데이터를 통째로 복원할 수 있도록 보관
+    window._myTopicData = myTopicData;
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
     window._heartbeatInterval = setInterval(() => {
         if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
@@ -8220,11 +8265,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
         }
     })();
 
-    // 화면 잠금/백그라운드 전환 시 하트비트(setInterval)가 지연되거나 멈출 수 있어,
-    // 다시 돌아오는 즉시 ts를 갱신해 "유령 방"으로 잘못 판정되는 것을 방지
+    // 화면 잠금/백그라운드 전환(다른 앱 전환, 음악 재생 등) 후 돌아왔을 때 방 데이터를
+    // 통째로 복구/재확인 — reattachRoomPresence()가 ts 갱신 + 필요시 방 재생성까지 처리
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && isJoined && window._myTopicRef) {
-            window._myTopicRef.update({ ts: firebase.database.ServerValue.TIMESTAMP }).catch(() => {});
+        if (document.visibilityState === 'visible' && isJoined) {
+            reattachRoomPresence();
         }
     });
 
@@ -8235,6 +8280,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             stopRollingAudioRecorder();
             if (window._heartbeatInterval) { clearInterval(window._heartbeatInterval); window._heartbeatInterval = null; }
             window._myTopicRef = null;
+            window._myTopicData = null;
+            window._myChannelMemberRef = null;
+            window._myChannelMemberUid = null;
+            window._myGuestFlagRef = null;
             // 좌석 열고 닫기 관련 상태도 방을 나갈 때 초기화 — 안 그러면 다음에 새 방에 들어갔을 때
             // 이전 방의 maxPeople 리스너가 계속 남아서 새 방 상태를 잘못 덮어쓸 수 있음
             if (_maxPeopleRef) { _maxPeopleRef.off(); _maxPeopleRef = null; }
