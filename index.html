@@ -438,14 +438,8 @@
     margin-bottom: 28px;
 }
 .select-group label { font-size: 11px; color: rgba(255,255,255,0.35); }
-.consent-item { display:flex; align-items:center; gap:10px; font-size:13px; color:rgba(255,255,255,0.75); cursor:pointer; }
-        .consent-item input[type="checkbox"] { appearance:none; width:18px; height:18px; min-width:18px; border:1.5px solid rgba(255,255,255,0.25); border-radius:5px; background:transparent; cursor:pointer; transition:all 0.2s; position:relative; }
-        .consent-item input[type="checkbox"]:checked { background:var(--accent-color); border-color:var(--accent-color); }
-        .consent-item input[type="checkbox"]:checked::after { content:'✓'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#0d0e12; font-size:12px; font-weight:700; }
-        .consent-view-btn { background:transparent; border:none; color:rgba(var(--accent-rgb),0.6); font-size:11px; cursor:pointer; padding:0 4px; text-decoration:underline; width:auto; margin:0; }
+.consent-view-btn { background:transparent; border:none; color:rgba(var(--accent-rgb),0.6); font-size:11px; cursor:pointer; padding:0 4px; text-decoration:underline; width:auto; margin:0; }
         .consent-view-btn:hover { color:var(--accent-color); }
-        #consent-confirm-btn:not(:disabled) { background:rgba(var(--accent-rgb),0.15); color:var(--accent-color); border-color:rgba(var(--accent-rgb),0.5); cursor:pointer; }
-        #consent-confirm-btn:not(:disabled):hover { background:rgba(var(--accent-rgb),0.25); }
 .speech-style-badge { font-size:10px; padding:2px 7px; border-radius:10px; margin-left:5px; background:rgba(var(--accent-rgb),0.1); color:rgba(var(--accent-rgb),0.7); border:1px solid rgba(var(--accent-rgb),0.2); vertical-align:middle; white-space: nowrap; flex-shrink: 0; }
 select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; cursor: pointer; outline: none; font-size: 11px; }
         button { width: 100%; padding: 16px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 12px; border: none; transition: all 0.2s ease; }
@@ -903,10 +897,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] #dob-day {
             background: #fff !important; border-color: rgba(0,0,0,0.15) !important; color: #241f1a !important; color-scheme: light !important;
         }
-        html[data-cute-mode="cute"] #dob-cancel-btn,
-        html[data-cute-mode="cute"] #consent-cancel-label { color: rgba(36,31,26,0.4) !important; }
-        html[data-cute-mode="cute"] .consent-item { color: rgba(36,31,26,0.75) !important; }
-        html[data-cute-mode="cute"] .consent-item input[type="checkbox"] { border-color: rgba(0,0,0,0.2) !important; }
+        html[data-cute-mode="cute"] #dob-cancel-btn { color: rgba(36,31,26,0.4) !important; }
+        html[data-cute-mode="cute"] #consent-cancel-label { color: rgba(36,31,26,0.6) !important; border-color: rgba(0,0,0,0.15) !important; }
+        html[data-cute-mode="cute"] #consent-body-title { color: #241f1a !important; }
+        html[data-cute-mode="cute"] #consent-body-list { color: rgba(36,31,26,0.65) !important; }
         /* ── 구독 상태 / 플랜 변경 / 환불 모달: 큐트 모드 ── */
         html[data-cute-mode="cute"] #sub-label-next,
         html[data-cute-mode="cute"] #sub-label-benefit,
@@ -2798,21 +2792,25 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     </div>
 
     <div class="modal-overlay" id="consent-modal">
-        <div class="modal-content" style="max-width:360px;">
-            <h3 id="consent-title" style="font-size:17px; margin-bottom:6px; letter-spacing:1px;">시작하기 전에</h3>
-            <p id="consent-subtitle" style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:16px;">아래 내용에 동의하셔야 이용할 수 있어요.</p>
-            <div style="display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:18px; font-size:12px;">
+        <div class="modal-content" style="max-width:360px; text-align:left;">
+            <h3 id="consent-title" style="text-align:center; font-size:19px; font-weight:700; letter-spacing:-0.01em; margin-bottom:18px;">Boundless Talk</h3>
+            <p id="consent-subtitle" style="font-size:13.5px; line-height:1.6; color:rgba(255,255,255,0.6); margin-bottom:16px; word-break:keep-all;">아래에서 '동의'를 선택하시면 이용약관, 개인정보처리방침, 커뮤니티 가이드라인, 안전 정책에 동의하게 됩니다.</p>
+            <div id="consent-body-title" style="font-weight:700; font-size:14px; margin-bottom:8px;">이용 전 확인해주세요</div>
+            <ul id="consent-body-list" style="margin:0 0 20px; padding-left:18px; font-size:13px; line-height:1.75; color:rgba(255,255,255,0.7); word-break:keep-all;">
+                <li id="consent-li-age">만 18세 이상만 이용할 수 있어요</li>
+                <li id="consent-li-safety">안전한 커뮤니티를 위해 대화가 신고·검토될 수 있어요</li>
+                <li id="consent-li-more">자세한 내용은 아래 약관에서 확인하실 수 있어요</li>
+            </ul>
+            <div style="display:flex; flex-wrap:wrap; gap:6px 14px; margin-bottom:24px; font-size:12px;">
                 <button class="consent-view-btn" onclick="openAboutPage('terms')" id="consent-terms-view">이용약관</button>
                 <button class="consent-view-btn" onclick="openAboutPage('privacy')" id="consent-privacy-view">개인정보처리방침</button>
                 <button class="consent-view-btn" onclick="openAboutPage('guidelines')" id="consent-guidelines-view">커뮤니티 가이드라인</button>
                 <button class="consent-view-btn" onclick="openAboutPage('safety')" id="consent-safety-view">안전 정책</button>
             </div>
-            <label class="consent-item" style="margin-bottom:22px;">
-                <input type="checkbox" id="consent-all" onchange="updateConsentBtn()">
-                <span id="consent-all-label">만 18세 이상이며, 위 약관/정책에 모두 동의합니다</span>
-            </label>
-            <button id="consent-confirm-btn" onclick="confirmConsent()" disabled style="width:100%; padding:14px; border-radius:12px; background:rgba(var(--accent-rgb),0.15); color:rgba(255,255,255,0.3); border:1px solid rgba(var(--accent-rgb),0.2); font-size:15px; font-weight:600; cursor:not-allowed; transition:all 0.2s;" id="consent-confirm-label">동의하고 시작하기</button>
-            <button onclick="document.getElementById('consent-modal').classList.remove('active')" style="width:100%; margin-top:10px; background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:13px; cursor:pointer; padding:8px;" id="consent-cancel-label">취소</button>
+            <div style="display:flex; gap:10px;">
+                <button id="consent-cancel-label" onclick="document.getElementById('consent-modal').classList.remove('active')" style="flex:1; padding:13px; border-radius:10px; background:transparent; border:1.5px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.7); font-size:14.5px; font-weight:600; cursor:pointer;">취소</button>
+                <button id="consent-confirm-btn" onclick="confirmConsent()" style="flex:1; padding:13px; border-radius:10px; background:var(--accent-color); color:#041025; border:none; font-size:14.5px; font-weight:700; cursor:pointer;">동의</button>
+            </div>
         </div>
     </div>
 
@@ -4656,7 +4654,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     }
                 });
             } else {
-                revealMainScreen();
+                // 게스트도 한 번 생년월일을 확인하면 Firebase에 저장해서, 자동로그인으로
+                // 돌아왔을 때(예: 브라우저 재시작, 세션 유지)는 다시 묻지 않게 함.
+                // 아직 확인 안 한 경우에만 "미리보기" 상태로 두고 대화방 입장 시점에 확인받음
+                database.ref('users/' + user.uid + '/dob').once('value').then(snap => {
+                    _previewMode = !snap.exists();
+                    revealMainScreen();
+                }).catch(() => {
+                    _previewMode = true;
+                    revealMainScreen();
+                });
             }
 
             // 상단 바는 배터리 + 설정 버튼만 깔끔하게 유지 (게스트 배지는 더 이상 표시하지 않음)
@@ -5065,10 +5072,13 @@ function updateUI() {
 
         // 약관 동의 모달 다국어
         const isKo = currentLang === 'ko';
-        const ct = document.getElementById('consent-title'); if(ct) ct.textContent = isKo ? '시작하기 전에' : 'Before You Start';
-        const cs = document.getElementById('consent-subtitle'); if(cs) cs.textContent = isKo ? '아래 내용에 동의하셔야 이용할 수 있어요.' : 'You must agree to the following to continue.';
-        const cal = document.getElementById('consent-all-label'); if(cal) cal.textContent = isKo ? '만 18세 이상이며, 위 약관/정책에 모두 동의합니다' : 'I am 18 or older and agree to all of the above';
-        const ccb = document.getElementById('consent-confirm-btn'); if(ccb) ccb.textContent = isKo ? '동의하고 시작하기' : 'Agree & Continue';
+        const cs = document.getElementById('consent-subtitle'); if(cs) cs.textContent = isKo ? "아래에서 '동의'를 선택하시면 이용약관, 개인정보처리방침, 커뮤니티 가이드라인, 안전 정책에 동의하게 됩니다." : "By selecting 'Agree' below, you agree to our Terms of Service, Privacy Policy, Community Guidelines, and Safety Policy.";
+        const cbt = document.getElementById('consent-body-title'); if(cbt) cbt.textContent = isKo ? '이용 전 확인해주세요' : 'Before you continue';
+        const cla = document.getElementById('consent-li-age'); if(cla) cla.textContent = isKo ? '만 18세 이상만 이용할 수 있어요' : 'You must be 18 or older to use this service';
+        const cls = document.getElementById('consent-li-safety'); if(cls) cls.textContent = isKo ? '안전한 커뮤니티를 위해 대화가 신고·검토될 수 있어요' : 'Conversations may be reported and reviewed to keep the community safe';
+        const clm = document.getElementById('consent-li-more'); if(clm) clm.textContent = isKo ? '자세한 내용은 아래 약관에서 확인하실 수 있어요' : 'See the policies below for details';
+        const ccb = document.getElementById('consent-confirm-btn'); if(ccb) ccb.textContent = isKo ? '동의' : 'Agree';
+        const ccl = document.getElementById('consent-cancel-label'); if(ccl) ccl.textContent = isKo ? '취소' : 'Cancel';
         const ctv = document.getElementById('consent-terms-view'); if(ctv) ctv.textContent = isKo ? '이용약관' : 'Terms of Service';
         const cpv = document.getElementById('consent-privacy-view'); if(cpv) cpv.textContent = isKo ? '개인정보처리방침' : 'Privacy Policy';
         const cgv = document.getElementById('consent-guidelines-view'); if(cgv) cgv.textContent = isKo ? '커뮤니티 가이드라인' : 'Community Guidelines';
@@ -5266,29 +5276,7 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
             return;
         }
         pendingLoginAction = action;
-        document.getElementById('consent-all').checked = false;
-        updateConsentBtn();
         document.getElementById('consent-modal').classList.add('active');
-    }
-
-    function updateConsentBtn() {
-        const allChecked = document.getElementById('consent-all').checked;
-        const btn = document.getElementById('consent-confirm-btn');
-        btn.disabled = !allChecked;
-        if (allChecked) {
-            btn.style.background = 'linear-gradient(135deg, rgba(var(--accent-rgb),0.35), rgba(0,180,255,0.25))';
-            btn.style.color = 'var(--accent-color)';
-            btn.style.borderColor = 'rgba(var(--accent-rgb),0.6)';
-            btn.style.cursor = 'pointer';
-            btn.style.boxShadow = '0 0 16px rgba(var(--accent-rgb),0.2)';
-        } else {
-            const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
-            btn.style.background = 'rgba(var(--accent-rgb),0.08)';
-            btn.style.color = isCute ? 'rgba(36,31,26,0.35)' : 'rgba(255,255,255,0.3)';
-            btn.style.borderColor = 'rgba(var(--accent-rgb),0.15)';
-            btn.style.cursor = 'not-allowed';
-            btn.style.boxShadow = 'none';
-        }
     }
 
     function confirmConsent() {
@@ -5832,7 +5820,11 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         // 들어가려는 이 시점에 딱 한 번 확인받고 나서 방금 누른 걸 그대로 재시도함
         if (_previewMode) {
             requireConsent(() => {
-                requireDob(() => {
+                requireDob(async (dobVal) => {
+                    // 다음에 자동로그인으로 돌아왔을 때 다시 안 물어보도록 저장
+                    if (auth.currentUser) {
+                        try { await database.ref('users/' + auth.currentUser.uid + '/dob').set(dobVal); } catch (e) {}
+                    }
                     _previewMode = false;
                     document.getElementById('join-btn').click();
                 });
