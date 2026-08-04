@@ -3230,9 +3230,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let myUid = null;
     let myAnimalGlobal = null;
     let isGuest = false; // 게스트 모드 여부
-    // "그냥 둘러보기"로 들어온 경우 — 동의/생년월일 확인 없이 바로 화면부터 보여주고,
-    // 실제로 대화방에 들어가려고 할 때(join-btn) 그 시점에 한 번만 확인받음
-    let _previewMode = false;
+    // 게스트 버튼 클릭 시점에 동의+생년월일을 이미 확인받은 직후인지 여부 —
+    // onAuthStateChanged에서 또 물어보지 않게 하는 1회성 플래그
+    let _guestJustConsented = false;
     let _dailyVisitorCount = 0; // 오늘 다녀간 순 방문자 수 (dailyVisitors/{날짜}/{uid} 노드 기준)
     let myNickname = ""; // 사용자 입력 닉네임
     let nicknameConfirmed = false; // 닉네임 입력 후 join 진행 플래그
@@ -4657,16 +4657,32 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                         revealMainScreen();
                     }
                 });
+            } else if (_guestJustConsented) {
+                // 게스트 버튼 클릭 시점에 이미 동의+생년월일을 확인받고 나서 방금
+                // signInAnonymously()가 호출된 경우 — 여기서 또 물어볼 필요 없음
+                _guestJustConsented = false;
+                revealMainScreen();
             } else {
-                // 게스트도 한 번 생년월일을 확인하면 Firebase에 저장해서, 자동로그인으로
-                // 돌아왔을 때(예: 브라우저 재시작, 세션 유지)는 다시 묻지 않게 함.
-                // 아직 확인 안 한 경우에만 "미리보기" 상태로 두고 대화방 입장 시점에 확인받음
+                // 버튼 클릭 없이 자동로그인 등으로 돌아온 게스트 — 저장된 생년월일이
+                // 있으면 다시 안 묻고, 없으면(예전 계정 등) 이 시점에 확인받음
                 database.ref('users/' + user.uid + '/dob').once('value').then(snap => {
-                    _previewMode = !snap.exists();
-                    revealMainScreen();
+                    if (!snap.exists()) {
+                        requireConsent(() => {
+                            requireDob(async (dobVal) => {
+                                await database.ref('users/' + user.uid + '/dob').set(dobVal);
+                                revealMainScreen();
+                            });
+                        });
+                    } else {
+                        revealMainScreen();
+                    }
                 }).catch(() => {
-                    _previewMode = true;
-                    revealMainScreen();
+                    requireConsent(() => {
+                        requireDob(async (dobVal) => {
+                            await database.ref('users/' + user.uid + '/dob').set(dobVal);
+                            revealMainScreen();
+                        });
+                    });
                 });
             }
 
@@ -5400,9 +5416,24 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
         if (pendingDobCancelAction) { pendingDobCancelAction(); pendingDobCancelAction = null; }
     }
 
-    // 게스트 로그인도 "그냥 둘러보기"와 동일하게 동의/생년월일 확인을 대화방 입장 시점으로 미룸
+    // 게스트 로그인 — 구글/이메일 로그인과 동일하게 클릭 즉시 동의+생년월일을 확인받고,
+    // 완료된 후에야 익명 계정을 생성함 (동의 취소 시 계정이 남아 재시도가 막히는 걸 방지)
     document.getElementById('guest-login-btn').addEventListener('click', () => {
-        browseWithoutLogin();
+        requireConsent(() => {
+            requireDob(async (dobVal) => {
+                try {
+                    _guestJustConsented = true;
+                    const cred = await auth.signInAnonymously();
+                    if (cred && cred.user) {
+                        await database.ref('users/' + cred.user.uid + '/dob').set(dobVal);
+                    }
+                } catch (e) {
+                    _guestJustConsented = false;
+                    console.error(e);
+                    alert(currentLang === 'ko' ? '게스트 로그인에 실패했습니다.' : 'Guest login failed.');
+                }
+            });
+        });
     });
 
     // 구글 로그인 버튼(로그인 화면 + 바텀시트 둘 다 여기서 호출)
@@ -5858,21 +5889,6 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
 
 // 7. Agora RTC 소통 엔진 핵심 제어 로직
     document.getElementById('join-btn').onclick = async function() {
-        // "그냥 둘러보기"로 들어와서 동의/생년월일 확인을 아직 안 했다면, 실제로 대화방에
-        // 들어가려는 이 시점에 딱 한 번 확인받고 나서 방금 누른 걸 그대로 재시도함
-        if (_previewMode) {
-            requireConsent(() => {
-                requireDob(async (dobVal) => {
-                    // 다음에 자동로그인으로 돌아왔을 때 다시 안 물어보도록 저장
-                    if (auth.currentUser) {
-                        try { await database.ref('users/' + auth.currentUser.uid + '/dob').set(dobVal); } catch (e) {}
-                    }
-                    _previewMode = false;
-                    document.getElementById('join-btn').click();
-                });
-            });
-            return;
-        }
         if (isJoined || isJoining ||
             client.connectionState === "CONNECTING" ||
             client.connectionState === "CONNECTED" ||
@@ -8868,20 +8884,6 @@ function promptGuestLogin() {
         openLoginSheet();
     } else {
         closeSettingsModal();
-    }
-}
-// 로그인 화면에서 "그냥 둘러보기" — 약관 동의/생년월일 확인 없이 바로 화면(Discover/Scheduled)부터
-// 보여줌. 익명 로그인은 그대로 하되(그래야 실시간 방 목록이 뜸), 동의/생년월일은 실제로 대화방에
-// 들어가려고 할 때(join-btn) 딱 한 번만 확인받음
-async function browseWithoutLogin() {
-    if (auth.currentUser) return;
-    try {
-        _previewMode = true;
-        await auth.signInAnonymously();
-    } catch (e) {
-        _previewMode = false;
-        console.error('둘러보기 진입 실패:', e);
-        alert(currentLang === 'ko' ? '둘러보기를 시작하지 못했어요. 다시 시도해 주세요.' : 'Could not start browsing. Please try again.');
     }
 }
 function openLoginSheet() {
