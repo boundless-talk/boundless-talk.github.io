@@ -8441,6 +8441,12 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             stopPPMode();
             stopRollingAudioRecorder();
             if (window._heartbeatInterval) { clearInterval(window._heartbeatInterval); window._heartbeatInterval = null; }
+            // "나가기" 버튼으로 나갈 땐 연결이 계속 살아있어서 onDisconnect가 안 뜨므로, 여기서
+            // 직접 지워야 함 — 안 그러면 방금 나간 방이 다른 사람 화면(Discover)에 65초 가까이
+            // "아직 사람이 있는 방"으로 계속 남아있게 됨 (특히 혼자 있던 방을 나갈 때 눈에 띔)
+            if (window._myTopicRef) { window._myTopicRef.onDisconnect().cancel(); window._myTopicRef.remove().catch(() => {}); }
+            if (window._myChannelMemberRef) { window._myChannelMemberRef.onDisconnect().cancel(); window._myChannelMemberRef.remove().catch(() => {}); }
+            if (window._myGuestFlagRef) { window._myGuestFlagRef.onDisconnect().cancel(); window._myGuestFlagRef.remove().catch(() => {}); }
             window._myTopicRef = null;
             window._myTopicData = null;
             window._myChannelMemberRef = null;
