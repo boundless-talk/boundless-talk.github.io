@@ -3266,6 +3266,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let isMicMuted = false;
     let isJoined = false;
     let isJoining = false; // 입장 처리 진행 중 플래그 (중복 클릭 방지)
+    let mainScreenRevealed = false; // 3번 화면(메인) 공개 여부 — 스플래시 영상이 뒤늦게 끝나도 배경음악 버튼을 다시 안 띄우기 위한 가드
     let currentChannelName = "";
     let safeAgoraChannelId = ""; // 전역으로 저장 — 저장/조회 시 항상 동일한 값 보장
     let myUid = null;
@@ -4688,7 +4689,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     document.body.classList.remove('intro-open');
                 }
                 // 배경음악 토글 버튼은 로그인 전(2번 화면)까지만 화면에 떠 있고, 로그인 후(3번 화면)부터는
-                // 설정 안의 버튼으로 대체됨 — 재생 상태 자체는 그대로 유지(꺼지지 않음), 노출 위치만 바뀜
+                // 설정 안의 버튼으로 대체됨 — 재생 상태 자체는 그대로 유지(꺼지지 않음), 노출 위치만 바뀜.
+                // mainScreenRevealed를 세워둬야 스플래시 영상이 뒤늦게 끝나 startFromIntro()가 호출돼도
+                // (백그라운드에서 계속 재생되다 로그인 완료 후에야 onended가 뜨는 경우) 이 버튼을 다시 안 띄움
+                mainScreenRevealed = true;
                 const floatBgmBtn = document.getElementById('bgm-toggle-btn');
                 if (floatBgmBtn) floatBgmBtn.style.display = 'none';
                 // 로그인 확인이 늦게 끝나서 "로그인하고 혜택 받기" 팝업이 그 사이에 떠버렸을 수 있으니 닫아줌
@@ -9996,9 +10000,12 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
         intro.classList.add('hide');
         document.body.classList.remove('intro-open');
         // 2번 화면(로그인 대기)부터는 배경음악을 켤 수 있도록 토글 버튼 노출 + 기본으로 자동 재생 시도
-        // (브라우저 자동재생 정책상 막힐 수 있음 — 그 경우 사용자가 버튼을 눌러 직접 켜면 됨).
-        // 로그인 후(3번 화면)엔 이 떠있는 버튼을 숨기고 설정 안 버튼으로 대체함 — revealMainScreen()에서 처리
+        // (브라우저 자동재생 정책상 막힐 수 있음 — 그 경우 사용자가 버튼을 눌러 직접 켜면 됨)
         bgmIntroPassed = true;
+        // 스플래시 영상이 화면 뒤에서 계속 재생되다 로그인이 이미 끝난 뒤에야 onended로 여기 들어오는
+        // 경우가 있음 — 그땐 이미 메인 화면(revealMainScreen)이 재생 상태와 버튼 노출을 다 관리 중이므로
+        // 이 뒤늦은 호출이 그 상태를 덮어쓰지 않게 여기서 멈춤
+        if (mainScreenRevealed) return;
         const bgmBtn = document.getElementById('bgm-toggle-btn');
         if (bgmBtn) bgmBtn.style.display = '';
         const bgmAudio = document.getElementById('bgm-audio');
