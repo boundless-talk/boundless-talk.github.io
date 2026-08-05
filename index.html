@@ -4498,6 +4498,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         addFriendBtn: "➕ ADD FRIEND",
         friendsModalTitle: "MY FRIEND LIST",
         noFriends: "No friends added yet.<br>Make some friends after a talk!",
+        noFriendsGuest: "Log in to add friends",
         lastTalked: "Last talked:",
         callBtn: "Call",
         editNickname: "✏️ Rename",
@@ -4626,6 +4627,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         addFriendBtn: "➕ 친구 추가",
         friendsModalTitle: "나의 친구 목록",
         noFriends: "아직 추가된 친구가 없습니다.<br>대화 후 친구를 맺어보세요!",
+        noFriendsGuest: "로그인 후 친구추가 하기",
         lastTalked: "마지막 대화:",
         callBtn: "연결",
         editNickname: "✏️ 이름 변경",
@@ -8910,10 +8912,16 @@ let activePresenceRefs = [];
 
 function loadFriendsList() {
     if (!auth.currentUser) return;
-    const myUid = auth.currentUser.uid;
     const container = document.getElementById('mycircles-friends-panel');
     if (!container) return;
 
+    // 게스트는 계정이 없어 친구를 맺을 수 없으므로, DB 조회 없이 로그인 유도 문구만 보여줌
+    if (isGuest) {
+        container.innerHTML = `<div class="friends-empty-msg" onclick="promptGuestLogin()" style="cursor:pointer;">${textData[currentLang].noFriendsGuest}</div>`;
+        return;
+    }
+
+    const myUid = auth.currentUser.uid;
     // [개선 3] 데이터를 요청하기 직전에 화면에 로딩 상태를 즉시 표시
     container.innerHTML = `<div class="friends-empty-msg">불러오는 중...</div>`;
 
