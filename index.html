@@ -351,8 +351,8 @@
         #settings-guest-locked-wrap { display: contents; }
         #settings-cards.guest-order #settings-guest-locked-wrap { display: flex; flex-direction: row; gap: 10px; position: relative; grid-column: 1 / -1; order: 1; }
         #settings-cards.guest-order #settings-guest-locked-wrap .settings-card { flex: 1; min-width: 0; }
-        #settings-cards.guest-order #settings-time-card { order: 2; grid-column: 1 / -1; }
-        #settings-cards.guest-order #settings-bgm-card { order: 3; grid-column: 1 / -1; }
+        #settings-cards.guest-order #settings-time-card { order: 2; }
+        #settings-cards.guest-order #settings-bgm-card { order: 3; }
         .settings-value-muted { color: rgba(255,255,255,0.85) !important; }
         html[data-cute-mode="cute"] .settings-value-muted { color: rgba(36,31,26,0.5) !important; }
         .settings-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 12px; }
@@ -1591,7 +1591,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── Discover 화면 (시안 1a 충실 재현: 레드 액센트 + 다크 카드) ── */
         #discover-screen {
             --dr: var(--accent-color); --dr-glow: rgba(var(--accent-rgb),.35); --dsurf: #141416; --dbord: rgba(255,255,255,.08);
-            width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; padding: 12px 0 110px;
+            width: 100%; display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; padding: 12px 0 150px;
         }
         #discover-tab-discover, #discover-tab-trending, #discover-tab-scheduled, #discover-tab-mycircles {
             display: flex; flex-direction: column; gap: 16px;
@@ -2207,10 +2207,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="settings-card-value" id="settings-time-value" style="color:var(--accent-color);">--:--:--</div>
                     <div class="settings-card-sub" id="settings-time-sub">구독 혜택</div>
                 </div>
-                <!-- BGM은 계정과 무관한 기능이라 게스트도 써야 해서 잠금 영역(guest-locked-wrap) 밖에 둠 -->
+                <!-- BGM은 계정과 무관한 기능이라 게스트도 써야 해서 잠금 영역(guest-locked-wrap) 밖에 둠.
+                     대화충전량 카드와 아이콘+라벨 뼈대를 맞춰서, 버튼(♫)이 그 카드의 "0%" 값과
+                     같은 높이에 오도록 함(위쪽에 숨긴 아이콘 자리를 똑같이 비워둠) -->
                 <div class="settings-card" id="settings-bgm-card">
+                    <div class="settings-card-icon" style="visibility:hidden;">·</div>
                     <div class="settings-card-label" id="settings-bgm-label">BGM</div>
-                    <button id="settings-bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="margin:4px 0 0;">♫</button>
+                    <button id="settings-bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="margin:-8px 0 0 -6px; padding:0;">♫</button>
                 </div>
             </div>
 
@@ -2888,8 +2891,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <div class="modal-overlay" id="about-page-modal" onclick="if(event.target===this) this.classList.remove('active')">
         <div class="modal-content" style="max-width:480px; max-height:80vh; overflow-y:auto;">
             <button id="about-page-back-btn" onclick="goBackFromAboutPage()" style="background:transparent; border:none; color:rgba(255,255,255,0.4); font-size:13px; cursor:pointer; padding:0; margin-bottom:12px; text-align:left;">← 뒤로</button>
-            <h3 id="about-page-title" style="margin-bottom:16px; font-size:16px;"></h3>
-            <div id="about-page-content" style="font-size:13px; color:rgba(255,255,255,0.65); line-height:1.8; white-space:pre-wrap;"></div>
+            <h3 id="about-page-title" style="margin-bottom:16px; font-size:16px; text-align:left;"></h3>
+            <div id="about-page-content" style="font-size:13px; color:rgba(255,255,255,0.65); line-height:1.8; white-space:pre-wrap; text-align:left;"></div>
         </div>
     </div>
 
