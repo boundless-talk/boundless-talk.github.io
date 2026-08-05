@@ -1977,7 +1977,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* ── Discover 화면: 큐트 모드 ── */
         html[data-cute-mode="cute"] #discover-screen {
             --dr: #8a2f2a; --dr-glow: rgba(138,47,42,.3); --dsurf: #ffffff; --dbord: rgba(0,0,0,.08);
-            background: #f7f4ee; border-radius: 2px; padding: 12px 12px 16px; margin: 0 -12px 24px;
+            background: #f7f4ee; border-radius: 2px; padding: 12px 12px 150px; margin: 0 -12px 24px;
             width: calc(100% + 24px);
         }
         html[data-cute-mode="cute"] .disco-navbar-cta { border-radius: 2px; box-shadow: none; }
@@ -2208,12 +2208,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     <div class="settings-card-sub" id="settings-time-sub">구독 혜택</div>
                 </div>
                 <!-- BGM은 계정과 무관한 기능이라 게스트도 써야 해서 잠금 영역(guest-locked-wrap) 밖에 둠.
-                     대화충전량 카드와 아이콘+라벨 뼈대를 맞춰서, 버튼(♫)이 그 카드의 "0%" 값과
-                     같은 높이에 오도록 함(위쪽에 숨긴 아이콘 자리를 똑같이 비워둠) -->
+                     오늘남은시간 카드와 똑같이 라벨+값 구조라 같은 줄(수평선)에 자연스레 맞음.
+                     버튼 자체 여백 때문에 음표가 라벨보다 안쪽에 있어 보여서 왼쪽으로 살짝 당김 -->
                 <div class="settings-card" id="settings-bgm-card">
-                    <div class="settings-card-icon" style="visibility:hidden;">·</div>
                     <div class="settings-card-label" id="settings-bgm-label">BGM</div>
-                    <button id="settings-bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="margin:-8px 0 0 -6px; padding:0;">♫</button>
+                    <button id="settings-bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="margin:0 0 0 -8px; padding:0;">♫</button>
                 </div>
             </div>
 
