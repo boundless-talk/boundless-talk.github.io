@@ -3881,7 +3881,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         return card;
     }
     // PP(핑퐁) 뱃지를 누르면 바로 위에 짧은 설명 말풍선을 띄움 — 같은 뱃지를 다시 누르면 닫힘,
-    // 다른 곳을 누르면 자동으로 닫힘
+    // 다른 곳을 누르면 자동으로 닫힘. position:fixed라 화면 좌표로 한 번 계산해두면 되지만,
+    // 그 계산을 열리는 순간에만 하고 끝내버리면 그 뒤에 스크롤했을 때 버튼은 움직이는데 말풍선만
+    // 그 자리에 남아서 서로 어긋나 보임 — 그래서 열려있는 동안은 스크롤할 때마다 다시 계산함
+    function positionPPInfoTip(btn) {
+        const tip = document.getElementById('pp-info-tip');
+        if (!tip || !btn) return;
+        const rect = btn.getBoundingClientRect();
+        const tipRect = tip.getBoundingClientRect();
+        let left = rect.left + rect.width / 2 - tipRect.width / 2;
+        left = Math.max(8, Math.min(window.innerWidth - tipRect.width - 8, left));
+        tip.style.left = left + 'px';
+        tip.style.top = (rect.top - tipRect.height - 8) + 'px';
+    }
     function togglePPInfoTip(e, btn) {
         e.stopPropagation();
         let tip = document.getElementById('pp-info-tip');
@@ -3899,12 +3911,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         tip.textContent = currentLang === 'ko' ? '90초씩 릴레이 토크' : 'Relay talk, 90 seconds each';
         tip._anchor = btn;
         tip.classList.add('active');
-        const rect = btn.getBoundingClientRect();
-        const tipRect = tip.getBoundingClientRect();
-        let left = rect.left + rect.width / 2 - tipRect.width / 2;
-        left = Math.max(8, Math.min(window.innerWidth - tipRect.width - 8, left));
-        tip.style.left = left + 'px';
-        tip.style.top = (rect.top - tipRect.height - 8) + 'px';
+        positionPPInfoTip(btn);
     }
     document.addEventListener('click', () => {
         const tip = document.getElementById('pp-info-tip');
@@ -3913,6 +3920,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             tip._anchor = null;
         }
     });
+    // capture:true라야 모달 내부처럼 body가 아닌 다른 요소가 스크롤될 때도 잡을 수 있음
+    // (scroll 이벤트는 버블링되지 않으므로 캡처 단계에서 상위 document가 받아야 함)
+    document.addEventListener('scroll', () => {
+        const tip = document.getElementById('pp-info-tip');
+        if (tip && tip.classList.contains('active') && tip._anchor) {
+            positionPPInfoTip(tip._anchor);
+        }
+    }, { passive: true, capture: true });
     // 9시가 지난 예약방은 더 이상 좌석을 예약하는 게 아니라, 그 주제로 바로 실제 대화방에 들어감
     // (알림을 못 받았거나 놓친 사람도 Scheduled 탭에서 같은 방식으로 합류할 수 있도록)
     function enterScheduledRoom(room) {
