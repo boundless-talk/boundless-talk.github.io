@@ -3357,18 +3357,19 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     // ══════════════════ Discover 화면 ══════════════════
     const DISCO_CATEGORIES = [
-        { id: 'maskoff',    ko: '언마스크', en: 'Unmask',     kws: ['가면','솔직','본심','가식','민낯'] },
-        { id: 'burnout',    ko: '번아웃',   en: 'Burnout',    kws: ['번아웃','무기력','소진','지침','슬럼프'] },
-        { id: 'vent',       ko: '대나무숲', en: 'Vent',       kws: ['대나무숲','하소연','뒷담','비밀','털어놓'] },
-        { id: 'worries',    ko: '고민',     en: 'Worries',    kws: ['고민','걱정','불안','진로','선택'] },
-        { id: 'comfort',    ko: '위로',     en: 'Comfort',    kws: ['위로','힘들','토닥','슬픔','우울','지쳤'] },
-        { id: 'failure',    ko: '실패',     en: 'Failure',    kws: ['실패','좌절','망함','포기','낙방'] },
-        { id: 'praise',     ko: '칭찬',     en: 'Praise',     kws: ['칭찬','자랑','뿌듯','성취','칭찬해'] },
-        { id: 'life',       ko: '일상',     en: 'Life',       kws: ['일상','연애','썸','데이트','자취','직장','취준'] },
-        { id: 'taste',      ko: '취향',     en: 'Taste',      kws: ['취향','최애','취미','좋아하는'] },
-        { id: 'philosophy', ko: '철학',     en: 'Philosophy', kws: ['철학','인생','가치관','존재','의미'] },
-        { id: 'books',      ko: '책이야기', en: 'Books',      kws: ['책','독서','소설','작가','서평','북토크','도서'] },
-        { id: 'general',    ko: '기타',     en: 'General',    kws: [] }
+        { id: 'smalltalk', ko: '스몰토크',   en: 'Small Talk', kws: ['스몰토크','가벼운','아무말'] },
+        { id: 'romance',   ko: '연애',       en: 'Romance',    kws: ['연애','썸','데이트','짝사랑','이별'] },
+        { id: 'vent',      ko: '대나무숲',   en: 'Vent',       kws: ['대나무숲','하소연','뒷담','비밀','털어놓'] },
+        { id: 'comfort',   ko: '따뜻한 한마디', en: 'Comfort', kws: ['위로','힘들','토닥','슬픔','우울','지쳤','따뜻한'] },
+        { id: 'worries',   ko: '말못할고민', en: 'Worries',    kws: ['고민','걱정','불안','진로','선택','말못할'] },
+        { id: 'burnout',   ko: '번아웃',     en: 'Burnout',    kws: ['번아웃','무기력','소진','지침','슬럼프'] },
+        { id: 'worklife',  ko: '직장고민',   en: 'Work Life',  kws: ['직장','회사','상사','이직','퇴사','취준'] },
+        { id: 'life',      ko: '일상',       en: 'Life',       kws: ['일상','자취','하루','오늘'] },
+        { id: 'funny',     ko: '웃긴얘기',   en: 'Funny',      kws: ['웃긴','유머','드립','개그'] },
+        { id: 'politics',  ko: '정치사회',   en: 'Politics',   kws: ['정치','사회','뉴스','시사'] },
+        { id: 'finance',   ko: '금융',       en: 'Finance',    kws: ['금융','주식','재테크','부동산','투자'] },
+        { id: 'books',     ko: '책소개',     en: 'Books',      kws: ['책','독서','소설','작가','서평','북토크','도서'] },
+        { id: 'general',   ko: '기타',       en: 'General',    kws: [] }
     ];
     function discoCatLabel(id) {
         const c = DISCO_CATEGORIES.find(c => c.id === id) || DISCO_CATEGORIES[DISCO_CATEGORIES.length - 1];
@@ -3505,7 +3506,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         return card;
     }
 
-    const DISCO_TRENDING_FALLBACK = ['#f1', '#existential', '#buildinpublic', '#latenight', '#aiethics'];
+    const DISCO_TRENDING_FALLBACK = ['#내생에최고로웃긴썰', '#내가제일아끼는아이템', '#책소개', '#회사사람이야기', '#연애고민', '#재테크팁', '#단기목표공유'];
     function renderDiscoTrendingRow() {
         const row = document.getElementById('disco-trending-row');
         if (!row) return;
