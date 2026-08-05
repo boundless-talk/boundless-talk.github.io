@@ -352,6 +352,7 @@
         #settings-cards.guest-order #settings-guest-locked-wrap { display: flex; flex-direction: row; gap: 10px; position: relative; grid-column: 1 / -1; order: 1; }
         #settings-cards.guest-order #settings-guest-locked-wrap .settings-card { flex: 1; min-width: 0; }
         #settings-cards.guest-order #settings-time-card { order: 2; grid-column: 1 / -1; }
+        #settings-cards.guest-order #settings-bgm-card { order: 3; grid-column: 1 / -1; }
         .settings-value-muted { color: rgba(255,255,255,0.85) !important; }
         html[data-cute-mode="cute"] .settings-value-muted { color: rgba(36,31,26,0.5) !important; }
         .settings-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 12px; }
@@ -378,7 +379,6 @@
         html[data-cute-mode="cute"] .settings-section-label { color: rgba(36,31,26,0.4); }
         html[data-cute-mode="cute"] .settings-row,
         html[data-cute-mode="cute"] .settings-card { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
-        html[data-cute-mode="cute"] .settings-bgm-box { border-left-color: rgba(0,0,0,0.08); }
         html[data-cute-mode="cute"] .settings-row-left { color: rgba(36,31,26,0.75); }
         html[data-cute-mode="cute"] .lang-pill.inactive { background: rgba(0,0,0,0.05); color: rgba(36,31,26,0.4); border-color: rgba(0,0,0,0.1); }
         html[data-cute-mode="cute"] .settings-card-label { color: rgba(36,31,26,0.45); }
@@ -2186,34 +2186,31 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
             <div class="settings-section-label" id="settings-mypage-label">My page</div>
             <div class="settings-cards" id="settings-cards">
-                <div class="settings-card" id="settings-time-card">
-                    <div class="settings-card-label" id="settings-time-label">오늘 남은 시간</div>
-                    <div class="settings-card-value" id="settings-time-value" style="color:var(--accent-color);">--:--:--</div>
-                    <div class="settings-card-sub" id="settings-time-sub">구독 혜택</div>
-                </div>
                 <div id="settings-guest-locked-wrap">
-                    <div class="settings-card" id="settings-rank-card">
+                    <div class="settings-card" id="settings-badge-card">
+                        <div class="settings-card-label" id="settings-badge-label">오늘 받은 배지</div>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
+                            <div class="settings-card-value" id="settings-badge-count" style="color:#ffd166;font-size:17px;font-weight:700;">0</div>
+                            <div class="settings-badge-chips" id="settings-badge-chips"></div>
+                        </div>
+                    </div>
+                    <div class="settings-card" id="settings-rank-card" onclick="toggleRankInfoTip(event, this)" style="cursor:pointer;">
                         <div class="settings-card-icon" id="settings-rank-emoji">👋</div>
                         <div class="settings-card-label" id="settings-rank-label">내 랭크</div>
                         <div class="settings-card-value" id="settings-rank-name" style="color:#ffd166;">--</div>
                         <div class="settings-card-sub" id="settings-rank-sub">누적 배지</div>
                     </div>
-                    <div class="settings-card" id="settings-badge-card" style="grid-column:1 / -1; display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-                        <div style="flex:1; min-width:0;">
-                            <div class="settings-card-label" id="settings-badge-label">오늘 받은 배지</div>
-                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;">
-                                <div class="settings-card-value" id="settings-badge-count" style="color:#ffd166;font-size:17px;font-weight:700;">0</div>
-                                <div class="settings-badge-chips" id="settings-badge-chips"></div>
-                            </div>
-                        </div>
-                        <!-- 번개/배지는 계정이 있어야 의미 있어서 게스트는 잠겨있지만(아래 잠금 오버레이),
-                             BGM은 계정과 무관한 기능이라 게스트도 눌러야 함 — 오버레이보다 위 z-index로 뚫어둠 -->
-                        <div class="settings-bgm-box" style="position:relative; z-index:2; flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:2px; padding-left:10px; border-left:1px solid rgba(255,255,255,0.08);">
-                            <div class="settings-card-label" id="settings-bgm-label" style="font-size:10px;">BGM</div>
-                            <button id="settings-bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="margin:0;">♫</button>
-                        </div>
-                    </div>
-                    <div id="settings-guest-locked-cta" onclick="promptGuestLogin()" style="display:none; position:absolute; inset:0; z-index:1; align-items:center; justify-content:center; text-align:center; padding:6px; background:rgba(20,20,22,0.4); backdrop-filter:blur(1px); border-radius:12px; cursor:pointer; font-size:10.5px; font-weight:600; color:rgba(255,209,102,0.9); line-height:1.35; text-shadow:0 1px 3px rgba(0,0,0,0.6);"></div>
+                    <div id="settings-guest-locked-cta" onclick="promptGuestLogin()" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; text-align:center; padding:6px; background:rgba(20,20,22,0.4); backdrop-filter:blur(1px); border-radius:12px; cursor:pointer; font-size:10.5px; font-weight:600; color:rgba(255,209,102,0.9); line-height:1.35; text-shadow:0 1px 3px rgba(0,0,0,0.6);"></div>
+                </div>
+                <div class="settings-card" id="settings-time-card">
+                    <div class="settings-card-label" id="settings-time-label">오늘 남은 시간</div>
+                    <div class="settings-card-value" id="settings-time-value" style="color:var(--accent-color);">--:--:--</div>
+                    <div class="settings-card-sub" id="settings-time-sub">구독 혜택</div>
+                </div>
+                <!-- BGM은 계정과 무관한 기능이라 게스트도 써야 해서 잠금 영역(guest-locked-wrap) 밖에 둠 -->
+                <div class="settings-card" id="settings-bgm-card">
+                    <div class="settings-card-label" id="settings-bgm-label">BGM</div>
+                    <button id="settings-bgm-toggle-btn" class="settings-gear-btn" onclick="toggleBgm()" title="배경음악" style="margin:4px 0 0;">♫</button>
                 </div>
             </div>
 
@@ -3894,7 +3891,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         tip.style.left = left + 'px';
         tip.style.top = (rect.top - tipRect.height - 8) + 'px';
     }
-    function togglePPInfoTip(e, btn) {
+    // PP 설명뿐 아니라 다른 곳(대화충전량 등)에서도 같은 방식의 말풍선을 쓸 수 있도록 범용화
+    function toggleInfoTip(e, btn, text) {
         e.stopPropagation();
         let tip = document.getElementById('pp-info-tip');
         if (tip && tip._anchor === btn && tip.classList.contains('active')) {
@@ -3908,10 +3906,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             tip.className = 'pp-info-tip';
             document.body.appendChild(tip);
         }
-        tip.textContent = currentLang === 'ko' ? '90초씩 릴레이 토크' : 'Relay talk, 90 seconds each';
+        tip.textContent = text;
         tip._anchor = btn;
         tip.classList.add('active');
         positionPPInfoTip(btn);
+    }
+    function togglePPInfoTip(e, btn) {
+        toggleInfoTip(e, btn, currentLang === 'ko' ? '90초씩 릴레이 토크' : 'Relay talk, 90 seconds each');
+    }
+    function toggleRankInfoTip(e, btn) {
+        toggleInfoTip(e, btn, currentLang === 'ko' ? '매일 1%씩 감소됩니다' : 'Drains 1% every day');
     }
     document.addEventListener('click', () => {
         const tip = document.getElementById('pp-info-tip');
@@ -9124,7 +9128,7 @@ function updateSettingsModalLang() {
     document.getElementById('settings-time-sub').textContent = '';
     document.getElementById('settings-badge-label').textContent = isKo ? '오늘 받은 번개' : 'Lightning received today';
     document.getElementById('settings-rank-label').textContent = isKo ? '대화 충전량' : 'Talk Charge';
-    document.getElementById('settings-rank-sub').textContent = isKo ? '매일 1%씩 감소' : 'Drains 1% per day';
+    document.getElementById('settings-rank-sub').textContent = '';
     renderSettingsBattery();
     renderSettingsDailyEnergy();
 }
