@@ -3616,6 +3616,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
 
     function joinDiscoRoom(room) {
+        // 게스트도 방을 눌러보는 것까진 자유롭게 두고, 실제 입장 시도(join-btn 핸들러)에서만 막음
         if (isJoined || isJoining) return;
         pendingRoomCategory = room.category;
         pingpongMode = !!room.pingpong;
@@ -3686,6 +3687,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
 
     function openDiscoCreateModal() {
+        // 게스트도 방 만들기 화면은 구경할 수 있게 두고, 실제로 만드는 순간(join-btn/제출)에만 막음
         if (!isWithinOperatingHours()) { openScheduleCreateModal(); return; }
         discoCreateSelectedCat = 'general';
         discoCreatePP = false;
@@ -4012,6 +4014,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         });
     }
     function openScheduleCreateModal() {
+        // 게스트도 예약하기 화면은 구경할 수 있게 두고, 실제 제출(submitScheduledRoomCreate) 시에만 막음
         if (!auth.currentUser) { promptGuestLogin(); return; }
         scheduleCreateSelectedCat = 'general';
         scheduleCreateStyle = 'casual';
@@ -4027,6 +4030,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
     async function submitScheduledRoomCreate() {
         const isKo = currentLang === 'ko';
+        if (isGuest) { closeScheduleCreateModal(); promptGuestLogin(); return; }
         const input = document.getElementById('schedule-create-topic-input');
         const title = input.value.normalize('NFC').trim();
         if (!title) {
@@ -6074,6 +6078,9 @@ document.getElementById('part-title-label').innerText = lang.partLabel;
 
 // 7. Agora RTC 소통 엔진 핵심 제어 로직
     document.getElementById('join-btn').onclick = async function() {
+        // 게스트는 방 만들기/참여하기 모두 막고 로그인을 유도함 — 여러 진입 경로가
+        // 결국 다 이 핸들러로 모이므로 여기서 최종적으로 한 번 더 막아둠
+        if (isGuest || !auth.currentUser) { promptGuestLogin(); return; }
         if (isJoined || isJoining ||
             client.connectionState === "CONNECTING" ||
             client.connectionState === "CONNECTED" ||
@@ -9247,26 +9254,29 @@ async function loadSettingsMyPage() {
         renderSettingsDailyEnergy();
     });
 
-    // 잔여 시간 (await는 리스너 등록 후에 실행)
-    try {
-        const usageSnap = await database.ref('users/' + uid + '/dailyUsage/' + today).once('value');
-        const usedSec = usageSnap.val() || 0;
-        const subSnap = await database.ref('users/' + uid + '/subscription').once('value');
-        const sub = subSnap.val();
-        const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
-        // 하루 2시간 한도는 구독 여부와 무관하게 모든 이용자(게스트 포함) 공통이므로 잔여 시간은 항상 계산해서 보여줌
-        const rem = Math.max(0, 7200 - usedSec);
-        const h = String(Math.floor(rem / 3600)).padStart(2, '0');
-        const m = String(Math.floor((rem % 3600) / 60)).padStart(2, '0');
-        const s = String(rem % 60).padStart(2, '0');
-        document.getElementById('settings-time-value').textContent = h + ':' + m + ':' + s;
-        if (subValid) {
-            document.getElementById('settings-time-value').style.color = 'var(--accent-color)';
-        } else {
-            const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
-            document.getElementById('settings-time-value').style.color = isCute ? '#241f1a' : 'rgba(255,255,255,0.85)';
-        }
-    } catch(e) { console.warn('settings time load failed:', e); }
+    // 잔여 시간 — 게스트는 이제 방 만들기/참여하기 자체가 막혀 있어 의미가 없으므로 "-"로 표시
+    if (isGuest) {
+        document.getElementById('settings-time-value').textContent = '-';
+    } else {
+        try {
+            const usageSnap = await database.ref('users/' + uid + '/dailyUsage/' + today).once('value');
+            const usedSec = usageSnap.val() || 0;
+            const subSnap = await database.ref('users/' + uid + '/subscription').once('value');
+            const sub = subSnap.val();
+            const subValid = !!(sub && sub.plan && sub.expiresAt && new Date(sub.expiresAt) > new Date());
+            const rem = Math.max(0, 7200 - usedSec);
+            const h = String(Math.floor(rem / 3600)).padStart(2, '0');
+            const m = String(Math.floor((rem % 3600) / 60)).padStart(2, '0');
+            const s = String(rem % 60).padStart(2, '0');
+            document.getElementById('settings-time-value').textContent = h + ':' + m + ':' + s;
+            if (subValid) {
+                document.getElementById('settings-time-value').style.color = 'var(--accent-color)';
+            } else {
+                const isCute = document.documentElement.getAttribute('data-cute-mode') === 'cute';
+                document.getElementById('settings-time-value').style.color = isCute ? '#241f1a' : 'rgba(255,255,255,0.85)';
+            }
+        } catch(e) { console.warn('settings time load failed:', e); }
+    }
 }
 
 function closeFriendsModal() {
