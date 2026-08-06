@@ -3962,7 +3962,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
     async function toggleScheduledSeat(roomId, alreadyJoined) {
         const isKo = currentLang === 'ko';
-        if (!auth.currentUser) { promptGuestLogin(); return; }
+        if (isGuest || !auth.currentUser) { promptGuestLogin(); return; }
         try {
             const idToken = await auth.currentUser.getIdToken();
             if (alreadyJoined) {
