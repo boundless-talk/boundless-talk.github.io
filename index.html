@@ -74,12 +74,16 @@
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
-            overscroll-behavior-y: none;
+            /* 화면 맨 위에서 아래로 당기면(pull-to-refresh) 브라우저 기본 새로고침이 되게 둠 —
+               로그인된 채로 앱을 오래 켜두면 어제 예약방 등 오래된 데이터가 그대로 남아있을 수
+               있어서, 당겨서 새로고침으로 최신 상태를 다시 불러올 수 있게 함. 다만 통화 중(room-open)엔
+               실수로 당겨서 통화가 끊기면 안 되니 그때만 아래에서 다시 막음 */
+            overscroll-behavior-y: auto;
             position: relative;
             padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom)) 20px;
 
         }
-        body.room-open { overflow: hidden; }
+        body.room-open { overflow: hidden; overscroll-behavior-y: none; }
         body.intro-open { overflow: hidden; }
 
 
@@ -3191,6 +3195,55 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             alert((isKo ? '로그 조회 실패: ' : 'Failed to load log: ') + e.message);
         }
     }
+
+    // 자정이 지나 날짜가 바뀌면 자동으로 새로고침 — 로그인 상태로 앱을 계속 켜두고 있어도
+    // 어제 예약방 등 오래된 데이터가 남아있지 않게 함. 통화 중(room-open)에 새로고침하면
+    // 통화가 끊기므로 그 틱은 건너뛰고, 통화가 끝난 뒤 다음 체크(최대 1분 뒤)에서 처리됨
+    (function setupAutoResetOnNewDay() {
+        function kstDateKey() {
+            return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        }
+        const loadedDateKey = kstDateKey();
+        setInterval(() => {
+            if (kstDateKey() === loadedDateKey) return;
+            if (document.body.classList.contains('room-open')) return; // 통화 끝난 뒤 다음 틱에 재시도
+            location.reload();
+        }, 60 * 1000);
+    })();
+
+    // 당겨서 새로고침(pull-to-refresh) — 안드로이드 크롬은 overscroll-behavior:auto만으로
+    // 브라우저 기본 제스처가 뜨지만, iOS Safari/홈화면 PWA는 그 기능 자체가 아예 없어서
+    // 직접 구현함. 로그인 상태로 앱을 오래 켜놔서 자정이 지나도 어제 예약방 등 오래된
+    // 데이터가 그대로 남아있는 문제를, 화면 맨 위에서 아래로 당기면 새로고침해서 해결하게 함
+    (function setupPullToRefresh() {
+        const THRESHOLD = 90; // px
+        let startY = null;
+        let armed = false;
+        function overlayOpen() {
+            if (document.body.classList.contains('room-open')) return true;
+            if (document.querySelector('.modal-overlay.active, .nickname-modal-overlay.active')) return true;
+            const settingsOverlay = document.getElementById('settings-modal-overlay');
+            if (settingsOverlay && settingsOverlay.classList.contains('open')) return true;
+            const loginSheet = document.getElementById('login-sheet-overlay');
+            if (loginSheet && loginSheet.style.display !== 'none') return true;
+            return false;
+        }
+        document.addEventListener('touchstart', (e) => {
+            if (window.scrollY > 0 || overlayOpen()) { startY = null; return; }
+            startY = e.touches[0].clientY;
+            armed = false;
+        }, { passive: true });
+        document.addEventListener('touchmove', (e) => {
+            if (startY === null) return;
+            if (overlayOpen()) { startY = null; return; }
+            if (window.scrollY === 0 && (e.touches[0].clientY - startY) > THRESHOLD) armed = true;
+        }, { passive: true });
+        document.addEventListener('touchend', () => {
+            if (armed) location.reload();
+            armed = false;
+            startY = null;
+        }, { passive: true });
+    })();
 
     // 서비스 워커 등록 (앱 로드 시)
     if ('serviceWorker' in navigator) {
