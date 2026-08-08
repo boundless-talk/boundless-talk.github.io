@@ -1111,15 +1111,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 .nm-cancel-btn { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1) !important; }
 .nm-cancel-btn:hover { background: rgba(255,255,255,0.1); }
 
-/* 예약 알림 사전 동의 모달 (매번 뜸, 스누즈 체크박스 포함) */
-.notify-checkbox-row { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 18px 0 0; }
-.notify-checkbox-row input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--accent-color); cursor: pointer; }
-.notify-checkbox-row label { font-size: 12px; color: rgba(255,255,255,0.45); cursor: pointer; user-select: none; }
-#notify-preprompt-modal .nickname-modal-box { padding-top: 34px; }
-#notify-preprompt-modal .nickname-modal-actions button { padding: 8px; font-size: 12px; }
-#notify-preprompt-modal .notify-preprompt-subtitle { margin: 0 0 6px 0; font-size: 12px; }
-#notify-preprompt-modal h3 { margin: 0 0 22px 0; font-size: 20px; }
-#notify-preprompt-modal .notify-checkbox-row { margin-top: 22px; }
+/* 예약 알림 사전 동의 모달 (매번 뜸, "일주일간 묻지 않기" 클릭 시 7일 스누즈) */
+#notify-preprompt-modal .nickname-modal-box { padding-top: 30px; text-align: center; }
+#notify-preprompt-modal .notify-preprompt-icon {
+    width: 52px; height: 52px; margin: 0 auto 16px;
+    color: var(--accent-color); display: flex; align-items: center; justify-content: center;
+}
+#notify-preprompt-modal .notify-preprompt-icon svg { width: 30px; height: 30px; }
+#notify-preprompt-modal h3 { margin: 0 0 8px 0; font-size: 18px; }
+#notify-preprompt-modal p { margin: 0 0 22px 0; }
+#notify-preprompt-modal .nickname-modal-actions { gap: 8px; justify-content: center; }
+#notify-preprompt-modal .nickname-modal-actions button { flex: 0 1 auto; width: auto; padding: 6px 16px; font-size: 12px; }
+#notify-preprompt-modal .notify-preprompt-snooze-link {
+    display: block; width: 100%; margin: 14px 0 0; padding: 4px;
+    background: none; border: none; color: var(--accent-color);
+    font-size: 12px; text-decoration: underline; cursor: pointer;
+}
 
 /* 친구 요청 수신 알림 배너 */
 #friend-request-banner {
@@ -2474,7 +2481,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <!-- 9시 전에 Scheduled 탭에 들어왔을 때 한 번 보여주는 안내 모달 -->
         <div class="modal-overlay" id="scheduled-preopen-modal" onclick="if(event.target===this) this.classList.remove('active')">
             <div class="modal-content" style="max-width:320px;">
-                <h3 id="scheduled-preopen-title" style="font-size:12.5px; line-height:1.8; margin-bottom:20px; word-break:keep-all;">9시부터 대화 시작이에요.<br>지금 테이블 하나 만들어보세요!</h3>
+                <h3 id="scheduled-preopen-title" style="font-size:12.5px; line-height:1.8; margin-bottom:20px; word-break:keep-all;">9시, 대화가 시작됩니다.<br>지금 테이블을 만들어보세요.</h3>
                 <button onclick="document.getElementById('scheduled-preopen-modal').classList.remove('active'); openScheduleCreateModal();" id="scheduled-preopen-btn" style="width:100%; padding:13px; background:var(--accent-color); color:#041025; font-weight:700; font-size:14px; border:none; border-radius:12px; cursor:pointer;">테이블 만들기</button>
             </div>
         </div>
@@ -2706,19 +2713,22 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
-    <!-- 예약할 때마다 뜨는 알림 동의 모달 (스누즈 체크 시 7일간 재노출 안 함) -->
+    <!-- 예약할 때마다 뜨는 알림 동의 모달 ("일주일간 묻지 않기" 클릭 시 7일간 재노출 안 함) -->
     <div class="nickname-modal-overlay" id="notify-preprompt-modal">
         <div class="nickname-modal-box">
-            <p class="notify-preprompt-subtitle" id="notify-preprompt-subtitle">깜빡하면 아쉬운 시간, 저녁 9시.</p>
-            <h3 id="notify-preprompt-title">알림으로 알려드릴까요?</h3>
+            <div class="notify-preprompt-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </div>
+            <h3 id="notify-preprompt-title">알림 활성화</h3>
+            <p id="notify-preprompt-desc">새로운 대화의 기회를 놓치지 않도록 알려드립니다.</p>
             <div class="nickname-modal-actions">
-                <button class="nm-cancel-btn" id="notify-preprompt-no-btn">아니요</button>
-                <button class="nm-confirm-btn intro2-start-btn" id="notify-preprompt-yes-btn">좋아요</button>
+                <button class="nm-cancel-btn" id="notify-preprompt-no-btn">나중에</button>
+                <button class="nm-confirm-btn intro2-start-btn" id="notify-preprompt-yes-btn">활성화</button>
             </div>
-            <div class="notify-checkbox-row">
-                <input type="checkbox" id="notify-preprompt-snooze">
-                <label for="notify-preprompt-snooze" id="notify-preprompt-snooze-label">일주일간 보지 않기</label>
-            </div>
+            <button class="notify-preprompt-snooze-link" id="notify-preprompt-snooze-link">일주일간 묻지 않기</button>
         </div>
     </div>
 
@@ -3864,8 +3874,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         _scheduledPreOpenModalShown = true;
         const isKo = currentLang === 'ko';
         document.getElementById('scheduled-preopen-title').innerHTML = isKo
-            ? '9시부터 대화 시작이에요.<br>지금 테이블 하나 만들어보세요!'
-            : 'At 10, the perfect conversation begins.<br>Create your own table, right now.';
+            ? '9시, 대화가 시작됩니다.<br>지금 테이블을 만들어보세요.'
+            : 'Conversations start at 9 PM.<br>Create your table now.';
         document.getElementById('scheduled-preopen-btn').textContent = isKo ? '테이블 만들기' : 'Create my table';
         document.getElementById('scheduled-preopen-modal').classList.add('active');
     }
@@ -4041,7 +4051,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
     }
     // 예약할 때마다(브라우저 네이티브 권한창과 별개로) 자체 안내 모달을 먼저 보여줌.
-    // "일주일간 보지 않기"를 체크하고 닫으면 그 기간 동안은 이 모달을 건너뛰고 바로 tryGetFcmToken() 호출.
+    // "일주일간 묻지 않기"를 누르면 그 기간 동안은 이 모달을 건너뛰고 바로 tryGetFcmToken() 호출은 하지 않음(스킵 처리).
     const NOTIFY_PREPROMPT_SNOOZE_KEY = 'btalk_notify_prompt_snooze_until';
     function shouldShowNotifyPreprompt() {
         const until = localStorage.getItem(NOTIFY_PREPROMPT_SNOOZE_KEY);
@@ -4050,29 +4060,33 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     function showNotifyPreprompt() {
         const isKo = currentLang === 'ko';
         const modal = document.getElementById('notify-preprompt-modal');
-        const checkbox = document.getElementById('notify-preprompt-snooze');
-        checkbox.checked = false;
-        document.getElementById('notify-preprompt-subtitle').textContent = isKo ? '깜빡하면 아쉬운 시간, 저녁 9시.' : "9 PM. Don't let it slip by.";
-        document.getElementById('notify-preprompt-title').textContent = isKo ? '알림으로 알려드릴까요?' : 'Turn on notifications?';
-        document.getElementById('notify-preprompt-snooze-label').textContent = isKo ? '일주일간 보지 않기' : "Don't show for a week";
+        document.getElementById('notify-preprompt-title').textContent = isKo ? '알림 활성화' : 'Turn on notifications';
+        document.getElementById('notify-preprompt-desc').textContent = isKo
+            ? '새로운 대화의 기회를 놓치지 않도록 알려드립니다.'
+            : "We'll let you know so you don't miss a new conversation.";
         const noBtn = document.getElementById('notify-preprompt-no-btn');
         const yesBtn = document.getElementById('notify-preprompt-yes-btn');
-        noBtn.textContent = isKo ? '아니요' : 'No';
-        yesBtn.textContent = isKo ? '좋아요' : 'Sure';
+        const snoozeLink = document.getElementById('notify-preprompt-snooze-link');
+        noBtn.textContent = isKo ? '나중에' : 'Later';
+        yesBtn.textContent = isKo ? '활성화' : 'Activate';
+        snoozeLink.textContent = isKo ? '일주일간 묻지 않기' : "Don't ask for a week";
         return new Promise((resolve) => {
             function cleanup(accepted) {
                 modal.classList.remove('active');
-                if (checkbox.checked) {
-                    localStorage.setItem(NOTIFY_PREPROMPT_SNOOZE_KEY, String(Date.now() + 7 * 24 * 60 * 60 * 1000));
-                }
                 noBtn.removeEventListener('click', onNo);
                 yesBtn.removeEventListener('click', onYes);
+                snoozeLink.removeEventListener('click', onSnooze);
                 resolve(accepted);
             }
             function onNo() { cleanup(false); }
             function onYes() { cleanup(true); }
+            function onSnooze() {
+                localStorage.setItem(NOTIFY_PREPROMPT_SNOOZE_KEY, String(Date.now() + 7 * 24 * 60 * 60 * 1000));
+                cleanup(false);
+            }
             noBtn.addEventListener('click', onNo);
             yesBtn.addEventListener('click', onYes);
+            snoozeLink.addEventListener('click', onSnooze);
             modal.classList.add('active');
         });
     }
