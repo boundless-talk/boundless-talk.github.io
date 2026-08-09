@@ -1700,8 +1700,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-trending-tag { width: auto; flex: none; font-size: 12px; color: var(--dr); padding: 5px 12px; margin: 0; border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 14px; cursor: pointer; background: none; }
         /* Discover 목록 필터 — 실시간 / 시간지정 */
         .disco-filter-row { display: flex; justify-content: flex-end; gap: 12px; margin: 10px 0 12px; }
-        .disco-filter { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: rgba(255,255,255,0.45); cursor: pointer; user-select: none; }
-        .disco-filter input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--accent-color); cursor: pointer; margin: 0; }
+        .disco-filter { display: inline-flex; align-items: center; gap: 3px; font-size: 9px; color: rgba(255,255,255,0.35); cursor: pointer; user-select: none; }
+        .disco-filter input[type="checkbox"] { width: 8px; height: 8px; accent-color: var(--accent-color); cursor: pointer; margin: 0; }
         /* 시간지정 방 카드의 시작 시각 배지 */
         .disco-when-badge {
             display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700;
@@ -2053,7 +2053,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-ring .ring-o { border-color: rgba(0,0,0,.12); }
         html[data-cute-mode="cute"] .disco-ring .ring-n.empty { border-color: rgba(0,0,0,.2); }
         html[data-cute-mode="cute"] .disco-search-input::placeholder { color: rgba(36,31,26,.35); }
-        html[data-cute-mode="cute"] .disco-filter { color: rgba(36,31,26,.55); }
+        html[data-cute-mode="cute"] .disco-filter { color: rgba(36,31,26,.4); }
         html[data-cute-mode="cute"] .disco-sched-btn.joined {
             background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); color: rgba(36,31,26,.5);
         }
@@ -2371,7 +2371,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             </div>
             <div class="disco-navbar">
                 <div class="disco-navbar-links">
-                    <a class="active" id="nav-tab-discover" onclick="switchDiscoTab('discover')">Discover</a><a id="nav-tab-trending" onclick="switchDiscoTab('trending')">Trending</a><a id="nav-tab-scheduled" onclick="switchDiscoTab('scheduled')">Scheduled</a><a id="nav-tab-mycircles" onclick="switchDiscoTab('mycircles')">My Tables</a>
+                    <a class="active" id="nav-tab-discover" onclick="switchDiscoTab('discover')">Discover</a><a id="nav-tab-trending" onclick="switchDiscoTab('trending')">Trending</a><a id="nav-tab-mycircles" onclick="switchDiscoTab('mycircles')">My Tables</a>
                 </div>
                 <button class="disco-navbar-cta" id="disco-navbar-cta-btn" onclick="openDiscoCreateModal()">Start a table</button>
             </div>
@@ -2456,11 +2456,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         <!-- ── 방 만들기 모달 ── -->
         <div class="modal-overlay" id="disco-create-modal" onclick="if(event.target===this) closeDiscoCreateModal()">
             <div class="disco-modal-box">
-                <div class="disco-modal-title" id="disco-create-title">새 방 만들기</div>
+                <div class="disco-modal-title" id="disco-create-title">Start a table</div>
 
                 <div class="disco-modal-label" id="disco-create-topic-label">주제</div>
-                <div class="disco-topic-row">
-                    <input type="text" id="disco-create-topic-input" placeholder="예: 오늘 있었던 일, F1, 자취 꿀팁">
+                <input type="text" id="disco-create-topic-input" placeholder="예: 오늘 있었던 일, F1, 자취 꿀팁">
+                <div style="margin-top:10px;">
                     <div id="disco-create-when-toggle" class="disco-seg-toggle" onclick="toggleDiscoCreateWhen()">
                         <div id="disco-create-when-live" class="disco-seg-opt active">실시간</div>
                         <div id="disco-create-when-sched" class="disco-seg-opt">시간지정</div>
@@ -2468,9 +2468,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
                 <div id="disco-create-when-custom" style="display:none; margin-top:8px;">
                     <div class="disco-when-selects">
-                        <select id="disco-when-day" onchange="syncDiscoCreateCustomTime()"></select>
                         <select id="disco-when-hour" onchange="syncDiscoCreateCustomTime()"></select>
-                        <select id="disco-when-min" onchange="syncDiscoCreateCustomTime()"></select>
                     </div>
                     <div id="disco-create-when-hint"></div>
                 </div>
@@ -2496,7 +2494,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     </div>
                 </div>
 
-                <button class="disco-modal-submit" id="disco-create-submit-btn" onclick="submitDiscoCreate()">방 만들고 시작하기</button>
+                <button class="disco-modal-submit" id="disco-create-submit-btn" onclick="submitDiscoCreate()">Start a table</button>
             </div>
         </div>
 
@@ -3739,9 +3737,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const d = new Date(ts);
         const now = new Date();
         const sameDay = d.toDateString() === now.toDateString();
-        const hhmm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        const h = String(d.getHours()).padStart(2, '0');
+        const mins = d.getMinutes();
+        const timeLabel = isKo
+            ? `${h}시${mins ? String(mins).padStart(2, '0') + '분' : ''}`
+            : `${h}:${String(mins).padStart(2, '0')}`;
         const dayLabel = sameDay ? (isKo ? '오늘' : 'Today') : (isKo ? '내일' : 'Tomorrow');
-        return dayLabel + ' ' + hhmm;
+        return dayLabel + ' ' + timeLabel;
     }
 
     async function fetchScheduledRoomsV2() {
@@ -4028,58 +4030,41 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const isKo = currentLang === 'ko';
         const submit = document.getElementById('disco-create-submit-btn');
         if (submit) submit.textContent = discoCreateScheduled
-            ? (isKo ? '방 만들기' : 'Create table')
-            : (isKo ? '방 만들고 시작하기' : 'Create and start');
+            ? (isKo ? '방 만들기' : 'Schedule table')
+            : 'Start a table';
     }
-    // 생년월일 입력과 같은 방식 — 네이티브 select라 모바일에서 스크롤 휠로 뜬다.
-    // 5분 단위로 끊어 두면 24시간 어느 시각이든 두어 번 스크롤로 닿는다.
+    // 시간만 선택 — 이미 지난 시각은 자동으로 다음 날로 처리한다.
     function populateDiscoWhenSelects() {
         const isKo = currentLang === 'ko';
-        const daySel = document.getElementById('disco-when-day');
         const hourSel = document.getElementById('disco-when-hour');
-        const minSel = document.getElementById('disco-when-min');
-        if (!daySel || !hourSel || !minSel) return;
-
-        daySel.innerHTML =
-            `<option value="0">${isKo ? '오늘' : 'Today'}</option>` +
-            `<option value="1">${isKo ? '내일' : 'Tomorrow'}</option>`;
+        if (!hourSel) return;
 
         let hours = '';
         for (let h = 0; h < 24; h++) hours += `<option value="${h}">${String(h).padStart(2, '0')}${isKo ? '시' : ':00'}</option>`;
         hourSel.innerHTML = hours;
 
-        let mins = '';
-        for (let m = 0; m < 60; m += 5) mins += `<option value="${m}">${String(m).padStart(2, '0')}${isKo ? '분' : ''}</option>`;
-        minSel.innerHTML = mins;
-
-        // 기본값은 다음 정시 — 대부분 "조금 뒤"를 원하므로 스크롤을 덜 하게 된다
+        // 기본값은 다음 정시
         const next = new Date(Date.now() + 60 * 60 * 1000);
-        daySel.value = String(next.getDate() !== new Date().getDate() ? 1 : 0);
         hourSel.value = String(next.getHours());
-        minSel.value = '0';
     }
 
     function syncDiscoCreateCustomTime() {
         const isKo = currentLang === 'ko';
-        const daySel = document.getElementById('disco-when-day');
         const hourSel = document.getElementById('disco-when-hour');
-        const minSel = document.getElementById('disco-when-min');
         const hint = document.getElementById('disco-create-when-hint');
-        if (!daySel || !hourSel || !minSel) return;
+        if (!hourSel) return;
 
+        const selectedHour = Number(hourSel.value);
+        const now = new Date();
         const d = new Date();
-        d.setDate(d.getDate() + Number(daySel.value));
-        d.setHours(Number(hourSel.value), Number(minSel.value), 0, 0);
+        d.setHours(selectedHour, 0, 0, 0);
+        // 선택한 시각이 이미 지났으면 자동으로 내일로
+        if (d.getTime() <= Date.now()) d.setDate(d.getDate() + 1);
 
-        const label = `${Number(daySel.value) ? (isKo ? '내일' : 'Tomorrow') : (isKo ? '오늘' : 'Today')} ` +
-            `${String(hourSel.value).padStart(2, '0')}:${String(minSel.value).padStart(2, '0')}`;
+        const isToday = d.toDateString() === now.toDateString();
+        const dayLabel = isToday ? (isKo ? '오늘' : 'Today') : (isKo ? '내일' : 'Tomorrow');
+        const label = `${dayLabel} ${String(selectedHour).padStart(2, '0')}${isKo ? '시' : ':00'}`;
 
-        // 이미 지난 시각이거나 24시간을 넘기면 서버가 거부하므로 여기서 먼저 막아준다
-        if (d.getTime() <= Date.now()) {
-            discoCreateStartAt = null;
-            if (hint) hint.textContent = isKo ? '⚠️ 이미 지난 시간이에요.' : '⚠️ That time has passed.';
-            return;
-        }
         if (d.getTime() > Date.now() + 24 * 60 * 60 * 1000) {
             discoCreateStartAt = null;
             if (hint) hint.textContent = isKo ? '⚠️ 24시간 이내로 정해주세요.' : '⚠️ Please pick a time within 24 hours.';
@@ -4615,7 +4600,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (searchInput) searchInput.placeholder = isKo ? '주제 검색...' : 'Search topics...';
         const setText = (id, ko, en) => { const el = document.getElementById(id); if (el) el.textContent = isKo ? ko : en; };
         const setPh = (id, ko, en) => { const el = document.getElementById(id); if (el) el.placeholder = isKo ? ko : en; };
-        setText('disco-create-title', '새 방 만들기', 'New table');
+        setText('disco-create-title', 'Start a table', 'Start a table');
         setText('disco-create-topic-label', '주제', 'Topic');
         setPh('disco-create-topic-input', '예: 오늘 있었던 일, F1, 자취 꿀팁', 'e.g. today\'s highlight, F1, dorm life tips');
         setText('disco-create-cat-label', '카테고리', 'Category');
@@ -4625,7 +4610,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('disco-create-style-polite', '정중하게', 'Polite');
         setText('disco-create-mode-label', '모드', 'Mode');
         setText('disco-pp-row-label', '핑퐁 모드 (순서대로 1분 30초씩 발언)', 'Ping Pong mode (take 90s turns speaking in order)');
-        setText('disco-create-submit-btn', discoCreateScheduled ? '방 만들기' : '방 만들고 시작하기', discoCreateScheduled ? 'Create table' : 'Create and start');
+        setText('disco-create-submit-btn', discoCreateScheduled ? '방 만들기' : 'Start a table', discoCreateScheduled ? 'Schedule table' : 'Start a table');
         setText('disco-filter-live-label', '실시간', 'Live');
         setText('disco-filter-sched-label', '시간지정', 'Scheduled');
         setDiscoCreateWhenUI(discoCreateScheduled);
