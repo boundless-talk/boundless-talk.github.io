@@ -1121,11 +1121,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 #notify-preprompt-modal p { margin: 0 0 22px 0; }
 #notify-preprompt-modal .nickname-modal-actions { gap: 8px; justify-content: center; }
 #notify-preprompt-modal .nickname-modal-actions button { flex: 0 1 auto; width: auto; padding: 6px 16px; font-size: 12px; }
-#notify-preprompt-modal .notify-preprompt-snooze-link {
-    display: block; width: 100%; margin: 14px 0 0; padding: 4px;
-    background: none; border: none; color: var(--accent-color);
-    font-size: 12px; text-decoration: underline; cursor: pointer;
-}
 
 /* 친구 요청 수신 알림 배너 */
 #friend-request-banner {
@@ -1722,6 +1717,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .disco-sched-btn.joined { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); }
         .disco-sched-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* 참여하기 옆에 작은 삭제 버튼이 붙는 경우(빈 방 + 방장 본인) */
+        .disco-card-actions { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+        .disco-card-actions .disco-sched-btn { width: auto; flex: 1; margin-top: 0; }
+        .disco-room-delete-btn {
+            flex: none; padding: 9px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,69,58,0.35); color: #ff453a;
+        }
+        .disco-room-delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
         .disco-card {
             background: var(--dsurf); border: 1px solid var(--dbord); border-radius: 8px;
@@ -1742,6 +1745,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-live-badge { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--dr); }
         .disco-live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dr); animation: pulse-dot 1.4s infinite; }
         .disco-live-badge-empty { color: rgba(255,255,255,0.4); letter-spacing: normal; text-transform: none; }
+        .disco-live-badge-clickable { color: var(--accent-color); cursor: pointer; }
         .disco-card-mid { display: flex; align-items: center; gap: 16px; }
         .disco-ring { position: relative; width: 56px; height: 56px; flex: none; }
         .disco-ring .ring-o { position: absolute; inset: 0; border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; }
@@ -2775,7 +2779,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
-    <!-- 예약할 때마다 뜨는 알림 동의 모달 ("일주일간 묻지 않기" 클릭 시 7일간 재노출 안 함) -->
+    <!-- 방을 만들거나(시간지정) 빈 방에 입장했다 나갈 때 뜨는 알림 동의 모달 -->
     <div class="nickname-modal-overlay" id="notify-preprompt-modal">
         <div class="nickname-modal-box">
             <div class="notify-preprompt-icon">
@@ -2785,12 +2789,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </svg>
             </div>
             <h3 id="notify-preprompt-title">알림 활성화</h3>
-            <p id="notify-preprompt-desc">새로운 대화의 기회를 놓치지 않도록 알려드립니다.</p>
+            <p id="notify-preprompt-desc">대화상대 입장시 알림을 보내드려요</p>
             <div class="nickname-modal-actions">
-                <button class="nm-cancel-btn" id="notify-preprompt-no-btn">나중에</button>
-                <button class="nm-confirm-btn intro2-start-btn" id="notify-preprompt-yes-btn">활성화</button>
+                <button class="nm-cancel-btn" id="notify-preprompt-no-btn">안받기</button>
+                <button class="nm-confirm-btn intro2-start-btn" id="notify-preprompt-yes-btn">받기</button>
             </div>
-            <button class="notify-preprompt-snooze-link" id="notify-preprompt-snooze-link">일주일간 묻지 않기</button>
         </div>
     </div>
 
@@ -2799,7 +2802,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     <div class="nickname-modal-overlay" id="table-delete-confirm-modal">
         <div class="nickname-modal-box">
             <h3 id="table-delete-confirm-title">테이블이 삭제됩니다</h3>
-            <p id="table-delete-confirm-desc">알림을 받지 않기로 하셨으니, 이 테이블을 닫을게요.</p>
             <div class="nickname-modal-actions">
                 <button class="nm-confirm-btn intro2-start-btn" id="table-delete-confirm-ok-btn" style="width:100%;">확인</button>
             </div>
@@ -3666,6 +3668,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             live.className = 'disco-live-badge';
             live.innerHTML = '<span class="dot"></span>';
             live.appendChild(document.createTextNode('LIVE NOW'));
+        } else if (room.joined) {
+            // 이 빈 방의 알림을 구독 중인 사람 본인(주로 방을 만든 사람)이 보는 경우 —
+            // 눌러서 알림만 끌 수 있게 함(방은 안 지워짐, rooms/unsubscribe)
+            live.className = 'disco-live-badge disco-live-badge-empty disco-live-badge-clickable';
+            live.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying you';
+            live.onclick = (e) => { e.stopPropagation(); unsubscribeRoomNotify(room); };
         } else {
             // 지금은 아무도 없지만 방 자체는 살아있는 경우 — 알림을 거부하고 나간 빈 방은
             // 바로 삭제되므로(rooms/delete), 목록에 남아있는 빈 방은 항상 마지막 사람이
@@ -3721,7 +3729,24 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         joinBtn.textContent = full ? (isKo ? '자리 없음' : 'Full') : (isKo ? '참여하기' : 'Join');
         joinBtn.disabled = full;
         joinBtn.onclick = (e) => { e.stopPropagation(); joinDiscoRoom(room); };
-        card.appendChild(joinBtn);
+
+        // 방이 비어있고(=아직 아무도 안 들어와 있고) 내가 만든 방이면, 참여하기 옆에 작은
+        // 삭제 버튼을 붙여준다 — 방에 누군가 입장해 있으면(occupancy>0) 이 분기 자체를 안 타므로
+        // 삭제는 항상 "아직 아무도 안 들어온 방"에서만 가능하고, 들어와 있으면 참여만 가능함
+        if (room.occupancy === 0 && room.isHost) {
+            const actionsRow = document.createElement('div');
+            actionsRow.className = 'disco-card-actions';
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'disco-room-delete-btn';
+            delBtn.textContent = isKo ? '삭제' : 'Delete';
+            delBtn.onclick = (e) => { e.stopPropagation(); deleteOwnEmptyRoom(room, delBtn); };
+            actionsRow.appendChild(joinBtn);
+            actionsRow.appendChild(delBtn);
+            card.appendChild(actionsRow);
+        } else {
+            card.appendChild(joinBtn);
+        }
 
         card.onclick = () => joinDiscoRoom(room);
         return card;
@@ -3979,7 +4004,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                     style: r.style,
                     roomId: r.id,
                     avatarEmoji: null,
-                    avatarColor: null
+                    avatarColor: null,
+                    joined: !!r.joined,
+                    isHost: !!r.isHost
                 }
             })));
         }
@@ -4037,6 +4064,49 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         pendingDirectChannelId = room.channelId;
         pendingRoomsRoomId = room.roomId || null;
         document.getElementById('join-btn').click();
+    }
+
+    // 빈 방 카드의 "🔔 알림받는중" 배지를 눌러 알림만 끔 — 방은 지워지지 않고 Discover에
+    // 그대로 남아있지만(다른 사람이 발견해서 참여 가능), 대화 상대가 들어와도 나는 더 이상 알림을 못 받음
+    async function unsubscribeRoomNotify(room) {
+        if (!auth.currentUser) return;
+        const isKo = currentLang === 'ko';
+        try {
+            const idToken = await auth.currentUser.getIdToken();
+            await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, roomId: room.roomId })
+            });
+            showBadgeToast(isKo
+                ? '알림을 껐어요. 방은 삭제되지 않지만, 대화 상대가 들어와도 알려드리지 못해요.'
+                : "Notifications off. The table stays open, but we won't be able to tell you if someone joins.");
+        } catch(e) {
+            console.warn('rooms/unsubscribe failed:', e.message);
+        }
+        fetchScheduledRoomsV2();
+    }
+
+    // 방을 만든 사람이 Discover에서 자기 빈 방을 직접 삭제 — 아직 아무도 안 들어와 있을 때만
+    // 가능하고(occupancy===0인 카드에서만 버튼이 뜸), 서버에서도 한 번 더 확인함
+    async function deleteOwnEmptyRoom(room, btn) {
+        const isKo = currentLang === 'ko';
+        if (!confirm(isKo ? '이 방을 삭제하시겠어요? 되돌릴 수 없어요.' : 'Delete this table? This cannot be undone.')) return;
+        if (btn) btn.disabled = true;
+        try {
+            const idToken = await auth.currentUser.getIdToken();
+            const res = await fetch(TOKEN_SERVER_URL + '/rooms/delete', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken, roomId: room.roomId })
+            });
+            const data = await res.json();
+            if (!data.success && data.error === 'occupied') {
+                showBadgeToast(isKo ? '이미 누군가 들어와서 삭제할 수 없어요.' : "Someone's already inside — can't delete.");
+            }
+        } catch(e) {
+            console.warn('rooms/delete failed:', e.message);
+        }
+        if (btn) btn.disabled = false;
+        fetchScheduledRoomsV2();
     }
 
     function toggleDiscoManualEntry() {
@@ -4457,45 +4527,36 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const until = localStorage.getItem(NOTIFY_PREPROMPT_SNOOZE_KEY);
         return !until || Date.now() > parseInt(until, 10);
     }
-    function showNotifyPreprompt(overrideTitle, overrideDesc) {
+    function showNotifyPreprompt() {
         const isKo = currentLang === 'ko';
         const modal = document.getElementById('notify-preprompt-modal');
-        document.getElementById('notify-preprompt-title').textContent = overrideTitle || (isKo ? '알림 활성화' : 'Turn on notifications');
-        document.getElementById('notify-preprompt-desc').textContent = overrideDesc || (isKo
-            ? '새로운 대화의 기회를 놓치지 않도록 알려드립니다.'
-            : "We'll let you know so you don't miss a new conversation.");
+        document.getElementById('notify-preprompt-title').textContent = isKo ? '알림 활성화' : 'Turn on notifications';
+        document.getElementById('notify-preprompt-desc').textContent = isKo
+            ? '대화상대 입장시 알림을 보내드려요'
+            : "We'll notify you when a conversation partner joins.";
         const noBtn = document.getElementById('notify-preprompt-no-btn');
         const yesBtn = document.getElementById('notify-preprompt-yes-btn');
-        const snoozeLink = document.getElementById('notify-preprompt-snooze-link');
-        noBtn.textContent = isKo ? '나중에' : 'Later';
-        yesBtn.textContent = isKo ? '활성화' : 'Activate';
-        snoozeLink.textContent = isKo ? '일주일간 묻지 않기' : "Don't ask for a week";
+        noBtn.textContent = isKo ? '안받기' : "Don't notify";
+        yesBtn.textContent = isKo ? '받기' : 'Notify me';
         return new Promise((resolve) => {
             function cleanup(accepted) {
                 modal.classList.remove('active');
                 noBtn.removeEventListener('click', onNo);
                 yesBtn.removeEventListener('click', onYes);
-                snoozeLink.removeEventListener('click', onSnooze);
                 resolve(accepted);
             }
             function onNo() { cleanup(false); }
             function onYes() { cleanup(true); }
-            function onSnooze() {
-                localStorage.setItem(NOTIFY_PREPROMPT_SNOOZE_KEY, String(Date.now() + 7 * 24 * 60 * 60 * 1000));
-                cleanup(false);
-            }
             noBtn.addEventListener('click', onNo);
             yesBtn.addEventListener('click', onYes);
-            snoozeLink.addEventListener('click', onSnooze);
             modal.classList.add('active');
         });
     }
     // 실시간 방에 혼자 남아있다 나가는 사람이 알림도 거부한 경우("대화를 더 원치 않는다")
     // 보여주는 단일 확인 모달 — 확인을 누르면 방을 지운다는 사실만 알려줌(선택은 이미 끝난 상태)
-    function showTableDeleteConfirm(title, desc) {
+    function showTableDeleteConfirm(title) {
         const modal = document.getElementById('table-delete-confirm-modal');
         document.getElementById('table-delete-confirm-title').textContent = title;
-        document.getElementById('table-delete-confirm-desc').textContent = desc;
         const okBtn = document.getElementById('table-delete-confirm-ok-btn');
         return new Promise((resolve) => {
             function onOk() {
@@ -9213,11 +9274,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                     // 알림 구독을 유도함(기존 notify 모달 디자인 재사용) — 상대가 있는 방을 나가는
                     // 사람은 그냥 대화를 마치고 가는 것이라 이 제안이 뜨면 안 됨
                     if (_leaveRoomsRoomId && leftRoomAlone && !isGuest && auth.currentUser && shouldShowNotifyPreprompt()) {
-                        const isKo2 = currentLang === 'ko';
-                        const accepted = await showNotifyPreprompt(
-                            isKo2 ? '알림 받기' : 'Get notified',
-                            isKo2 ? '방에 사람이 오면 알려드릴까요?' : 'Want to be notified when someone joins?'
-                        );
+                        const accepted = await showNotifyPreprompt();
                         if (accepted) {
                             // 알림을 받겠다 = 나중에 대화를 이어가고 싶다는 뜻 → 방을 그대로 유지
                             try {
@@ -9237,10 +9294,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                             // 방은 이 값이 설정되지 않으므로 애초에 이 블록에 들어오지 않음)이라
                             // 시간지정 방을 실수로 지울 위험은 없다.
                             const isKo3 = currentLang === 'ko';
-                            await showTableDeleteConfirm(
-                                isKo3 ? '테이블이 삭제됩니다' : 'This table will be deleted',
-                                isKo3 ? '알림을 받지 않기로 하셨으니, 이 테이블을 닫을게요.' : "Since you won't be notified, we'll close this table."
-                            );
+                            await showTableDeleteConfirm(isKo3 ? '테이블이 삭제됩니다' : 'This table will be deleted');
                             try {
                                 const idToken = await auth.currentUser.getIdToken();
                                 await fetch(TOKEN_SERVER_URL + '/rooms/delete', {

@@ -609,8 +609,31 @@ app.post('/rooms/leave', express.json(), async (req, res) => {
     }
 });
 
-// 방에 혼자 남아있던 사람이 나가면서 "알림 받기"까지 거부한 경우 — 대화를 더 원치 않는다는
-// 뜻이므로(클라이언트가 확인 모달까지 띄운 뒤 호출) 다른 구독자 존재 여부와 무관하게 방을 통째로 지운다.
+// 알림 구독만 해제 — /rooms/leave와 달리 구독자가 0명이 돼도 방을 지우지 않는다.
+// Discover의 빈 방 카드에서 "🔔 알림받는중" 배지를 눌러 알림만 끌 때 씀
+// (방을 만든 사람이 계속 방은 열어두되 더는 알림을 받고 싶지 않은 경우).
+app.post('/rooms/unsubscribe', express.json(), async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId } = req.body || {};
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+
+    let uid;
+    try { uid = (await admin.auth().verifyIdToken(idToken)).uid; }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+
+    try {
+        await admin.database().ref(`rooms/${roomId}/participants/${uid}`).remove();
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[rooms/unsubscribe] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 방에 혼자 남아있던 사람이 나가면서 "알림 받기"까지 거부한 경우, 또는 방을 만든 사람이
+// Discover에서 자기 빈 방을 직접 삭제하는 경우 — 다른 구독자 존재 여부와 무관하게 방을 통째로
+// 지운다. 단, 지금 실제로 대화 중인(occupants가 있는) 방은 삭제하지 않는다 — 참여 중인 사람을
+// 두고 방이 사라지면 안 되므로, 그 경우엔 참여만 가능해야 함.
 app.post('/rooms/delete', express.json(), async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
     const { idToken, roomId } = req.body || {};
@@ -620,7 +643,12 @@ app.post('/rooms/delete', express.json(), async (req, res) => {
     catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
 
     try {
-        await admin.database().ref(`rooms/${roomId}`).remove();
+        const roomRef = admin.database().ref(`rooms/${roomId}`);
+        const occSnap = await roomRef.child('occupants').once('value');
+        if (occSnap.exists() && occSnap.numChildren() > 0) {
+            return res.json({ success: false, error: 'occupied' });
+        }
+        await roomRef.remove();
         res.json({ success: true });
     } catch (e) {
         console.error('[rooms/delete] error:', e.message);
