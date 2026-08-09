@@ -2794,6 +2794,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <!-- 실시간 방에 혼자 남아있던 사람이 나가며 알림도 거부한 경우: 대화를 더 원치 않는다는
+         뜻이므로 테이블이 지워진다는 걸 알려주는 확인 모달 (단일 확인 버튼) -->
+    <div class="nickname-modal-overlay" id="table-delete-confirm-modal">
+        <div class="nickname-modal-box">
+            <h3 id="table-delete-confirm-title">테이블이 삭제됩니다</h3>
+            <p id="table-delete-confirm-desc">알림을 받지 않기로 하셨으니, 이 테이블을 닫을게요.</p>
+            <div class="nickname-modal-actions">
+                <button class="nm-confirm-btn intro2-start-btn" id="table-delete-confirm-ok-btn" style="width:100%;">확인</button>
+            </div>
+        </div>
+    </div>
+
     <!-- My Tables: 지난 대화 요약 보기 모달 -->
     <div class="nickname-modal-overlay" id="circle-summary-modal" onclick="if(event.target===this) closeCircleSummaryModal()">
         <div class="nickname-modal-box">
@@ -3655,9 +3667,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             live.innerHTML = '<span class="dot"></span>';
             live.appendChild(document.createTextNode('LIVE NOW'));
         } else {
-            // 지금은 아무도 없지만 방 자체는 살아있는 경우 — 들어가면 이전 참여자들에게 알림이 감
+            // 지금은 아무도 없지만 방 자체는 살아있는 경우 — 알림을 거부하고 나간 빈 방은
+            // 바로 삭제되므로(rooms/delete), 목록에 남아있는 빈 방은 항상 마지막 사람이
+            // 알림을 받겠다고 하고 나간 경우다. 참여하면 그 사람에게 알림이 감.
             live.className = 'disco-live-badge disco-live-badge-empty';
-            live.textContent = isKo ? '🔔 들어가면 알려드려요' : '🔔 Join & we\'ll notify them';
+            live.textContent = isKo ? '🔔 참여시 알림을 보냅니다' : '🔔 We\'ll notify them when you join';
         }
         badges.appendChild(live);
         top.appendChild(badges);
@@ -4473,6 +4487,23 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             noBtn.addEventListener('click', onNo);
             yesBtn.addEventListener('click', onYes);
             snoozeLink.addEventListener('click', onSnooze);
+            modal.classList.add('active');
+        });
+    }
+    // 실시간 방에 혼자 남아있다 나가는 사람이 알림도 거부한 경우("대화를 더 원치 않는다")
+    // 보여주는 단일 확인 모달 — 확인을 누르면 방을 지운다는 사실만 알려줌(선택은 이미 끝난 상태)
+    function showTableDeleteConfirm(title, desc) {
+        const modal = document.getElementById('table-delete-confirm-modal');
+        document.getElementById('table-delete-confirm-title').textContent = title;
+        document.getElementById('table-delete-confirm-desc').textContent = desc;
+        const okBtn = document.getElementById('table-delete-confirm-ok-btn');
+        return new Promise((resolve) => {
+            function onOk() {
+                modal.classList.remove('active');
+                okBtn.removeEventListener('click', onOk);
+                resolve();
+            }
+            okBtn.addEventListener('click', onOk);
             modal.classList.add('active');
         });
     }
@@ -9091,6 +9122,10 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const topicEl = document.getElementById('room-topic-display');
             pendingSummaryTopic = topicEl ? topicEl.textContent : null;
         } catch(e) { pendingSummaryTopic = null; }
+        // 방에 나 말고 아무도 없어서 나가는 건지 — 상대가 있는데도 대화를 끝내고 나가는 사람에게는
+        // "방에 사람이 오면 알려드릴까요?"가 뜨면 안 됨(그 사람은 이미 대화를 마치고 나가는 것).
+        // client.leave()로 연결이 끊기기 전, roomParticipants가 아직 안 지워진 지금 시점에 읽어둔다.
+        const leftRoomAlone = roomParticipants.length === 0;
         try {
             clearFreeTimer();
             stopPPMode();
@@ -9167,14 +9202,17 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 const _leaveRoomsRoomId = pendingRoomsRoomId;
                 pendingRoomsRoomId = null;
                 setTimeout(async () => {
-                    // 방에 /rooms/ 항목이 있으면 퇴장 후 알림 구독 유도 (기존 notify 모달 디자인 재사용)
-                    if (_leaveRoomsRoomId && !isGuest && auth.currentUser && shouldShowNotifyPreprompt()) {
+                    // 방에 /rooms/ 항목이 있고, 나가는 사람이 방에 혼자 남아있던 경우에만 퇴장 후
+                    // 알림 구독을 유도함(기존 notify 모달 디자인 재사용) — 상대가 있는 방을 나가는
+                    // 사람은 그냥 대화를 마치고 가는 것이라 이 제안이 뜨면 안 됨
+                    if (_leaveRoomsRoomId && leftRoomAlone && !isGuest && auth.currentUser && shouldShowNotifyPreprompt()) {
                         const isKo2 = currentLang === 'ko';
                         const accepted = await showNotifyPreprompt(
                             isKo2 ? '알림 받기' : 'Get notified',
                             isKo2 ? '방에 사람이 오면 알려드릴까요?' : 'Want to be notified when someone joins?'
                         );
                         if (accepted) {
+                            // 알림을 받겠다 = 나중에 대화를 이어가고 싶다는 뜻 → 방을 그대로 유지
                             try {
                                 const { token } = await tryGetFcmToken();
                                 if (token && auth.currentUser) {
@@ -9185,6 +9223,24 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                                     });
                                 }
                             } catch(e) { console.warn('rooms/join subscribe failed:', e.message); }
+                        } else {
+                            // 알림을 거부 = 대화를 더 원치 않는다는 뜻 → 테이블 자체를 지움.
+                            // _leaveRoomsRoomId는 여기까지 오면 항상 "실시간" 방(pendingRoomsRoomId는
+                            // joinDiscoRoom/submitDiscoCreate의 실시간 방 흐름에서만 설정됨, 시간지정
+                            // 방은 이 값이 설정되지 않으므로 애초에 이 블록에 들어오지 않음)이라
+                            // 시간지정 방을 실수로 지울 위험은 없다.
+                            const isKo3 = currentLang === 'ko';
+                            await showTableDeleteConfirm(
+                                isKo3 ? '테이블이 삭제됩니다' : 'This table will be deleted',
+                                isKo3 ? '알림을 받지 않기로 하셨으니, 이 테이블을 닫을게요.' : "Since you won't be notified, we'll close this table."
+                            );
+                            try {
+                                const idToken = await auth.currentUser.getIdToken();
+                                await fetch(TOKEN_SERVER_URL + '/rooms/delete', {
+                                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ idToken, roomId: _leaveRoomsRoomId })
+                                });
+                            } catch(e) { console.warn('rooms/delete failed:', e.message); }
                         }
                     }
                     badgeSentThisSession = false;
