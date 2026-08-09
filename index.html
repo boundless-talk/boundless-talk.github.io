@@ -1719,10 +1719,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-sched-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         /* 참여하기 옆에 작은 삭제 버튼이 붙는 경우(빈 방 + 방장 본인) */
         .disco-card-actions { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
-        .disco-card-actions .disco-sched-btn { width: auto; flex: 1; margin-top: 0; }
+        .disco-card-actions .disco-sched-btn { width: auto; flex: 1 1 auto; min-width: 0; margin-top: 0; }
         .disco-room-delete-btn {
-            flex: none; padding: 9px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer;
-            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,69,58,0.35); color: #ff453a;
+            flex: 0 0 auto; width: auto; white-space: nowrap; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer;
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.45);
         }
         .disco-room-delete-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
@@ -2072,6 +2072,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-filter input[type="checkbox"] { border-color: rgba(36,31,26,.3); }
         html[data-cute-mode="cute"] .disco-sched-btn.joined {
             background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); color: rgba(36,31,26,.5);
+        }
+        html[data-cute-mode="cute"] .disco-room-delete-btn {
+            background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.12); color: rgba(36,31,26,.4);
         }
         html[data-cute-mode="cute"] .disco-trending-tag { border: 1px solid rgba(138,47,42,.25); color: #8a2f2a; background: transparent; border-radius: 2px; }
         html[data-cute-mode="cute"] .disco-trending-tag.disco-trending-tag-alt { color: #8a2f2a; background: transparent; }
@@ -3669,17 +3672,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             live.innerHTML = '<span class="dot"></span>';
             live.appendChild(document.createTextNode('LIVE NOW'));
         } else if (room.joined) {
-            // 이 빈 방의 알림을 구독 중인 사람 본인(주로 방을 만든 사람)이 보는 경우 —
-            // 눌러서 알림만 끌 수 있게 함(방은 안 지워짐, rooms/unsubscribe)
+            // 실제로 알림을 구독 중인 사람(방 만들 때 또는 퇴장 시 "받기"를 선택한 사람) 본인이
+            // 보는 경우 — 눌러서 알림을 끌 수 있음(방은 안 지워짐, rooms/unsubscribe)
             live.className = 'disco-live-badge disco-live-badge-empty disco-live-badge-clickable';
-            live.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying you';
-            live.onclick = (e) => { e.stopPropagation(); unsubscribeRoomNotify(room); };
+            live.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying';
+            live.onclick = (e) => { e.stopPropagation(); toggleRoomNotifyOff(room, live); };
         } else {
-            // 지금은 아무도 없지만 방 자체는 살아있는 경우 — 알림을 거부하고 나간 빈 방은
-            // 바로 삭제되므로(rooms/delete), 목록에 남아있는 빈 방은 항상 마지막 사람이
-            // 알림을 받겠다고 하고 나간 경우다. 참여하면 그 사람에게 알림이 감.
+            // "안받기"를 선택했거나, 위 배지를 눌러 알림을 꺼둔 상태
             live.className = 'disco-live-badge disco-live-badge-empty';
-            live.textContent = isKo ? '🔔 참여시 알림을 보냅니다' : '🔔 We\'ll notify them when you join';
+            live.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
         }
         badges.appendChild(live);
         top.appendChild(badges);
@@ -4066,24 +4067,27 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         document.getElementById('join-btn').click();
     }
 
-    // 빈 방 카드의 "🔔 알림받는중" 배지를 눌러 알림만 끔 — 방은 지워지지 않고 Discover에
-    // 그대로 남아있지만(다른 사람이 발견해서 참여 가능), 대화 상대가 들어와도 나는 더 이상 알림을 못 받음
-    async function unsubscribeRoomNotify(room) {
+    // 빈 방 카드의 "🔔 알림받는중" 배지를 눌러 알림만 끔 — 방은 지워지지 않고 Discover에 그대로
+    // 남아있지만(다른 사람이 발견해서 참여 가능), 나는 더 이상 대화 상대 입장 알림을 못 받음.
+    // 배지 텍스트를 바로 "알림안받는중"으로 바꿔주고(재조회를 기다리지 않음), 서버 반영은 백그라운드로.
+    async function toggleRoomNotifyOff(room, badgeEl) {
         if (!auth.currentUser) return;
         const isKo = currentLang === 'ko';
+        badgeEl.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
+        badgeEl.classList.remove('disco-live-badge-clickable');
+        badgeEl.onclick = null;
+        showBadgeToast(isKo
+            ? '다만 대화 상대가 들어와도 알림을 못 받을 수 있어요.'
+            : "You just won't be notified if someone joins.");
         try {
             const idToken = await auth.currentUser.getIdToken();
             await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idToken, roomId: room.roomId })
             });
-            showBadgeToast(isKo
-                ? '알림을 껐어요. 방은 삭제되지 않지만, 대화 상대가 들어와도 알려드리지 못해요.'
-                : "Notifications off. The table stays open, but we won't be able to tell you if someone joins.");
         } catch(e) {
             console.warn('rooms/unsubscribe failed:', e.message);
         }
-        fetchScheduledRoomsV2();
     }
 
     // 방을 만든 사람이 Discover에서 자기 빈 방을 직접 삭제 — 아직 아무도 안 들어와 있을 때만
