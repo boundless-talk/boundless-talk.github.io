@@ -2800,17 +2800,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
-    <!-- 실시간 방에 혼자 남아있던 사람이 나가며 알림도 거부한 경우: 대화를 더 원치 않는다는
-         뜻이므로 테이블이 지워진다는 걸 알려주는 확인 모달 (단일 확인 버튼) -->
-    <div class="nickname-modal-overlay" id="table-delete-confirm-modal">
-        <div class="nickname-modal-box">
-            <h3 id="table-delete-confirm-title">테이블이 삭제됩니다</h3>
-            <div class="nickname-modal-actions">
-                <button class="nm-confirm-btn intro2-start-btn" id="table-delete-confirm-ok-btn" style="width:100%;">확인</button>
-            </div>
-        </div>
-    </div>
-
     <!-- My Tables: 지난 대화 요약 보기 모달 -->
     <div class="nickname-modal-overlay" id="circle-summary-modal" onclick="if(event.target===this) closeCircleSummaryModal()">
         <div class="nickname-modal-box">
@@ -3671,16 +3660,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             live.className = 'disco-live-badge';
             live.innerHTML = '<span class="dot"></span>';
             live.appendChild(document.createTextNode('LIVE NOW'));
-        } else if (room.joined) {
-            // 실제로 알림을 구독 중인 사람(방 만들 때 또는 퇴장 시 "받기"를 선택한 사람) 본인이
-            // 보는 경우 — 눌러서 알림을 끌 수 있음(방은 안 지워짐, rooms/unsubscribe)
-            live.className = 'disco-live-badge disco-live-badge-empty disco-live-badge-clickable';
-            live.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying';
-            live.onclick = (e) => { e.stopPropagation(); toggleRoomNotifyOff(room, live); };
         } else {
-            // "안받기"를 선택했거나, 위 배지를 눌러 알림을 꺼둔 상태
-            live.className = 'disco-live-badge disco-live-badge-empty';
-            live.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
+            // 빈 방의 알림 구독 여부를 보여주는 배지 — 누르면 켜고 끌 수 있음(방은 어느 쪽이든 안 지워짐)
+            live.className = 'disco-live-badge disco-live-badge-empty disco-live-badge-clickable';
+            if (room.joined) {
+                live.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying';
+                live.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, live, false); };
+            } else {
+                live.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
+                live.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, live, true); };
+            }
         }
         badges.appendChild(live);
         top.appendChild(badges);
@@ -3989,9 +3978,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         let items = [];
         if (showLive) {
             items = items.concat(discoRooms.map(r => ({ kind: 'live', room: r, category: r.category, text: r.topic })));
-            // 빈 실시간 방을 discoRooms(activeTopics 기반)와 같은 카드 모양으로 보여주기 위해
-            // createDiscoCardEl이 기대하는 room 형태로 맞춰준다
-            items = items.concat(discoEmptyLiveRooms.map(r => ({
+            // discoEmptyLiveRooms는 /rooms/list를 주기적으로 다시 불러올 때만 갱신되는 스냅샷이라,
+            // 다른 기기가 그 사이에 빈 방에 들어오면 activeTopics(실시간, discoRooms)에는 이미
+            // 반영됐는데 이 스냅샷은 여전히 "비어있음"으로 남아있을 수 있음 — 그대로 합치면 같은
+            // 방이 카드 두 개로(하나는 진짜 실시간, 하나는 오래된 빈 방) 중복 표시됨.
+            // channelId가 이미 discoRooms에 있는 건 여기서 제외해서 중복을 막는다.
+            const liveChannelIds = new Set(discoRooms.map(r => r.channelId));
+            items = items.concat(discoEmptyLiveRooms.filter(r => !liveChannelIds.has(r.channelId)).map(r => ({
                 kind: 'live',
                 category: r.category,
                 text: r.title,
@@ -4067,26 +4060,38 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         document.getElementById('join-btn').click();
     }
 
-    // 빈 방 카드의 "🔔 알림받는중" 배지를 눌러 알림만 끔 — 방은 지워지지 않고 Discover에 그대로
-    // 남아있지만(다른 사람이 발견해서 참여 가능), 나는 더 이상 대화 상대 입장 알림을 못 받음.
-    // 배지 텍스트를 바로 "알림안받는중"으로 바꿔주고(재조회를 기다리지 않음), 서버 반영은 백그라운드로.
-    async function toggleRoomNotifyOff(room, badgeEl) {
+    // 빈 방 카드의 "🔔 알림받는중"/"🔔 알림 안받는중" 배지를 눌러 알림을 켜고 끔 — 어느 쪽이든
+    // 방은 지워지지 않고 Discover에 그대로 남아있음(다른 사람이 발견해서 참여 가능).
+    // 배지 텍스트를 바로 바꿔주고(재조회를 기다리지 않음), 서버 반영은 백그라운드로.
+    async function toggleRoomNotify(room, badgeEl, turnOn) {
         if (!auth.currentUser) return;
         const isKo = currentLang === 'ko';
-        badgeEl.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
-        badgeEl.classList.remove('disco-live-badge-clickable');
-        badgeEl.onclick = null;
-        showBadgeToast(isKo
-            ? '다만 대화 상대가 들어와도 알림을 못 받을 수 있어요.'
-            : "You just won't be notified if someone joins.");
-        try {
-            const idToken = await auth.currentUser.getIdToken();
-            await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken, roomId: room.roomId })
-            });
-        } catch(e) {
-            console.warn('rooms/unsubscribe failed:', e.message);
+        if (turnOn) {
+            badgeEl.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying';
+            badgeEl.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, badgeEl, false); };
+            try {
+                const { token } = await tryGetFcmToken();
+                const idToken = await auth.currentUser.getIdToken();
+                await fetch(TOKEN_SERVER_URL + '/rooms/join', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, roomId: room.roomId, fcmToken: token })
+                });
+            } catch(e) {
+                console.warn('rooms/join failed:', e.message);
+            }
+        } else {
+            badgeEl.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
+            badgeEl.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, badgeEl, true); };
+            showBadgeToast(isKo ? '대화상대 입장시 놓칠 수 있어요.' : "You may miss it when a conversation partner joins.");
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, roomId: room.roomId })
+                });
+            } catch(e) {
+                console.warn('rooms/unsubscribe failed:', e.message);
+            }
         }
     }
 
@@ -4553,22 +4558,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             function onYes() { cleanup(true); }
             noBtn.addEventListener('click', onNo);
             yesBtn.addEventListener('click', onYes);
-            modal.classList.add('active');
-        });
-    }
-    // 실시간 방에 혼자 남아있다 나가는 사람이 알림도 거부한 경우("대화를 더 원치 않는다")
-    // 보여주는 단일 확인 모달 — 확인을 누르면 방을 지운다는 사실만 알려줌(선택은 이미 끝난 상태)
-    function showTableDeleteConfirm(title) {
-        const modal = document.getElementById('table-delete-confirm-modal');
-        document.getElementById('table-delete-confirm-title').textContent = title;
-        const okBtn = document.getElementById('table-delete-confirm-ok-btn');
-        return new Promise((resolve) => {
-            function onOk() {
-                modal.classList.remove('active');
-                okBtn.removeEventListener('click', onOk);
-                resolve();
-            }
-            okBtn.addEventListener('click', onOk);
             modal.classList.add('active');
         });
     }
@@ -9292,20 +9281,18 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                                 }
                             } catch(e) { console.warn('rooms/join subscribe failed:', e.message); }
                         } else {
-                            // 알림을 거부 = 대화를 더 원치 않는다는 뜻 → 테이블 자체를 지움.
-                            // _leaveRoomsRoomId는 여기까지 오면 항상 "실시간" 방(pendingRoomsRoomId는
-                            // joinDiscoRoom/submitDiscoCreate의 실시간 방 흐름에서만 설정됨, 시간지정
-                            // 방은 이 값이 설정되지 않으므로 애초에 이 블록에 들어오지 않음)이라
-                            // 시간지정 방을 실수로 지울 위험은 없다.
+                            // 알림을 거부해도 방 자체는 지우지 않는다 — 참여자 목록에서만 빠지고
+                            // (badge의 "알림 안받는중"과 동일 취급), 방은 Discover에 그대로 남아
+                            // 다른 사람이 발견해서 들어올 수 있음. 나만 그 알림을 못 받게 될 뿐.
                             const isKo3 = currentLang === 'ko';
-                            await showTableDeleteConfirm(isKo3 ? '테이블이 삭제됩니다' : 'This table will be deleted');
+                            showBadgeToast(isKo3 ? '대화상대 입장시 놓칠 수 있어요.' : "You may miss it when a conversation partner joins.");
                             try {
                                 const idToken = await auth.currentUser.getIdToken();
-                                await fetch(TOKEN_SERVER_URL + '/rooms/delete', {
+                                await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
                                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ idToken, roomId: _leaveRoomsRoomId })
                                 });
-                            } catch(e) { console.warn('rooms/delete failed:', e.message); }
+                            } catch(e) { console.warn('rooms/unsubscribe failed:', e.message); }
                         }
                     }
                     badgeSentThisSession = false;
