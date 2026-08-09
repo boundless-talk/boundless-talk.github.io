@@ -396,7 +396,6 @@
         html[data-cute-mode="cute"] .settings-card-value.dim { color: rgba(36,31,26,0.35) !important; }
         html[data-cute-mode="cute"] .settings-card-sub { color: rgba(36,31,26,0.4); }
         html[data-cute-mode="cute"] #mycircles-withdrawal-link { color: rgba(36,31,26,0.3) !important; }
-        html[data-cute-mode="cute"] #mycircles-sub-id { color: rgba(36,31,26,0.35) !important; }
         html[data-cute-mode="cute"] .friend-item-box { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
         html[data-cute-mode="cute"] .friend-name { color: #241f1a; }
         html[data-cute-mode="cute"] .friend-date { color: rgba(36,31,26,0.4); }
@@ -1702,14 +1701,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-filter-row { display: flex; justify-content: flex-end; gap: 12px; margin: 10px 0 12px; }
         .disco-filter { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; color: rgba(255,255,255,0.35); cursor: pointer; user-select: none; }
         .disco-filter input[type="checkbox"] {
-            appearance: none; -webkit-appearance: none; margin: 0;
-            width: 11px; height: 11px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.3);
+            appearance: none; -webkit-appearance: none; -moz-appearance: none; margin: 0; padding: 0; box-sizing: border-box;
+            width: 9px; height: 9px; min-width: 9px; min-height: 9px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.3);
             background: transparent; cursor: pointer; flex-shrink: 0; position: relative;
         }
         .disco-filter input[type="checkbox"]:checked { background: var(--accent-color); border-color: var(--accent-color); }
         .disco-filter input[type="checkbox"]:checked::after {
-            content: ''; position: absolute; left: 3px; top: 0px; width: 3px; height: 6px;
-            border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg);
+            content: ''; position: absolute; left: 2px; top: -1px; width: 2.5px; height: 5px;
+            border: solid #fff; border-width: 0 1.3px 1.3px 0; transform: rotate(45deg);
         }
         /* 시간지정 방 카드의 시작 시각 배지 */
         .disco-when-badge {
@@ -1722,6 +1721,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             cursor: pointer; background: rgba(var(--accent-rgb),0.08); border: 1px solid rgba(var(--accent-rgb),0.4); color: var(--accent-color);
         }
         .disco-sched-btn.joined { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); }
+        .disco-sched-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
         .disco-card {
             background: var(--dsurf); border: 1px solid var(--dbord); border-radius: 8px;
@@ -1741,6 +1741,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .pp-info-tip::after { border-top-color: #241f1a; }
         .disco-live-badge { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--dr); }
         .disco-live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dr); animation: pulse-dot 1.4s infinite; }
+        .disco-live-badge-empty { color: rgba(255,255,255,0.4); letter-spacing: normal; text-transform: none; }
         .disco-card-mid { display: flex; align-items: center; gap: 16px; }
         .disco-ring { position: relative; width: 56px; height: 56px; flex: none; }
         .disco-ring .ring-o { position: absolute; inset: 0; border: 1px solid rgba(255,255,255,0.15); border-radius: 50%; }
@@ -1755,6 +1756,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-card-title { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.3; color: #f5f4f2; }
         .disco-card-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); }
         .disco-occupancy { font-size: 12px; color: rgba(255,255,255,0.4); }
+        .disco-occupancy-avatar { display: inline-block; margin-left: 5px; font-size: 13px; vertical-align: middle; }
         .disco-wave { display: flex; align-items: center; gap: 2px; height: 20px; }
         .disco-wave span { width: 2px; background: var(--dr); border-radius: 1px; display: inline-block; }
         .disco-empty { padding: 28px 14px; text-align: center; color: rgba(255,255,255,0.35); font-size: 13px; }
@@ -2053,6 +2055,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-empty,
         html[data-cute-mode="cute"] .disco-trending-label,
         html[data-cute-mode="cute"] .disco-modal-label,
+        html[data-cute-mode="cute"] .disco-live-badge-empty,
         html[data-cute-mode="cute"] .disco-pp-row-label { color: rgba(36,31,26,.55); }
         html[data-cute-mode="cute"] .disco-chip { background: #fff; color: rgba(36,31,26,.65); border-color: rgba(0,0,0,.08); border-radius: 2px; }
         html[data-cute-mode="cute"] .disco-chip.active { background: #8a2f2a; border-color: #8a2f2a; color: #fff; }
@@ -2449,7 +2452,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                 <div id="mycircles-recent-list"></div>
                 <div id="mycircles-subscription-panel" style="display:none;">
-                    <div id="mycircles-sub-id" style="font-size:11px; color:rgba(255,255,255,0.35); text-align:center; margin-bottom:8px;"></div>
                     <div class="settings-card" id="mycircles-sub-card" onclick="openMainPayModal()" style="cursor:pointer;">
                         <div class="settings-card-label" id="mycircles-sub-label">구독 현황</div>
                         <div class="settings-card-value" id="mycircles-sub-value" style="color:var(--accent-color);">--</div>
@@ -2789,6 +2791,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <button class="nm-confirm-btn intro2-start-btn" id="notify-preprompt-yes-btn">활성화</button>
             </div>
             <button class="notify-preprompt-snooze-link" id="notify-preprompt-snooze-link">일주일간 묻지 않기</button>
+        </div>
+    </div>
+
+    <!-- My Tables: 지난 대화 요약 보기 모달 -->
+    <div class="nickname-modal-overlay" id="circle-summary-modal" onclick="if(event.target===this) closeCircleSummaryModal()">
+        <div class="nickname-modal-box">
+            <h3 id="circle-summary-title">대화 요약</h3>
+            <p id="circle-summary-content" style="text-align:left; line-height:1.6; max-height:45vh; overflow-y:auto;"></p>
+            <div class="nickname-modal-actions">
+                <button class="nm-confirm-btn intro2-start-btn" id="circle-summary-close-btn" onclick="closeCircleSummaryModal()">닫기</button>
+            </div>
         </div>
     </div>
 
@@ -3551,6 +3564,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let pendingRoomCategory = null;   // Discover에서 방 만들기/입장 시, join-btn 흐름에 실어 보낼 카테고리
     let pendingDirectChannelId = null; // Discover 카드로 기존 방에 바로 들어갈 때, 주제 재정규화를 건너뛰고 쓸 정확한 채널 ID
     let pendingRoomsRoomId = null;    // /rooms/ 시스템의 roomId — 입장 시 설정, 퇴장 시 알림 구독에 사용
+    // "Start a table"로 새 실시간 방을 만드는 경우에만 true — join-btn 핸들러에서 최종 채널이
+    // 정해진 뒤 /rooms/ 시스템에 등록해서, 모두 나가도 방 자체는 남아 재입장이 가능하게 함
+    let pendingRoomsCreate = false;
     let discoCreatePP = false;
 
     function renderDiscoChipRow() {
@@ -3606,9 +3622,9 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
 
     function createDiscoCardEl(room) {
-        const card = document.createElement('button');
+        const isKo = currentLang === 'ko';
+        const card = document.createElement('div');
         card.className = 'disco-card';
-        card.type = 'button';
 
         const top = document.createElement('div');
         top.className = 'disco-card-top';
@@ -3634,9 +3650,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             badges.appendChild(pp);
         }
         const live = document.createElement('span');
-        live.className = 'disco-live-badge';
-        live.innerHTML = '<span class="dot"></span>';
-        live.appendChild(document.createTextNode('LIVE NOW'));
+        if (room.occupancy > 0) {
+            live.className = 'disco-live-badge';
+            live.innerHTML = '<span class="dot"></span>';
+            live.appendChild(document.createTextNode('LIVE NOW'));
+        } else {
+            // 지금은 아무도 없지만 방 자체는 살아있는 경우 — 들어가면 이전 참여자들에게 알림이 감
+            live.className = 'disco-live-badge disco-live-badge-empty';
+            live.textContent = isKo ? '🔔 들어가면 알려드려요' : '🔔 Join & we\'ll notify them';
+        }
         badges.appendChild(live);
         top.appendChild(badges);
         card.appendChild(top);
@@ -3658,12 +3680,34 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const occ = document.createElement('span');
         occ.className = 'disco-occupancy';
         const full = room.occupancy >= room.maxPeople;
-        occ.textContent = room.occupancy + '/' + room.maxPeople + (full ? (currentLang === 'ko' ? ' · 가득참' : ' · full') : '');
+        const occLabel = full
+            ? (isKo ? ' · 가득참' : ' · full')
+            : room.occupancy > 0
+                ? (isKo ? ' 참여중' : ' joining')
+                : (isKo ? ' · 대화 시작하기' : ' · be the first');
+        occ.textContent = room.occupancy + '/' + room.maxPeople + occLabel;
+        // 실제로 아바타를 고르고 들어와 있는 참여자가 있으면 인원 표시 옆에 그 아바타를 작게 보여준다
+        // (기본값 '👋'는 아바타를 아직 고르지 않은 경우라 표시하지 않음)
+        if (room.avatarEmoji && room.avatarEmoji !== '👋') {
+            const av = document.createElement('span');
+            av.className = 'disco-occupancy-avatar';
+            av.style.filter = AVATAR_COLOR_FILTERS[room.avatarColor] || 'none';
+            av.textContent = room.avatarEmoji;
+            occ.appendChild(av);
+        }
         bottom.appendChild(occ);
         let seed = 0;
         for (let i = 0; i < room.channelId.length; i++) seed = (seed + room.channelId.charCodeAt(i)) % 97;
         bottom.appendChild(buildDiscoWaveEl(seed));
         card.appendChild(bottom);
+
+        const joinBtn = document.createElement('button');
+        joinBtn.type = 'button';
+        joinBtn.className = 'disco-sched-btn';
+        joinBtn.textContent = full ? (isKo ? '자리 없음' : 'Full') : (isKo ? '참여하기' : 'Join');
+        joinBtn.disabled = full;
+        joinBtn.onclick = (e) => { e.stopPropagation(); joinDiscoRoom(room); };
+        card.appendChild(joinBtn);
 
         card.onclick = () => joinDiscoRoom(room);
         return card;
@@ -3729,6 +3773,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     // ── 시간지정 방 (rooms/ 서버) — 실시간 방과 같은 Discover 목록에 함께 표시 ──
     let discoScheduledRooms = [];
+    // 실시간 방인데 지금 activeTopics(실제 접속 현황)엔 아무도 없는 방 — 모두 나가도 /rooms/
+    // 레코드는 남아있으므로, 여기서 목록에 계속 보여줘야 새로 들어오는 사람이 발견해서
+    // 재입장할 수 있고, 재입장하면 이전 참여자들에게 "누가 들어왔어요" 알림이 감
+    let discoEmptyLiveRooms = [];
     // 체크박스 두 개 중 하나만 켜면 그 종류만, 둘 다 켜거나 둘 다 끄면 전체를 보여준다.
     let discoFilterLive = false;
     let discoFilterSched = false;
@@ -3767,11 +3815,16 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 body: JSON.stringify(body)
             });
             const data = await res.json();
-            // 실시간 방은 activeTopics(실제 접속 현황)가 진실이므로, 여기서는 시각이 잡힌 방만 가져온다
-            discoScheduledRooms = (data.rooms || []).filter(r => r.startAt);
+            const rooms = data.rooms || [];
+            // 시각이 잡힌 방은 그대로 Scheduled 카드로
+            discoScheduledRooms = rooms.filter(r => r.startAt);
+            // 실시간 방인데 지금은 아무도 없는 방 — channelId가 있어야(과거에 만들어져 값이
+            // 없는 방은 예외) 정확히 같은 채널로 재입장할 수 있으므로 그 경우만 목록에 올린다
+            discoEmptyLiveRooms = rooms.filter(r => !r.startAt && r.occupantCount === 0 && r.channelId);
         } catch (e) {
             console.warn('fetchScheduledRoomsV2 failed:', e.message);
             discoScheduledRooms = [];
+            discoEmptyLiveRooms = [];
         }
         renderDiscoGrid();
     }
@@ -3894,7 +3947,28 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
         // 두 종류를 하나의 목록으로 합치되, 카드 생성 방식이 달라 kind로 구분해둔다
         let items = [];
-        if (showLive) items = items.concat(discoRooms.map(r => ({ kind: 'live', room: r, category: r.category, text: r.topic })));
+        if (showLive) {
+            items = items.concat(discoRooms.map(r => ({ kind: 'live', room: r, category: r.category, text: r.topic })));
+            // 빈 실시간 방을 discoRooms(activeTopics 기반)와 같은 카드 모양으로 보여주기 위해
+            // createDiscoCardEl이 기대하는 room 형태로 맞춰준다
+            items = items.concat(discoEmptyLiveRooms.map(r => ({
+                kind: 'live',
+                category: r.category,
+                text: r.title,
+                room: {
+                    channelId: r.channelId,
+                    topic: r.title,
+                    category: r.category,
+                    maxPeople: r.maxPeople,
+                    occupancy: r.occupantCount,
+                    pingpong: r.pingpong,
+                    style: r.style,
+                    roomId: r.id,
+                    avatarEmoji: null,
+                    avatarColor: null
+                }
+            })));
+        }
         if (showSched) items = items.concat(discoScheduledRooms.map(r => ({ kind: 'sched', room: r, category: r.category, text: r.title })));
 
         if (discoActiveCategory !== 'all') items = items.filter(it => it.category === discoActiveCategory);
@@ -3903,9 +3977,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             items = items.filter(it => (it.text || '').toLowerCase().includes(q));
         }
 
-        // 실시간 방이 먼저, 시간지정 방은 시작이 임박한 순서대로
+        // 실시간 방이 먼저(그 중에서도 사람이 있는 방이 먼저), 시간지정 방은 시작이 임박한 순서대로
         items.sort((a, b) => {
             if (a.kind !== b.kind) return a.kind === 'live' ? -1 : 1;
+            if (a.kind === 'live') return (b.room.occupancy > 0 ? 1 : 0) - (a.room.occupancy > 0 ? 1 : 0);
             if (a.kind === 'sched') return a.room.startAt - b.room.startAt;
             return 0;
         });
@@ -4406,7 +4481,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             const accepted = await showNotifyPreprompt();
             if (!accepted) return { token: null, reason: 'skipped' };
         }
-        return tryGetFcmToken();
+        // 서비스워커 등록이 지연되거나 브라우저가 알림 권한창에 응답을 안 받는 경우(특히 데스크톱)
+        // tryGetFcmToken()이 끝없이 대기할 수 있어, 방 참여 자체가 멈춰버리는 걸 막기 위해 타임아웃을 둠 —
+        // 토큰 없이도 참여는 그대로 진행되고, 알림만 못 받게 될 뿐이다.
+        return Promise.race([
+            tryGetFcmToken(),
+            new Promise(resolve => setTimeout(() => resolve({ token: null, reason: 'timeout' }), 6000))
+        ]);
     }
     async function toggleScheduledSeat(roomId, alreadyJoined) {
         const isKo = currentLang === 'ko';
@@ -4548,19 +4629,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         selectedSpeechStyle = discoCreateStyle;
         document.getElementById('topic-input').value = topic;
         closeDiscoCreateModal();
-        // 실시간 방도 /rooms/ 시스템에 등록해 두면, 나중에 퇴장할 때 알림 구독을 제안할 수 있음
+        // 실시간 방을 /rooms/ 시스템에 등록하는 건 join-btn 핸들러에서 최종 topic/channelId가
+        // 정해진 뒤에 함(여기서 등록하면 AI 주제 매칭으로 실제 채널과 다른 topic이 저장될 수 있음).
+        // 이렇게 등록해두면 모두 나가서 activeTopics에서 사라져도 방 자체는 남아있어서,
+        // 나중에 누가 다시 들어오면 이전 참여자들에게 알림이 감(퇴장 시 알림 구독과 별개).
         pendingRoomsRoomId = null;
-        if (!isGuest && auth.currentUser) {
-            try {
-                const idToken = await auth.currentUser.getIdToken();
-                const res = await fetch(TOKEN_SERVER_URL + '/rooms/create', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ idToken, title: topic, category: discoCreateSelectedCat, style: discoCreateStyle, pingpong: discoCreatePP })
-                });
-                const data = await res.json();
-                if (data.success) pendingRoomsRoomId = data.roomId;
-            } catch(e) { console.warn('rooms/create for live room failed:', e.message); }
-        }
+        pendingRoomsCreate = !isGuest && !!auth.currentUser;
         document.getElementById('join-btn').click();
     }
 
@@ -4640,7 +4714,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         renderScheduleCreateCatGrid();
         renderScheduledGrid();
         updateDiscoCtaLabel();
-        setText('mycircles-subtext', '익명 기반 — 대화 기록은 이 기기에만 저장돼요.', 'Anonymous by design — your history lives only on this device.');
+        updateMyCirclesSubtext();
         setText('subtab-recent', '최근 참여', 'Recently joined');
         setText('subtab-subscription', '구독', 'Subscription');
         setText('subtab-friends', '친구', 'Friends');
@@ -4659,16 +4733,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     // 앱을 저녁 9시 경계 넘어 계속 켜두고 있어도 "방 만들기"/"예약하기" 버튼 라벨이 스스로 갱신되도록
     setInterval(updateDiscoCtaLabel, 60000);
     // ── My Circles 탭 (구독 현황 카드는 그대로 재사용) ──
+    // My Tables 부제목에 로그인한 계정(이메일/게스트)을 함께 표시
+    function updateMyCirclesSubtext() {
+        const isKo = currentLang === 'ko';
+        const el = document.getElementById('mycircles-subtext');
+        if (!el) return;
+        const cu = auth.currentUser;
+        const idLabel = !cu ? '' : (cu.isAnonymous ? (isKo ? '게스트' : 'Guest') : (cu.email || ''));
+        el.textContent = idLabel;
+        el.style.display = idLabel ? '' : 'none';
+    }
     async function loadMyCirclesSubStatus() {
         const uid = auth.currentUser ? auth.currentUser.uid : null;
         const isKo = currentLang === 'ko';
         const valueEl = document.getElementById('mycircles-sub-value');
-        const idEl = document.getElementById('mycircles-sub-id');
-        if (idEl) {
-            idEl.textContent = !auth.currentUser
-                ? ''
-                : (auth.currentUser.isAnonymous ? (isKo ? '게스트' : 'Guest') : (auth.currentUser.email || '-'));
-        }
         if (!valueEl) return;
         if (!uid) { valueEl.textContent = isKo ? '로그인 필요' : 'Login required'; return; }
         try {
@@ -4704,7 +4782,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (tab === 'discover') { renderDiscoGrid(); fetchScheduledRoomsV2(); }
         if (tab === 'trending') renderTrendingTab();
         if (tab === 'scheduled') renderScheduledTab();
-        if (tab === 'mycircles') switchMyCirclesSubtab('recent');
+        if (tab === 'mycircles') { updateMyCirclesSubtext(); switchMyCirclesSubtab('recent'); }
     }
 
     // ── Trending 탭: 실제 discoRooms 데이터로 인원수 기준 랭킹 렌더 ──
@@ -4806,6 +4884,36 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             localStorage.setItem(RECENT_CIRCLES_KEY, JSON.stringify(list));
         } catch(e) { console.warn('recordRecentCircle failed:', e); }
     }
+    // ── 대화 요약본 로컬 저장 (Recently joined에서 "요약 보기"로 다시 볼 수 있게) ──
+    const CIRCLE_SUMMARIES_KEY = 'btalk_circle_summaries';
+    function getCircleSummaries() {
+        try {
+            const raw = localStorage.getItem(CIRCLE_SUMMARIES_KEY);
+            return raw ? JSON.parse(raw) : {};
+        } catch(e) { return {}; }
+    }
+    function saveCircleSummary(topic, summaryHtml) {
+        if (!topic || !summaryHtml) return;
+        try {
+            const all = getCircleSummaries();
+            all[topic] = { summary: summaryHtml, savedAt: Date.now() };
+            localStorage.setItem(CIRCLE_SUMMARIES_KEY, JSON.stringify(all));
+        } catch(e) { console.warn('saveCircleSummary failed:', e); }
+    }
+    function openCircleSummaryModal(topic) {
+        const isKo = currentLang === 'ko';
+        const entry = getCircleSummaries()[topic];
+        document.getElementById('circle-summary-title').textContent = topic;
+        const contentEl = document.getElementById('circle-summary-content');
+        contentEl.innerHTML = entry
+            ? entry.summary
+            : (isKo ? '이 테이블의 요약이 아직 없어요.' : 'No summary available for this table yet.');
+        document.getElementById('circle-summary-close-btn').textContent = isKo ? '닫기' : 'Close';
+        document.getElementById('circle-summary-modal').classList.add('active');
+    }
+    function closeCircleSummaryModal() {
+        document.getElementById('circle-summary-modal').classList.remove('active');
+    }
     function formatTimeAgo(ts) {
         const isKo = currentLang === 'ko';
         const diffMs = Date.now() - ts;
@@ -4850,8 +4958,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             return;
         }
         list.forEach(c => {
-            const liveRoom = (discoRooms || []).find(r => r && r.topic === c.topic);
-
             const row = document.createElement('div');
             row.className = 'mycircles-row';
 
@@ -4870,23 +4976,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             mid.appendChild(title);
             mid.appendChild(meta);
 
-            const rejoinBtn = document.createElement('button');
-            rejoinBtn.className = 'mycircles-rejoin-btn';
-            rejoinBtn.textContent = isKo ? '다시 참여' : 'Rejoin';
-            rejoinBtn.onclick = () => {
-                if (liveRoom) {
-                    joinDiscoRoom(liveRoom);
-                } else {
-                    switchDiscoTab('discover');
-                    discoSearchQuery = c.topic;
-                    document.getElementById('disco-search-input').value = c.topic;
-                    renderDiscoGrid();
-                }
-            };
+            const summaryBtn = document.createElement('button');
+            summaryBtn.className = 'mycircles-rejoin-btn';
+            summaryBtn.textContent = isKo ? '요약 보기' : 'View summary';
+            summaryBtn.onclick = () => openCircleSummaryModal(c.topic);
 
             row.appendChild(icon);
             row.appendChild(mid);
-            row.appendChild(rejoinBtn);
+            row.appendChild(summaryBtn);
             container.appendChild(row);
         });
     }
@@ -5368,6 +5465,8 @@ database.ref('activeTopics').on('value', (snap) => {
             topics.push(entry[1].topic);
         }
         if (entry) {
+            // 실제로 아바타(동물+색)를 고르고 들어와 있는 참여자가 있으면 카드에 보여줄 대표 아바타로 사용
+            const avatarUser = liveUsers.find(([, u]) => u.avatarEmoji && u.avatarEmoji !== '👋');
             discoRoomsBuilt.push({
                 channelId,
                 topic: entry[1].topic,
@@ -5376,7 +5475,9 @@ database.ref('activeTopics').on('value', (snap) => {
                 occupancy: liveUsers.length,
                 pingpong: channelId.endsWith('_pp'),
                 style: entry[1].style || null,
-                roomId: entry[1].roomId || null
+                roomId: entry[1].roomId || null,
+                avatarEmoji: avatarUser ? avatarUser[1].avatarEmoji : null,
+                avatarColor: avatarUser ? avatarUser[1].avatarColor : null
             });
         }
     });
@@ -6666,7 +6767,22 @@ document.getElementById('max-people-group').style.visibility = "hidden";
             }
         }
 
-    
+        // "Start a table"로 새로 만든 실시간 방을 /rooms/ 시스템에 등록 — 최종 topic과 channelId가
+        // 정해진 지금 시점에 해야 나중에 모두 나가도 정확히 같은 채널로 재입장할 수 있음
+        if (pendingRoomsCreate) {
+            pendingRoomsCreate = false;
+            if (!finalTopic.startsWith('🔒_')) {
+                try {
+                    const idToken = await auth.currentUser.getIdToken();
+                    const res = await fetch(TOKEN_SERVER_URL + '/rooms/create', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idToken, title: finalTopic, category: pendingRoomCategory, style: selectedSpeechStyle, pingpong: pingpongMode, channelId: safeAgoraChannelId })
+                    });
+                    const data = await res.json();
+                    if (data.success) pendingRoomsRoomId = data.roomId;
+                } catch(e) { console.warn('rooms/create for live room failed:', e.message); }
+            }
+        }
 
         const dbg = (msg) => { document.getElementById('debug-log').innerText += msg + '\n'; };
         try {
@@ -8970,6 +9086,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     // showCeremony=false는 로그아웃/게스트체험끝내기 도중 조용히 방만 정리할 때 씀
     // (대기자 재등록, 대화 리포트/배지 모달 세리머니는 어차피 바로 로그아웃할 거라 불필요)
     async function leaveRoom(showCeremony) {
+        // 요약본을 "최근 참여" 목록의 어느 대화와 연결할지 — UI가 초기화되기 전에 미리 읽어둔다
+        try {
+            const topicEl = document.getElementById('room-topic-display');
+            pendingSummaryTopic = topicEl ? topicEl.textContent : null;
+        } catch(e) { pendingSummaryTopic = null; }
         try {
             clearFreeTimer();
             stopPPMode();
@@ -9108,6 +9229,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
     }
     document.getElementById('leave-btn').onclick = () => leaveRoom(true);
 
+    // 방금 나간 대화방의 주제 — leaveRoom()에서 채워서 requestAISummary()가 어느 테이블의
+    // 요약인지 알 수 있게 함 (My Tables > Recently joined > 요약 보기 에서 다시 볼 수 있도록 저장)
+    let pendingSummaryTopic = null;
     // AI 대화 요약 함수 — summarize.js Netlify Function 호출
     async function requestAISummary() {
         try {
@@ -9132,9 +9256,11 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             const summary = data.summary || '';
 
             document.getElementById('summary-headline').innerText = textData[currentLang].aiHeadline;
-            document.getElementById('summary-content').innerHTML = summary
+            const summaryHtml = summary
                 .split('\n').filter(Boolean)
                 .map(line => `• ${line}`).join('<br>');
+            document.getElementById('summary-content').innerHTML = summaryHtml;
+            if (summaryHtml) saveCircleSummary(pendingSummaryTopic, summaryHtml);
 
         } catch (e) {
             console.error('AI summary failed:', e);

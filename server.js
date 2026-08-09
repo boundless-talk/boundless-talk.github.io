@@ -478,6 +478,7 @@ function serializeRoom(id, r, uid) {
         category: r.category || 'general',
         style: r.style === 'polite' ? 'polite' : 'casual',
         pingpong: !!r.pingpong,
+        channelId: r.channelId || null,
         startAt: r.startAt || null,
         createdAt: r.createdAt || 0,
         expiresAt: r.expiresAt || 0,
@@ -492,7 +493,7 @@ function serializeRoom(id, r, uid) {
 // 방 만들기 — startAt을 안 주면 "지금 바로" 방
 app.post('/rooms/create', express.json(), async (req, res) => {
     if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
-    const { idToken, title, category, style, pingpong, fcmToken, startAt } = req.body || {};
+    const { idToken, title, category, style, pingpong, fcmToken, startAt, channelId } = req.body || {};
     if (!idToken || !title) return res.status(400).json({ error: 'idToken, title required' });
 
     let uid;
@@ -516,6 +517,10 @@ app.post('/rooms/create', express.json(), async (req, res) => {
             category: String(category || 'general').slice(0, 32),
             style: style === 'polite' ? 'polite' : 'casual',
             pingpong: !!pingpong,
+            // "지금" 방의 실제 Agora 채널 ID. 저장해두면, 나중에 다 나가서 activeTopics(실시간
+            // 접속 현황)에서 사라져도 이 값으로 정확히 같은 채널에 재입장할 수 있다 — 없으면
+            // 주제를 재정규화해서 다른 채널로 새고 서로 연결이 안 될 위험이 있음.
+            channelId: channelId ? String(channelId).slice(0, 200) : null,
             createdAt: now,
             createdBy: uid,
             startAt: start,
