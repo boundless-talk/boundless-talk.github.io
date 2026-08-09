@@ -10715,6 +10715,9 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     function refreshRoomAloneBgm() {
         const audio = document.getElementById('bgm-audio');
         if (!audio) return;
+        // 사용자가 직접 꺼둔 상태라면(예: 매칭 화면에서 끔) 방에 혼자 들어왔다고 해서
+        // 제멋대로 다시 켜지 않는다 — 조용히 있고 싶어서 끈 것일 수 있으므로
+        if (bgmUserDisabled) { audio.pause(); setBgmBtnColor(''); return; }
         if (isJoined && roomParticipants.length === 0) {
             audio.volume = ROOM_ALONE_BGM_VOLUME;
             if (audio.paused) {
