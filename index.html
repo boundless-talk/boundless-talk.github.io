@@ -1701,7 +1701,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         /* Discover 목록 필터 — 실시간 / 시간지정 */
         .disco-filter-row { display: flex; justify-content: flex-end; gap: 12px; margin: 10px 0 12px; }
         .disco-filter { display: inline-flex; align-items: center; gap: 3px; font-size: 9px; color: rgba(255,255,255,0.35); cursor: pointer; user-select: none; }
-        .disco-filter input[type="checkbox"] { width: 8px; height: 8px; accent-color: var(--accent-color); cursor: pointer; margin: 0; }
+        .disco-filter input[type="checkbox"] { width: 12px; height: 12px; accent-color: var(--accent-color); cursor: pointer; margin: 0; transform: scale(0.6); transform-origin: center; flex-shrink: 0; }
         /* 시간지정 방 카드의 시작 시각 배지 */
         .disco-when-badge {
             display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700;
@@ -1847,10 +1847,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             cursor: pointer; color-scheme: dark; appearance: none; text-align: center;
         }
         .disco-when-selects select:focus { border-color: var(--dr); }
-        #disco-create-when-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 7px; }
+        #disco-create-when-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 6px; }
         .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; padding: 10px 12px; }
         .disco-pp-row-label { font-size: 12.5px; color: rgba(255,255,255,0.7); }
-        .disco-seg-toggle { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.06); border-radius: 16px; padding: 3px; cursor: pointer; flex: none; }
+        .disco-seg-toggle { display: inline-flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.06); border-radius: 16px; padding: 3px; cursor: pointer; flex: none; }
         .disco-seg-opt { padding: 5px 10px; border-radius: 13px; font-size: 10.5px; font-weight: 700; color: rgba(255,255,255,0.35); }
         .disco-seg-opt.active { background: rgba(255,255,255,0.1); color: #fff; }
         .disco-seg-opt.disco-seg-opt-accent.active { background: var(--accent-color); color: #000; }
@@ -2461,14 +2461,14 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div class="disco-modal-label" id="disco-create-topic-label">주제</div>
                 <input type="text" id="disco-create-topic-input" placeholder="예: 오늘 있었던 일, F1, 자취 꿀팁">
                 <div style="margin-top:10px;">
-                    <div id="disco-create-when-toggle" class="disco-seg-toggle" onclick="toggleDiscoCreateWhen()">
-                        <div id="disco-create-when-live" class="disco-seg-opt active">실시간</div>
-                        <div id="disco-create-when-sched" class="disco-seg-opt">시간지정</div>
-                    </div>
-                </div>
-                <div id="disco-create-when-custom" style="display:none; margin-top:8px;">
-                    <div class="disco-when-selects">
-                        <select id="disco-when-hour" onchange="syncDiscoCreateCustomTime()"></select>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <div id="disco-create-when-toggle" class="disco-seg-toggle" onclick="toggleDiscoCreateWhen()">
+                            <div id="disco-create-when-live" class="disco-seg-opt active">실시간</div>
+                            <div id="disco-create-when-sched" class="disco-seg-opt">시간지정</div>
+                        </div>
+                        <div class="disco-when-selects" id="disco-create-when-custom" style="display:none;">
+                            <select id="disco-when-hour" onchange="syncDiscoCreateCustomTime()"></select>
+                        </div>
                     </div>
                     <div id="disco-create-when-hint"></div>
                 </div>
