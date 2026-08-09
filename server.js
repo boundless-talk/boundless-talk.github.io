@@ -421,6 +421,15 @@ const ROOM_SCHEDULE_MAX_MS = 24 * 60 * 60 * 1000;  // 약속은 24시간 이내�
 const ROOM_LIVE_TTL_MS = 24 * 60 * 60 * 1000;      // "지금" 방: 만든 지 24시간
 const ROOM_AFTER_START_TTL_MS = 2 * 60 * 60 * 1000; // "지정" 방: 약속 시각 + 2시간
 
+// 방이 새로 생기거나 통째로 사라졌을 때 건드리는 가벼운 신호 노드 — /rooms/list는 참여자 uid/
+// fcmToken 등 민감한 정보가 있어 서버(Admin SDK)를 거쳐야 하므로 클라이언트가 rooms/ 전체를
+// 직접 실시간 구독할 수 없다. 대신 이 타임스탬프만 클라이언트가 실시간으로 지켜보다가, 바뀌면
+// /rooms/list를 다시 불러오게 해서, 한 기기에서 삭제한 방이 다른 기기에도 새로고침 없이 반영되게 함.
+async function touchRoomsUpdated() {
+    try { await admin.database().ref('roomsUpdatedAt').set(Date.now()); }
+    catch (e) { console.warn('touchRoomsUpdated failed:', e.message); }
+}
+
 function kstDayKey(ms) {
     return new Date((ms || Date.now()) + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
 }
@@ -529,6 +538,7 @@ app.post('/rooms/create', express.json(), async (req, res) => {
             expiresAt: start ? start + ROOM_AFTER_START_TTL_MS : now + ROOM_LIVE_TTL_MS,
             participants: { [uid]: { fcmToken: fcmToken || null, joinedAt: now, nCount: 0, nDate: kstDayKey(now) } }
         });
+        touchRoomsUpdated();
         res.json({ success: true, roomId });
     } catch (e) {
         console.error('[rooms/create] error:', e.message);
@@ -601,7 +611,10 @@ app.post('/rooms/leave', express.json(), async (req, res) => {
         const roomRef = admin.database().ref(`rooms/${roomId}`);
         await roomRef.child(`participants/${uid}`).remove();
         const left = await roomRef.child('participants').once('value');
-        if (!left.exists() || left.numChildren() === 0) await roomRef.remove();
+        if (!left.exists() || left.numChildren() === 0) {
+            await roomRef.remove();
+            touchRoomsUpdated();
+        }
         res.json({ success: true });
     } catch (e) {
         console.error('[rooms/leave] error:', e.message);
@@ -649,6 +662,7 @@ app.post('/rooms/delete', express.json(), async (req, res) => {
             return res.json({ success: false, error: 'occupied' });
         }
         await roomRef.remove();
+        touchRoomsUpdated();
         res.json({ success: true });
     } catch (e) {
         console.error('[rooms/delete] error:', e.message);
@@ -888,6 +902,7 @@ app.post('/admin/delete-room', async (req, res) => {
     }
     try {
         await admin.database().ref(`rooms/${roomId}`).remove();
+        touchRoomsUpdated();
         res.json({ success: true });
     } catch (e) {
         console.error('[admin/delete-room] error:', e.message);

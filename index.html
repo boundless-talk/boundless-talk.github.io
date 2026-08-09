@@ -3565,6 +3565,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     }
 
     let discoRooms = [];              // activeTopics 리스너가 채움
+    let _prevLiveChannelIds = new Set(); // 직전 activeTopics 스냅샷의 채널 집합 — 방이 막 사라졌는지 감지용
     let discoActiveCategory = 'all';
     let discoSearchQuery = '';
     let pendingRoomCategory = null;   // Discover에서 방 만들기/입장 시, join-btn 흐름에 실어 보낼 카테고리
@@ -3660,18 +3661,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             live.className = 'disco-live-badge';
             live.innerHTML = '<span class="dot"></span>';
             live.appendChild(document.createTextNode('LIVE NOW'));
-        } else {
-            // 빈 방의 알림 구독 여부를 보여주는 배지 — 누르면 켜고 끌 수 있음(방은 어느 쪽이든 안 지워짐)
+        } else if (room.joined) {
+            // 알림을 받기로 한 사람(방을 만든 사람은 자동으로 여기 해당) — 눌러서 끌 수 있음
             live.className = 'disco-live-badge disco-live-badge-empty disco-live-badge-clickable';
-            if (room.joined) {
-                live.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying';
-                live.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, live, false); };
-            } else {
-                live.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
-                live.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, live, true); };
-            }
+            live.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying';
+            live.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, live, false); };
+        } else if (getDeclinedNotifyRoomIds().has(room.roomId)) {
+            // 이 방에 들어갔다 나가면서(또는 배지를 눌러서) 명시적으로 "안받기"를 고른 적 있는 사람 —
+            // 눌러서 다시 켤 수 있음
+            live.className = 'disco-live-badge disco-live-badge-empty disco-live-badge-clickable';
+            live.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
+            live.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, live, true); };
         }
-        badges.appendChild(live);
+        // 이 방에 대해 알림 여부를 한 번도 정한 적 없는 제3자에게는 배지를 아예 안 보여준다
+        if (live.className) badges.appendChild(live);
         top.appendChild(badges);
         card.appendChild(top);
 
@@ -4069,6 +4072,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (turnOn) {
             badgeEl.textContent = isKo ? '🔔 알림받는중' : '🔔 Notifying';
             badgeEl.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, badgeEl, false); };
+            clearRoomNotifyDeclined(room.roomId);
             try {
                 const { token } = await tryGetFcmToken();
                 const idToken = await auth.currentUser.getIdToken();
@@ -4083,6 +4087,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             badgeEl.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
             badgeEl.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, badgeEl, true); };
             showBadgeToast(isKo ? '대화상대 입장시 놓칠 수 있어요.' : "You may miss it when a conversation partner joins.");
+            markRoomNotifyDeclined(room.roomId);
             try {
                 const idToken = await auth.currentUser.getIdToken();
                 await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
@@ -4535,6 +4540,29 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     function shouldShowNotifyPreprompt() {
         const until = localStorage.getItem(NOTIFY_PREPROMPT_SNOOZE_KEY);
         return !until || Date.now() > parseInt(until, 10);
+    }
+    // 빈 방 배지는 "이 방에 대해 알림 여부를 실제로 정한 적 있는 사람"에게만 떠야 함 — 방을 만들지도
+    // 않았고 들어갔다 나가며 안내 모달에서 선택한 적도 없는 제3자에게는 아무 배지도 안 보여야 함.
+    // 서버 participants에는 "받기"만 남고 "안받기"는 흔적이 없으므로, "안받기"를 고른 적 있는
+    // roomId만 로컬에 따로 기억해둔다(joined=true면 그게 곧 "받기"를 정한 증거이므로 따로 안 둠).
+    const NOTIFY_DECLINED_ROOMS_KEY = 'btalk_notify_declined_rooms';
+    function getDeclinedNotifyRoomIds() {
+        try { return new Set(JSON.parse(localStorage.getItem(NOTIFY_DECLINED_ROOMS_KEY)) || []); }
+        catch(e) { return new Set(); }
+    }
+    function markRoomNotifyDeclined(roomId) {
+        if (!roomId) return;
+        try {
+            const ids = getDeclinedNotifyRoomIds();
+            ids.add(roomId);
+            localStorage.setItem(NOTIFY_DECLINED_ROOMS_KEY, JSON.stringify([...ids].slice(-100)));
+        } catch(e) { console.warn('markRoomNotifyDeclined failed:', e); }
+    }
+    function clearRoomNotifyDeclined(roomId) {
+        try {
+            const ids = getDeclinedNotifyRoomIds();
+            if (ids.delete(roomId)) localStorage.setItem(NOTIFY_DECLINED_ROOMS_KEY, JSON.stringify([...ids]));
+        } catch(e) { console.warn('clearRoomNotifyDeclined failed:', e); }
     }
     function showNotifyPreprompt() {
         const isKo = currentLang === 'ko';
@@ -5575,6 +5603,13 @@ database.ref('activeTopics').on('value', (snap) => {
     });
     discoRooms = discoRoomsBuilt;
     renderDiscoGrid();
+    // 방금까지 있던 채널이 이번엔 사라졌다면(=마지막 사람이 나가서 activeTopics에서 지워짐) 그 방을
+    // 빈 방으로라도 Discover에 계속 보여주기 위해 /rooms/list 스냅샷을 바로 다시 불러온다 — 안 그러면
+    // discoEmptyLiveRooms가 다음 갱신 시점(탭 전환 등)까지는 그대로라 방이 잠깐 통째로 사라져 보임
+    const newLiveChannelIds = new Set(discoRoomsBuilt.map(r => r.channelId));
+    const aChannelDisappeared = [..._prevLiveChannelIds].some(id => !newLiveChannelIds.has(id));
+    _prevLiveChannelIds = newLiveChannelIds;
+    if (aChannelDisappeared) fetchScheduledRoomsV2();
     // Scheduled 탭 카드는 9시 이후 이 실시간 데이터로 진짜 참여 인원을 보여주므로 같이 갱신
     renderScheduledGrid();
 
@@ -5604,6 +5639,16 @@ database.ref('activeTopics').on('value', (snap) => {
     } else {
         bar.style.display = 'none';
     }
+});
+
+// rooms/ 트리 자체는 참여자 uid/fcmToken 등이 있어 클라이언트가 직접 실시간 구독하지 않고
+// 서버(/rooms/list)를 거치는데, 그러면 다른 기기가 방을 지우거나 새로 만들어도 이 기기는
+// 다음 갱신 시점까지 모르고 있게 됨(새로고침해야 반영되던 문제). 방이 생기거나 지워질 때만
+// 서버가 건드리는 가벼운 타임스탬프 신호를 대신 실시간으로 지켜보다가, 바뀌면 목록을 다시 불러온다.
+let _roomsUpdatedAtFirstSnapshot = true;
+database.ref('roomsUpdatedAt').on('value', () => {
+    if (_roomsUpdatedAtFirstSnapshot) { _roomsUpdatedAtFirstSnapshot = false; return; } // 최초 attach 시 중복 조회 방지
+    fetchScheduledRoomsV2();
 });
 
 /* 고정 스케줄 방 (한국/미국) - 월수금토 9~12시 자동 오픈 배너 */ const FIXED_ROOMS = [ { key: 'korea', tz: 'Asia/Seoul', days: [1,3,5,6], openHour: 9, closeHour: 12 }, { key: 'us', tz: 'America/New_York', days: [1,3,5,6], openHour: 9, closeHour: 12 } ]; function getFixedRoomOpenNow(room) { const parts = new Intl.DateTimeFormat('en-US', { timeZone: room.tz, weekday: 'short', hour: 'numeric', hour12: false }).formatToParts(new Date()); const dayMap = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }; const weekday = dayMap[parts.find(p => p.type === 'weekday').value]; let hour = parseInt(parts.find(p => p.type === 'hour').value, 10); if (hour === 24) hour = 0; return room.days.includes(weekday) && hour >= room.openHour && hour < room.closeHour; } function updateFixedRoomBanner() { const banner = document.getElementById('fixed-room-banner'); if (!banner) return; if (typeof isJoined !== 'undefined' && isJoined) { banner.style.display = 'none'; return; } const openRoom = FIXED_ROOMS.find(getFixedRoomOpenNow); if (!openRoom) { banner.style.display = 'none'; return; } database.ref('fixedRooms/' + openRoom.key + '/topic').once('value').then(snap => { const topic = snap.val(); if (!topic) { banner.style.display = 'none'; return; } banner.textContent = "Today's topic: " + topic; banner.style.display = 'block'; banner.style.cursor = 'pointer'; banner.onclick = () => autoJoinFromPush(topic); }); } updateFixedRoomBanner(); setInterval(updateFixedRoomBanner, 60000); let allLiveTopics = [];
@@ -9279,6 +9324,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                                         body: JSON.stringify({ idToken, roomId: _leaveRoomsRoomId, fcmToken: token })
                                     });
                                 }
+                                clearRoomNotifyDeclined(_leaveRoomsRoomId);
                             } catch(e) { console.warn('rooms/join subscribe failed:', e.message); }
                         } else {
                             // 알림을 거부해도 방 자체는 지우지 않는다 — 참여자 목록에서만 빠지고
@@ -9286,6 +9332,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                             // 다른 사람이 발견해서 들어올 수 있음. 나만 그 알림을 못 받게 될 뿐.
                             const isKo3 = currentLang === 'ko';
                             showBadgeToast(isKo3 ? '대화상대 입장시 놓칠 수 있어요.' : "You may miss it when a conversation partner joins.");
+                            markRoomNotifyDeclined(_leaveRoomsRoomId);
                             try {
                                 const idToken = await auth.currentUser.getIdToken();
                                 await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
@@ -10737,11 +10784,24 @@ Request a refund within 14 days of subscribing for a full refund and immediate c
     }
 
     // 닉네임 모달 confirm — 고른 색깔+동물을 조합해 닉네임/아바타를 확정
-    document.getElementById('join-nick-confirm-btn').addEventListener('click', function() {
+    document.getElementById('join-nick-confirm-btn').addEventListener('click', async function() {
         if (_pickedAvatarColorIdx === null || _pickedAvatarAnimalIdx === null) return;
         const color = AVATAR_COLORS[_pickedAvatarColorIdx];
         const animal = AVATAR_ANIMALS[_pickedAvatarAnimalIdx];
         const isKo = currentLang === 'ko';
+        // Discover 카드로 이미 존재하는 방에 바로 들어가는 경우, 그 방에 있는 누군가가 이미
+        // 같은 동물+색 조합을 쓰고 있으면 막고 다른 조합을 고르게 함(같은 방에서 아바타 중복 방지)
+        if (pendingDirectChannelId) {
+            try {
+                const snap = await database.ref('activeTopics/' + pendingDirectChannelId).once('value');
+                const users = snap.val() || {};
+                const taken = Object.values(users).some(u => u.avatarEmoji === animal.emoji && u.avatarColor === color.key);
+                if (taken) {
+                    showBadgeToast(isKo ? '참여자가 사용중입니다' : 'Someone in the room is already using this.');
+                    return;
+                }
+            } catch(e) { console.warn('avatar conflict check failed:', e.message); }
+        }
         myNickname = isKo ? `${color.ko} ${animal.ko}` : `${color.en} ${animal.en}`;
         myAvatarEmoji = animal.emoji;
         myAvatarColor = color.key;
