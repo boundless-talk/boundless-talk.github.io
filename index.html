@@ -5301,7 +5301,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         waitingMany: (n) => `${n} people are ready to chat!`,
         dailyVisitorsText: (n) => `Today: ${n} ${n === 1 ? 'visitor' : 'visitors'}`,
         pwaBannerTitle: "Add to Home Screen for a better experience",
-        pwaBannerDesc: "Launches instantly like an app — one tap and you're in.",
+        pwaBannerDesc: "Launches instantly like an app — one tap and you're in. On iOS, adding to Home Screen is required to receive notifications.",
         pwaInstallBtn: "Add to Home Screen",
         pwaLaterBtn: "Later",
         iosBannerTitle: "Add to Home Screen for a better experience",
@@ -5430,7 +5430,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         waitingMany: (n) => `${n}명이 대화 준비가 되었어요!`,
         dailyVisitorsText: (n) => `오늘 ${n}명이 다녀갔어요`,
         pwaBannerTitle: "홈 화면에 추가하고 앱처럼 이용하세요",
-        pwaBannerDesc: "앱처럼 빠르게 실행되고, 한 번의 터치로 바로 접속할 수 있습니다.",
+        pwaBannerDesc: "앱처럼 빠르게 실행되고, 한 번의 터치로 바로 접속할 수 있습니다. iOS 기기는 홈 추가 후 알림을 받아볼 수 있어요.",
         pwaInstallBtn: "홈 화면에 추가",
         pwaLaterBtn: "나중에",
         iosBannerTitle: "첫 화면에서 바로,<br>놓치는 알림 없이.",
@@ -11228,7 +11228,7 @@ function showSuspendOverlay(until, reason, uid) {
   <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
     <div style="flex:1;">
       <div id="pwa-title" style="font-size:14px; font-weight:600; color:#fff; margin-bottom:5px; line-height:1.4;">홈 화면에 추가하고 앱처럼 이용하세요</div>
-      <div id="pwa-desc" style="font-size:12px; color:rgba(255,255,255,0.45); line-height:1.5;">앱처럼 빠르게 실행되고, 한 번의 터치로 바로 접속할 수 있습니다.</div>
+      <div id="pwa-desc" style="font-size:12px; color:rgba(255,255,255,0.45); line-height:1.5;">앱처럼 빠르게 실행되고, 한 번의 터치로 바로 접속할 수 있습니다. iOS 기기는 홈 추가 후 알림을 받아볼 수 있어요.</div>
     </div>
     <button onclick="document.getElementById('pwa-banner').style.display='none'" style="background:transparent; border:none; color:rgba(255,255,255,0.3); font-size:18px; cursor:pointer; padding:0; margin:0; width:auto; line-height:1; flex-shrink:0;">✕</button>
   </div>
@@ -11287,7 +11287,7 @@ function showSuspendOverlay(until, reason, uid) {
     const lang = (typeof currentLang !== 'undefined' && currentLang) ? currentLang : (navigator.language || '').startsWith('ko') ? 'ko' : 'en';
     if (lang === 'en') {
       document.getElementById('pwa-title').textContent = 'Add to Home Screen for quick and easy chatting.';
-      document.getElementById('pwa-desc').textContent = 'Launch like an app and connect instantly with one tap.';
+      document.getElementById('pwa-desc').textContent = 'Launch like an app and connect instantly with one tap. On iOS, adding to Home Screen is required to receive notifications.';
       document.getElementById('pwa-install-btn').textContent = 'Add to Home Screen';
     }
     setTimeout(() => { document.getElementById('pwa-banner').style.display = 'block'; }, 3000);
