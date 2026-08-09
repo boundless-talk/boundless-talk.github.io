@@ -1698,6 +1698,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-trending-row::-webkit-scrollbar { display: none; }
         .disco-trending-label { font-size: 12px; color: rgba(255,255,255,0.35); flex: none; }
         .disco-trending-tag { width: auto; flex: none; font-size: 12px; color: var(--dr); padding: 5px 12px; margin: 0; border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 14px; cursor: pointer; background: none; }
+        /* Discover 목록 필터 — 실시간 / 시간지정 */
+        .disco-filter-row { display: flex; justify-content: flex-end; gap: 12px; margin: 10px 0 12px; }
+        .disco-filter { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: rgba(255,255,255,0.45); cursor: pointer; user-select: none; }
+        .disco-filter input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--accent-color); cursor: pointer; margin: 0; }
+        /* 시간지정 방 카드의 시작 시각 배지 */
+        .disco-when-badge {
+            display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.04em; padding: 3px 8px; border-radius: 12px;
+            border: 1px solid rgba(var(--accent-rgb),0.35); color: var(--accent-color); white-space: nowrap;
+        }
+        .disco-sched-btn {
+            width: 100%; margin-top: 10px; padding: 9px; border-radius: 8px; font-size: 12.5px; font-weight: 700;
+            cursor: pointer; background: rgba(var(--accent-rgb),0.08); border: 1px solid rgba(var(--accent-rgb),0.4); color: var(--accent-color);
+        }
+        .disco-sched-btn.joined { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); }
         .disco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
         .disco-card {
             background: var(--dsurf); border: 1px solid var(--dbord); border-radius: 8px;
@@ -1821,6 +1836,18 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         }
         .disco-modal-box input[type="text"]:focus { border-color: var(--dr); }
         .disco-cat-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+        /* 주제 입력 + 실시간/시간지정 토글을 한 줄에 */
+        .disco-topic-row { display: flex; align-items: center; gap: 8px; }
+        .disco-topic-row input[type="text"] { flex: 1; min-width: 0; }
+        /* 시작 시각 스크롤 선택 — 모달의 입력 톤을 그대로 따름 */
+        .disco-when-selects { display: flex; gap: 7px; }
+        .disco-when-selects select {
+            flex: 1; min-width: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09);
+            border-radius: 8px; color: #f5f4f2; font-size: 13.5px; padding: 10px 8px; outline: none;
+            cursor: pointer; color-scheme: dark; appearance: none; text-align: center;
+        }
+        .disco-when-selects select:focus { border-color: var(--dr); }
+        #disco-create-when-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 7px; }
         .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; padding: 10px 12px; }
         .disco-pp-row-label { font-size: 12.5px; color: rgba(255,255,255,0.7); }
         .disco-seg-toggle { display: flex; align-items: center; gap: 2px; background: rgba(255,255,255,0.06); border-radius: 16px; padding: 3px; cursor: pointer; flex: none; }
@@ -2026,6 +2053,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-ring .ring-o { border-color: rgba(0,0,0,.12); }
         html[data-cute-mode="cute"] .disco-ring .ring-n.empty { border-color: rgba(0,0,0,.2); }
         html[data-cute-mode="cute"] .disco-search-input::placeholder { color: rgba(36,31,26,.35); }
+        html[data-cute-mode="cute"] .disco-filter { color: rgba(36,31,26,.55); }
+        html[data-cute-mode="cute"] .disco-sched-btn.joined {
+            background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); color: rgba(36,31,26,.5);
+        }
         html[data-cute-mode="cute"] .disco-trending-tag { border: 1px solid rgba(138,47,42,.25); color: #8a2f2a; background: transparent; border-radius: 2px; }
         html[data-cute-mode="cute"] .disco-trending-tag.disco-trending-tag-alt { color: #8a2f2a; background: transparent; }
         html[data-cute-mode="cute"] .speech-style-badge { color: #8a2f2a; background: rgba(36,31,26,0.06); border-color: rgba(36,31,26,0.06); border-radius: 2px; }
@@ -2036,6 +2067,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.1); color: #241f1a;
         }
         html[data-cute-mode="cute"] .disco-pp-row { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
+        html[data-cute-mode="cute"] #disco-create-when-hint { color: rgba(36,31,26,.5); }
+        html[data-cute-mode="cute"] .disco-when-selects select {
+            background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.1); color: #241f1a; color-scheme: light;
+        }
         html[data-cute-mode="cute"] .disco-seg-toggle { background: rgba(0,0,0,.05); }
         html[data-cute-mode="cute"] .disco-seg-opt { color: rgba(36,31,26,.35); }
         html[data-cute-mode="cute"] .disco-seg-opt.active { background: #241f1a; color: #fff; }
@@ -2357,6 +2392,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 </div>
                 <div class="disco-chip-row" id="disco-chip-row"></div>
                 <div class="disco-trending-row" id="disco-trending-row"></div>
+                <div class="disco-filter-row">
+                    <label class="disco-filter"><input type="checkbox" id="disco-filter-live" onchange="applyDiscoFilter('live')"><span id="disco-filter-live-label">실시간</span></label>
+                    <label class="disco-filter"><input type="checkbox" id="disco-filter-sched" onchange="applyDiscoFilter('sched')"><span id="disco-filter-sched-label">시간지정</span></label>
+                </div>
                 <div class="disco-grid" id="disco-grid"></div>
                 <div class="disco-empty" id="disco-empty" style="display:none;">지금 진행 중인 방이 없어요. 먼저 써클을 시작해보세요!</div>
             </div>
@@ -2420,7 +2459,21 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div class="disco-modal-title" id="disco-create-title">새 방 만들기</div>
 
                 <div class="disco-modal-label" id="disco-create-topic-label">주제</div>
-                <input type="text" id="disco-create-topic-input" placeholder="예: 오늘 있었던 일, F1, 자취 꿀팁">
+                <div class="disco-topic-row">
+                    <input type="text" id="disco-create-topic-input" placeholder="예: 오늘 있었던 일, F1, 자취 꿀팁">
+                    <div id="disco-create-when-toggle" class="disco-seg-toggle" onclick="toggleDiscoCreateWhen()">
+                        <div id="disco-create-when-live" class="disco-seg-opt active">실시간</div>
+                        <div id="disco-create-when-sched" class="disco-seg-opt">시간지정</div>
+                    </div>
+                </div>
+                <div id="disco-create-when-custom" style="display:none; margin-top:8px;">
+                    <div class="disco-when-selects">
+                        <select id="disco-when-day" onchange="syncDiscoCreateCustomTime()"></select>
+                        <select id="disco-when-hour" onchange="syncDiscoCreateCustomTime()"></select>
+                        <select id="disco-when-min" onchange="syncDiscoCreateCustomTime()"></select>
+                    </div>
+                    <div id="disco-create-when-hint"></div>
+                </div>
 
                 <div class="disco-modal-label" id="disco-create-cat-label">카테고리</div>
                 <div class="disco-cat-grid" id="disco-create-cat-grid"></div>
@@ -3490,6 +3543,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     let discoSearchQuery = '';
     let pendingRoomCategory = null;   // Discover에서 방 만들기/입장 시, join-btn 흐름에 실어 보낼 카테고리
     let pendingDirectChannelId = null; // Discover 카드로 기존 방에 바로 들어갈 때, 주제 재정규화를 건너뛰고 쓸 정확한 채널 ID
+    let pendingRoomsRoomId = null;    // /rooms/ 시스템의 roomId — 입장 시 설정, 퇴장 시 알림 구독에 사용
     let discoCreatePP = false;
 
     function renderDiscoChipRow() {
@@ -3666,6 +3720,157 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         discoCountdownInterval = setInterval(tick, 1000);
     }
 
+    // ── 시간지정 방 (rooms/ 서버) — 실시간 방과 같은 Discover 목록에 함께 표시 ──
+    let discoScheduledRooms = [];
+    // 체크박스 두 개 중 하나만 켜면 그 종류만, 둘 다 켜거나 둘 다 끄면 전체를 보여준다.
+    let discoFilterLive = false;
+    let discoFilterSched = false;
+
+    function applyDiscoFilter(which) {
+        const liveEl = document.getElementById('disco-filter-live');
+        const schedEl = document.getElementById('disco-filter-sched');
+        discoFilterLive = !!(liveEl && liveEl.checked);
+        discoFilterSched = !!(schedEl && schedEl.checked);
+        renderDiscoGrid();
+    }
+
+    function formatStartAt(ts) {
+        const isKo = currentLang === 'ko';
+        const d = new Date(ts);
+        const now = new Date();
+        const sameDay = d.toDateString() === now.toDateString();
+        const hhmm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        const dayLabel = sameDay ? (isKo ? '오늘' : 'Today') : (isKo ? '내일' : 'Tomorrow');
+        return dayLabel + ' ' + hhmm;
+    }
+
+    async function fetchScheduledRoomsV2() {
+        try {
+            const body = {};
+            if (auth.currentUser) {
+                try { body.idToken = await auth.currentUser.getIdToken(); } catch (e) {}
+            }
+            const res = await fetch(TOKEN_SERVER_URL + '/rooms/list', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            // 실시간 방은 activeTopics(실제 접속 현황)가 진실이므로, 여기서는 시각이 잡힌 방만 가져온다
+            discoScheduledRooms = (data.rooms || []).filter(r => r.startAt);
+        } catch (e) {
+            console.warn('fetchScheduledRoomsV2 failed:', e.message);
+            discoScheduledRooms = [];
+        }
+        renderDiscoGrid();
+    }
+
+    function createTimedRoomCardEl(room) {
+        const isKo = currentLang === 'ko';
+        const card = document.createElement('div');
+        card.className = 'disco-card';
+
+        const top = document.createElement('div');
+        top.className = 'disco-card-top';
+        const topLeft = document.createElement('div');
+        topLeft.className = 'disco-card-top-left';
+        const cat = document.createElement('span');
+        cat.className = 'disco-card-cat';
+        cat.textContent = discoCatLabel(room.category);
+        topLeft.appendChild(cat);
+        if (room.style) {
+            const styleTag = document.createElement('span');
+            styleTag.className = 'speech-style-badge';
+            styleTag.textContent = textData[currentLang]['speechStyleBadge' + (room.style === 'casual' ? 'Casual' : 'Polite')];
+            topLeft.appendChild(styleTag);
+        }
+        top.appendChild(topLeft);
+        const badges = document.createElement('div');
+        badges.className = 'disco-card-badges';
+        if (room.pingpong) {
+            const pp = document.createElement('span');
+            pp.className = 'disco-pp-badge';
+            pp.textContent = '🏓 PP';
+            badges.appendChild(pp);
+        }
+        const when = document.createElement('span');
+        when.className = 'disco-when-badge';
+        when.textContent = '🕘 ' + formatStartAt(room.startAt);
+        badges.appendChild(when);
+        top.appendChild(badges);
+        card.appendChild(top);
+
+        const mid = document.createElement('div');
+        mid.className = 'disco-card-mid';
+        mid.appendChild(buildDiscoRingEl(room.participantCount, room.maxPeople));
+        const titleWrap = document.createElement('div');
+        titleWrap.className = 'disco-card-title-wrap';
+        const title = document.createElement('h3');
+        title.className = 'disco-card-title';
+        title.textContent = room.title;
+        titleWrap.appendChild(title);
+        mid.appendChild(titleWrap);
+        card.appendChild(mid);
+
+        const bottom = document.createElement('div');
+        bottom.className = 'disco-card-bottom';
+        const occ = document.createElement('span');
+        occ.className = 'disco-occupancy';
+        const full = room.participantCount >= room.maxPeople;
+        occ.textContent = room.participantCount + '/' + room.maxPeople +
+            (full ? (isKo ? '명 · 가득참' : ' · full') : (isKo ? '명 참여' : ' joined'));
+        bottom.appendChild(occ);
+        card.appendChild(bottom);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'disco-sched-btn' + (room.joined ? ' joined' : '');
+        btn.textContent = room.joined
+            ? (isKo ? '참여 취소' : 'Cancel')
+            : (full ? (isKo ? '자리 없음' : 'Full') : (isKo ? '참여하기' : 'Join'));
+        btn.disabled = !room.joined && full;
+        btn.onclick = (e) => { e.stopPropagation(); toggleScheduledRoomV2(room); };
+        card.appendChild(btn);
+
+        return card;
+    }
+
+    async function toggleScheduledRoomV2(room) {
+        const isKo = currentLang === 'ko';
+        if (isGuest || !auth.currentUser) { promptGuestLogin(); return; }
+        try {
+            const idToken = await auth.currentUser.getIdToken();
+            if (room.joined) {
+                await fetch(TOKEN_SERVER_URL + '/rooms/leave', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, roomId: room.id })
+                });
+                showBadgeToast(isKo ? '참여를 취소했어요.' : 'Cancelled.');
+            } else {
+                const { token } = await maybeGetFcmToken();
+                const res = await fetch(TOKEN_SERVER_URL + '/rooms/join', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, roomId: room.id, fcmToken: token })
+                });
+                const data = await res.json();
+                if (data.full) {
+                    showBadgeToast(isKo ? '이미 자리가 다 찼어요.' : 'This table is already full.');
+                } else if (!data.success) {
+                    throw new Error(data.error || 'unknown');
+                } else {
+                    showBadgeToast(token
+                        ? (isKo ? `✅ 참여했어요! ${formatStartAt(room.startAt)}에 알려드릴게요.` : `✅ Joined! We'll notify you at ${formatStartAt(room.startAt)}.`)
+                        : (isKo ? '✅ 참여했어요!' : '✅ Joined!'));
+                }
+            }
+        } catch (e) {
+            console.warn('toggleScheduledRoomV2 failed:', e.message);
+            showBadgeToast((isKo ? '오류: ' : 'Error: ') + e.message);
+        } finally {
+            fetchScheduledRoomsV2();
+        }
+    }
+
     function renderDiscoGrid() {
         const grid = document.getElementById('disco-grid');
         const empty = document.getElementById('disco-empty');
@@ -3673,36 +3878,48 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (!grid) return;
         renderDiscoTrendingRow();
 
-        let rooms = discoRooms;
-        if (discoActiveCategory !== 'all') rooms = rooms.filter(r => r.category === discoActiveCategory);
+        const showLive = !discoFilterLive && !discoFilterSched ? true : discoFilterLive;
+        const showSched = !discoFilterLive && !discoFilterSched ? true : discoFilterSched;
+
+        // 두 종류를 하나의 목록으로 합치되, 카드 생성 방식이 달라 kind로 구분해둔다
+        let items = [];
+        if (showLive) items = items.concat(discoRooms.map(r => ({ kind: 'live', room: r, category: r.category, text: r.topic })));
+        if (showSched) items = items.concat(discoScheduledRooms.map(r => ({ kind: 'sched', room: r, category: r.category, text: r.title })));
+
+        if (discoActiveCategory !== 'all') items = items.filter(it => it.category === discoActiveCategory);
         if (discoSearchQuery) {
             const q = discoSearchQuery.toLowerCase();
-            rooms = rooms.filter(r => r.topic.toLowerCase().includes(q));
+            items = items.filter(it => (it.text || '').toLowerCase().includes(q));
         }
 
+        // 실시간 방이 먼저, 시간지정 방은 시작이 임박한 순서대로
+        items.sort((a, b) => {
+            if (a.kind !== b.kind) return a.kind === 'live' ? -1 : 1;
+            if (a.kind === 'sched') return a.room.startAt - b.room.startAt;
+            return 0;
+        });
+
+        const totalRooms = discoRooms.length + discoScheduledRooms.length;
         if (countText) countText.textContent = discoRooms.length + (currentLang === 'ko' ? '개 방 진행 중' : ' tables live');
 
         grid.innerHTML = '';
-        if (rooms.length === 0) {
+        if (items.length === 0) {
             if (empty) {
                 empty.style.display = 'block';
                 empty.innerHTML = '';
-                if (discoRooms.length === 0 && !isWithinOperatingHours()) {
-                    empty.classList.add('disco-empty-hero');
-                    startDiscoCountdown(empty);
-                } else {
-                    stopDiscoCountdown();
-                    empty.classList.remove('disco-empty-hero');
-                    empty.textContent = discoRooms.length === 0
-                        ? (currentLang === 'ko' ? '지금 진행 중인 방이 없어요. 먼저 테이블을 시작해보세요!' : 'No tables live right now. Start the first one!')
-                        : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No tables match your filters.');
-                }
+                stopDiscoCountdown();
+                empty.classList.remove('disco-empty-hero');
+                empty.textContent = totalRooms === 0
+                    ? (currentLang === 'ko' ? '아직 방이 없어요. 먼저 테이블을 만들어보세요!' : 'No tables yet. Start the first one!')
+                    : (currentLang === 'ko' ? '조건에 맞는 방이 없어요.' : 'No tables match your filters.');
             }
             return;
         }
         stopDiscoCountdown();
         if (empty) empty.style.display = 'none';
-        rooms.forEach(room => grid.appendChild(createDiscoCardEl(room)));
+        items.forEach(it => grid.appendChild(
+            it.kind === 'live' ? createDiscoCardEl(it.room) : createTimedRoomCardEl(it.room)
+        ));
     }
 
     function joinDiscoRoom(room) {
@@ -3718,6 +3935,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         // 이미 있는 방의 정확한 channelId를 알고 있으므로, 주제를 다시 정규화(소문자 변환 등)해서
         // 다른 채널로 새고 서로 연결이 안 되는 일이 없도록 그대로 직행
         pendingDirectChannelId = room.channelId;
+        pendingRoomsRoomId = room.roomId || null;
         document.getElementById('join-btn').click();
     }
 
@@ -3764,11 +3982,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         discoCreateStyle = discoCreateStyle === 'casual' ? 'polite' : 'casual';
         setDiscoCreateStyleUI(discoCreateStyle);
     }
-    // 운영시간: 저녁 9시(21:00) ~ 자정(24:00) KST
+    // 운영시간 폐지 — 24시간 상시 오픈.
+    // 시간으로 사람을 모으는 방식(저녁 9시 오픈)은 유입이 적을 때 "찾아온 사람을 돌려보내는" 손실만 컸음.
+    // 특히 새벽에 들어온 방문자가 아무것도 못 하고 나가는 게 가장 큰 손실이었음.
+    // 앞으로는 시간 대신 알림으로 사람을 모음.
+    // 호출부가 여러 곳이라 함수는 그대로 두고 항상 열린 것으로 처리함.
     function isWithinOperatingHours() {
-        const now = new Date();
-        const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours();
-        return kstHour >= 21;
+        return true;
     }
 
     function updateDailyVisitorBadge() {
@@ -3776,13 +3996,108 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         if (el) el.textContent = textData[currentLang].dailyVisitorsText(_dailyVisitorCount);
     }
 
+    // ── "언제 얘기할까요?" — 방을 만들 때 시작 시각을 고르게 함 ──
+    // null이면 "지금 바로"(사람이 들어오면 알림), 값이 있으면 그 시각에 모이는 방.
+    // 너무 먼 미래로 잡으면 노쇼가 급증해서 서버와 동일하게 24시간 이내로만 받는다.
+    let discoCreateStartAt = null;
+    let discoCreateScheduled = false;   // false = 실시간, true = 시간지정
+
+    function setDiscoCreateWhenUI(scheduled) {
+        const isKo = currentLang === 'ko';
+        const live = document.getElementById('disco-create-when-live');
+        const sched = document.getElementById('disco-create-when-sched');
+        const custom = document.getElementById('disco-create-when-custom');
+        if (!live || !sched || !custom) return;
+        live.textContent = isKo ? '실시간' : 'Now';
+        sched.textContent = isKo ? '시간지정' : 'Later';
+        live.classList.toggle('active', !scheduled);
+        sched.classList.toggle('active', scheduled);
+        if (scheduled) {
+            custom.style.display = 'block';
+            populateDiscoWhenSelects();
+            syncDiscoCreateCustomTime();
+        } else {
+            custom.style.display = 'none';
+            discoCreateStartAt = null;   // 실시간 방은 시작 시각이 없다
+        }
+    }
+    function toggleDiscoCreateWhen() {
+        discoCreateScheduled = !discoCreateScheduled;
+        setDiscoCreateWhenUI(discoCreateScheduled);
+        // 시간지정 방은 지금 들어가는 게 아니므로 버튼 문구도 같이 바꿔준다
+        const isKo = currentLang === 'ko';
+        const submit = document.getElementById('disco-create-submit-btn');
+        if (submit) submit.textContent = discoCreateScheduled
+            ? (isKo ? '방 만들기' : 'Create table')
+            : (isKo ? '방 만들고 시작하기' : 'Create and start');
+    }
+    // 생년월일 입력과 같은 방식 — 네이티브 select라 모바일에서 스크롤 휠로 뜬다.
+    // 5분 단위로 끊어 두면 24시간 어느 시각이든 두어 번 스크롤로 닿는다.
+    function populateDiscoWhenSelects() {
+        const isKo = currentLang === 'ko';
+        const daySel = document.getElementById('disco-when-day');
+        const hourSel = document.getElementById('disco-when-hour');
+        const minSel = document.getElementById('disco-when-min');
+        if (!daySel || !hourSel || !minSel) return;
+
+        daySel.innerHTML =
+            `<option value="0">${isKo ? '오늘' : 'Today'}</option>` +
+            `<option value="1">${isKo ? '내일' : 'Tomorrow'}</option>`;
+
+        let hours = '';
+        for (let h = 0; h < 24; h++) hours += `<option value="${h}">${String(h).padStart(2, '0')}${isKo ? '시' : ':00'}</option>`;
+        hourSel.innerHTML = hours;
+
+        let mins = '';
+        for (let m = 0; m < 60; m += 5) mins += `<option value="${m}">${String(m).padStart(2, '0')}${isKo ? '분' : ''}</option>`;
+        minSel.innerHTML = mins;
+
+        // 기본값은 다음 정시 — 대부분 "조금 뒤"를 원하므로 스크롤을 덜 하게 된다
+        const next = new Date(Date.now() + 60 * 60 * 1000);
+        daySel.value = String(next.getDate() !== new Date().getDate() ? 1 : 0);
+        hourSel.value = String(next.getHours());
+        minSel.value = '0';
+    }
+
+    function syncDiscoCreateCustomTime() {
+        const isKo = currentLang === 'ko';
+        const daySel = document.getElementById('disco-when-day');
+        const hourSel = document.getElementById('disco-when-hour');
+        const minSel = document.getElementById('disco-when-min');
+        const hint = document.getElementById('disco-create-when-hint');
+        if (!daySel || !hourSel || !minSel) return;
+
+        const d = new Date();
+        d.setDate(d.getDate() + Number(daySel.value));
+        d.setHours(Number(hourSel.value), Number(minSel.value), 0, 0);
+
+        const label = `${Number(daySel.value) ? (isKo ? '내일' : 'Tomorrow') : (isKo ? '오늘' : 'Today')} ` +
+            `${String(hourSel.value).padStart(2, '0')}:${String(minSel.value).padStart(2, '0')}`;
+
+        // 이미 지난 시각이거나 24시간을 넘기면 서버가 거부하므로 여기서 먼저 막아준다
+        if (d.getTime() <= Date.now()) {
+            discoCreateStartAt = null;
+            if (hint) hint.textContent = isKo ? '⚠️ 이미 지난 시간이에요.' : '⚠️ That time has passed.';
+            return;
+        }
+        if (d.getTime() > Date.now() + 24 * 60 * 60 * 1000) {
+            discoCreateStartAt = null;
+            if (hint) hint.textContent = isKo ? '⚠️ 24시간 이내로 정해주세요.' : '⚠️ Please pick a time within 24 hours.';
+            return;
+        }
+        discoCreateStartAt = d.getTime();
+        if (hint) hint.textContent = isKo ? `${label}에 시작해요.` : `Starts ${label}.`;
+    }
+
     function openDiscoCreateModal() {
         // 게스트도 방 만들기 화면은 구경할 수 있게 두고, 실제로 만드는 순간(join-btn/제출)에만 막음
-        if (!isWithinOperatingHours()) { openScheduleCreateModal(); return; }
         discoCreateSelectedCat = 'general';
         discoCreatePP = false;
         discoCreateStyle = 'casual';
+        discoCreateScheduled = false;
+        discoCreateStartAt = null;
         document.getElementById('disco-create-topic-input').value = '';
+        setDiscoCreateWhenUI(false);
         renderDiscoCreateCatGrid();
         setDiscoCreatePPUI(false);
         setDiscoCreateStyleUI('casual');
@@ -4057,13 +4372,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const until = localStorage.getItem(NOTIFY_PREPROMPT_SNOOZE_KEY);
         return !until || Date.now() > parseInt(until, 10);
     }
-    function showNotifyPreprompt() {
+    function showNotifyPreprompt(overrideTitle, overrideDesc) {
         const isKo = currentLang === 'ko';
         const modal = document.getElementById('notify-preprompt-modal');
-        document.getElementById('notify-preprompt-title').textContent = isKo ? '알림 활성화' : 'Turn on notifications';
-        document.getElementById('notify-preprompt-desc').textContent = isKo
+        document.getElementById('notify-preprompt-title').textContent = overrideTitle || (isKo ? '알림 활성화' : 'Turn on notifications');
+        document.getElementById('notify-preprompt-desc').textContent = overrideDesc || (isKo
             ? '새로운 대화의 기회를 놓치지 않도록 알려드립니다.'
-            : "We'll let you know so you don't miss a new conversation.";
+            : "We'll let you know so you don't miss a new conversation.");
         const noBtn = document.getElementById('notify-preprompt-no-btn');
         const yesBtn = document.getElementById('notify-preprompt-yes-btn');
         const snoozeLink = document.getElementById('notify-preprompt-snooze-link');
@@ -4212,14 +4527,23 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         btn.textContent = isWithinOperatingHours() ? 'Start a table' : 'Schedule a table';
     }
 
-    function submitDiscoCreate() {
-        if (!isWithinOperatingHours()) { closeDiscoCreateModal(); openScheduleCreateModal(); return; }
+    async function submitDiscoCreate() {
         if (isJoined || isJoining) return;
+        const isKo = currentLang === 'ko';
         const topicInput = document.getElementById('disco-create-topic-input');
         const topic = topicInput.value.normalize('NFC').trim();
         if (!topic) {
-            alert(currentLang === 'ko' ? '주제를 입력해 주세요.' : 'Please enter a topic.');
+            alert(isKo ? '주제를 입력해 주세요.' : 'Please enter a topic.');
             topicInput.focus();
+            return;
+        }
+        // 시간지정 방은 지금 들어가는 게 아니라 목록에 올려두고 그 시각에 모인다
+        if (discoCreateScheduled) {
+            if (!discoCreateStartAt) {
+                alert(isKo ? '시작 시간을 정해주세요.' : 'Please pick a start time.');
+                return;
+            }
+            submitScheduledRoomV2(topic);
             return;
         }
         pendingRoomCategory = discoCreateSelectedCat;
@@ -4228,7 +4552,53 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         selectedSpeechStyle = discoCreateStyle;
         document.getElementById('topic-input').value = topic;
         closeDiscoCreateModal();
+        // 실시간 방도 /rooms/ 시스템에 등록해 두면, 나중에 퇴장할 때 알림 구독을 제안할 수 있음
+        pendingRoomsRoomId = null;
+        if (!isGuest && auth.currentUser) {
+            try {
+                const idToken = await auth.currentUser.getIdToken();
+                const res = await fetch(TOKEN_SERVER_URL + '/rooms/create', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, title: topic, category: discoCreateSelectedCat, style: discoCreateStyle, pingpong: discoCreatePP })
+                });
+                const data = await res.json();
+                if (data.success) pendingRoomsRoomId = data.roomId;
+            } catch(e) { console.warn('rooms/create for live room failed:', e.message); }
+        }
         document.getElementById('join-btn').click();
+    }
+
+    async function submitScheduledRoomV2(topic) {
+        const isKo = currentLang === 'ko';
+        if (isGuest || !auth.currentUser) { closeDiscoCreateModal(); promptGuestLogin(); return; }
+        const btn = document.getElementById('disco-create-submit-btn');
+        if (btn) btn.disabled = true;
+        const startAt = discoCreateStartAt;
+        try {
+            const { token } = await maybeGetFcmToken();
+            const idToken = await auth.currentUser.getIdToken();
+            const res = await fetch(TOKEN_SERVER_URL + '/rooms/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    idToken, title: topic, category: discoCreateSelectedCat,
+                    style: discoCreateStyle, pingpong: discoCreatePP,
+                    fcmToken: token, startAt: startAt
+                })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'unknown');
+            closeDiscoCreateModal();
+            showBadgeToast(token
+                ? (isKo ? `✅ ${formatStartAt(startAt)}으로 만들었어요! 시작할 때 알려드릴게요.` : `✅ Created for ${formatStartAt(startAt)}! We'll notify you.`)
+                : (isKo ? `✅ ${formatStartAt(startAt)}으로 만들었어요!` : `✅ Created for ${formatStartAt(startAt)}!`));
+            fetchScheduledRoomsV2();
+        } catch (e) {
+            console.warn('submitScheduledRoomV2 failed:', e.message);
+            showBadgeToast((isKo ? '방 만들기 오류: ' : 'Error: ') + e.message);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
     }
 
     document.getElementById('disco-search-input').addEventListener('input', function() {
@@ -4255,7 +4625,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         setText('disco-create-style-polite', '정중하게', 'Polite');
         setText('disco-create-mode-label', '모드', 'Mode');
         setText('disco-pp-row-label', '핑퐁 모드 (순서대로 1분 30초씩 발언)', 'Ping Pong mode (take 90s turns speaking in order)');
-        setText('disco-create-submit-btn', '방 만들고 시작하기', 'Create and start');
+        setText('disco-create-submit-btn', discoCreateScheduled ? '방 만들기' : '방 만들고 시작하기', discoCreateScheduled ? 'Create table' : 'Create and start');
+        setText('disco-filter-live-label', '실시간', 'Live');
+        setText('disco-filter-sched-label', '시간지정', 'Scheduled');
+        setDiscoCreateWhenUI(discoCreateScheduled);
         setText('scheduled-subtext', '예약하신 분들께 저녁 9시에 알림을 보내드려요.', 'We\'ll notify everyone who reserves a seat at 9 PM.');
         setText('schedule-create-title', '🌙 테이블 예약하기', '🌙 Schedule a table');
         setText('schedule-create-topic-label', '주제', 'Topic');
@@ -4332,7 +4705,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             if (panel) panel.style.display = (t === tab) ? 'flex' : 'none';
         });
         if (tab !== 'discover') stopDiscoCountdown();
-        if (tab === 'discover') renderDiscoGrid();
+        if (tab === 'discover') { renderDiscoGrid(); fetchScheduledRoomsV2(); }
         if (tab === 'trending') renderTrendingTab();
         if (tab === 'scheduled') renderScheduledTab();
         if (tab === 'mycircles') switchMyCirclesSubtab('recent');
@@ -4685,7 +5058,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         },
         ko: {
             title: "boundless talk",
-            subtitle: "이름도 얼굴도 없이 — 목소리로만.",
+            subtitle: "누구든 마음 놓고 얘기할 수 있는 곳",
             placeholder: "어떤 이야기할래요? (예: 커리어, 독서, 고민상담...)",
             maxPeopleLabel: "최대 인원:",
             startBtn: "대화 시작하기",
@@ -5006,7 +5379,8 @@ database.ref('activeTopics').on('value', (snap) => {
                 maxPeople: entry[1].maxPeople || 4,
                 occupancy: liveUsers.length,
                 pingpong: channelId.endsWith('_pp'),
-                style: entry[1].style || null
+                style: entry[1].style || null,
+                roomId: entry[1].roomId || null
             });
         }
     });
@@ -6419,13 +6793,29 @@ document.getElementById('max-people-group').style.visibility = "hidden";
                 if (finalTopic && !finalTopic.startsWith('🔒_')) {
                     try {
     const myTopicRef = database.ref('activeTopics/' + safeAgoraChannelId + '/' + auth.currentUser.uid);
-    const myTopicData = { topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', avatarEmoji: myAvatarEmoji || '👋', avatarColor: myAvatarColor || 'gray', agoraUid: String(myUid), category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople };
+    const myTopicData = { topic: finalTopic, style: selectedSpeechStyle, nickname: myNickname || 'Anonymous', guest: isGuest, energyEmoji: myBatteryEmoji || '👋', avatarEmoji: myAvatarEmoji || '👋', avatarColor: myAvatarColor || 'gray', agoraUid: String(myUid), category: pendingRoomCategory || guessDiscoCategory(finalTopic), maxPeople: maxPeople, roomId: pendingRoomsRoomId || null };
     await myTopicRef.set({ ...myTopicData, ts: firebase.database.ServerValue.TIMESTAMP, joinedAt: firebase.database.ServerValue.TIMESTAMP });
     pendingRoomCategory = null;
     myTopicRef.onDisconnect().remove();
     window._myTopicRef = myTopicRef;
     // 재연결 시(폰 백그라운드 전환 등) 방 데이터를 통째로 복원할 수 있도록 보관
     window._myTopicData = myTopicData;
+    // /rooms/ 시스템: 현재 방 점유자로 등록 + 빈 방 입장 시 구독자에게 알림 발송
+    if (pendingRoomsRoomId && auth.currentUser) {
+        (async () => {
+            try {
+                const occRef = database.ref(`rooms/${pendingRoomsRoomId}/occupants/${auth.currentUser.uid}`);
+                occRef.set(true);
+                occRef.onDisconnect().remove();
+                window._myRoomsOccRef = occRef;
+                const idToken = await auth.currentUser.getIdToken();
+                fetch(TOKEN_SERVER_URL + '/rooms/entered', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken, roomId: pendingRoomsRoomId })
+                }).catch(e => console.warn('rooms/entered failed:', e.message));
+            } catch(e) { console.warn('rooms occupant write failed:', e.message); }
+        })();
+    }
     if (window._heartbeatInterval) clearInterval(window._heartbeatInterval);
     window._heartbeatInterval = setInterval(() => {
         if (!isJoined) { clearInterval(window._heartbeatInterval); return; }
@@ -8595,6 +8985,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             if (window._myTopicRef) { window._myTopicRef.onDisconnect().cancel(); window._myTopicRef.remove().catch(() => {}); }
             if (window._myChannelMemberRef) { window._myChannelMemberRef.onDisconnect().cancel(); window._myChannelMemberRef.remove().catch(() => {}); }
             if (window._myGuestFlagRef) { window._myGuestFlagRef.onDisconnect().cancel(); window._myGuestFlagRef.remove().catch(() => {}); }
+            if (window._myRoomsOccRef) { window._myRoomsOccRef.onDisconnect().cancel(); window._myRoomsOccRef.remove().catch(() => {}); window._myRoomsOccRef = null; }
             window._myTopicRef = null;
             window._myTopicData = null;
             window._myChannelMemberRef = null;
@@ -8656,13 +9047,37 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             // AI 대화 요약본 분석 브리핑 레이아웃 활성화
             // 핑퐁 매칭 지연 → 일반 모드 자동 전환인 경우, 실제 대화가 없었으므로 이 세리머니는 생략
             if (showCeremony && !ppAutoSwitchInProgress) {
-                setTimeout(() => {
+                const _leaveRoomsRoomId = pendingRoomsRoomId;
+                pendingRoomsRoomId = null;
+                setTimeout(async () => {
+                    // 방에 /rooms/ 항목이 있으면 퇴장 후 알림 구독 유도 (기존 notify 모달 디자인 재사용)
+                    if (_leaveRoomsRoomId && !isGuest && auth.currentUser && shouldShowNotifyPreprompt()) {
+                        const isKo2 = currentLang === 'ko';
+                        const accepted = await showNotifyPreprompt(
+                            isKo2 ? '알림 받기' : 'Get notified',
+                            isKo2 ? '방에 사람이 오면 알려드릴까요?' : 'Want to be notified when someone joins?'
+                        );
+                        if (accepted) {
+                            try {
+                                const { token } = await tryGetFcmToken();
+                                if (token && auth.currentUser) {
+                                    const idToken = await auth.currentUser.getIdToken();
+                                    await fetch(TOKEN_SERVER_URL + '/rooms/join', {
+                                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ idToken, roomId: _leaveRoomsRoomId, fcmToken: token })
+                                    });
+                                }
+                            } catch(e) { console.warn('rooms/join subscribe failed:', e.message); }
+                        }
+                    }
                     badgeSentThisSession = false;
                     document.getElementById('badge-modal').classList.add('active');
                     document.getElementById('summary-headline').innerText = textData[currentLang].aiLoading;
                     document.getElementById('summary-content').innerHTML = '<span class="summary-loading-text">🤖 AI가 대화 내용을 분석하는 중...</span>';
                     requestAISummary();
                 }, 400);
+            } else {
+                pendingRoomsRoomId = null;
             }
 
         } catch (error) {
@@ -8683,6 +9098,7 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
             document.getElementById('matching-status').innerText = "";
             // 에러가 나도 배지 모달은 열어줌 (핑퐁 자동 전환 중이 아닐 때만)
             setupVoteTargetsUI();
+            pendingRoomsRoomId = null;
             if (showCeremony && !ppAutoSwitchInProgress) {
                 setTimeout(() => {
                     badgeSentThisSession = false;

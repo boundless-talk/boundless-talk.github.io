@@ -404,6 +404,312 @@ app.post('/scheduled-rooms-today', async (req, res) => {
     }
 });
 
+// ══════════════════════════════════════════════════════════════════════════
+//  새 방 시스템 (rooms) — 운영시간·예약방을 대체
+//
+//  기존 scheduledRooms가 "저녁 9시 하나로 고정"이었던 것을 일반화한 구조.
+//    startAt === null  →  "지금 바로" 방. 빈 방에 누가 들어오면 참여자에게 알림.
+//    startAt === 시각   →  "시간 지정" 방. 참여자가 늘 때 / 5분 전 / 시작 시각에 알림.
+//
+//  방은 접속자가 없어도 사라지지 않는 것이 핵심. 그래야 시간이 어긋난 사람들도 만난다.
+//  기존 scheduledRooms 엔드포인트는 그대로 두어, 이미 잡힌 예약이 소진될 때까지 함께 돈다.
+// ══════════════════════════════════════════════════════════════════════════
+
+const ROOM_MAX_PEOPLE = 4;        // 정원 = 알림 대상 상한
+const ROOM_DAILY_PUSH_CAP = 2;    // 한 방에서 한 사람에게 하루 최대 몇 통까지
+const ROOM_SCHEDULE_MAX_MS = 24 * 60 * 60 * 1000;  // 약속은 24시간 이내로만
+const ROOM_LIVE_TTL_MS = 24 * 60 * 60 * 1000;      // "지금" 방: 만든 지 24시간
+const ROOM_AFTER_START_TTL_MS = 2 * 60 * 60 * 1000; // "지정" 방: 약속 시각 + 2시간
+
+function kstDayKey(ms) {
+    return new Date((ms || Date.now()) + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+// FCM 발송. 하루 상한을 넘긴 사람은 건너뛰고, 보낸 사람의 카운터를 올려준다.
+// 알림 하나 실패했다고 요청 전체가 죽으면 안 되므로 개별 실패는 삼킨다.
+async function pushToParticipants(roomId, room, targetUids, title, body) {
+    if (!admin.apps.length) return 0;
+    const participants = room.participants || {};
+    const today = kstDayKey();
+    const sends = [];
+    const bumps = {};
+
+    targetUids.forEach(uid => {
+        const p = participants[uid];
+        if (!p || !p.fcmToken) return;
+        const used = (p.nDate === today) ? (p.nCount || 0) : 0;
+        if (used >= ROOM_DAILY_PUSH_CAP) return;   // 알림 피로 방지
+        bumps[uid] = { nDate: today, nCount: used + 1 };
+        sends.push(
+            admin.messaging().send({
+                token: p.fcmToken,
+                notification: { title: title, body: body },
+                data: {
+                    roomId: String(roomId),
+                    topic: String(room.title || ''),
+                    style: room.style === 'polite' ? 'polite' : 'casual',
+                    pp: room.pingpong ? '1' : '0'
+                }
+            }).catch(e => { console.warn('[rooms push]', uid, e.message); return null; })
+        );
+    });
+
+    if (!sends.length) return 0;
+    const results = await Promise.all(sends);
+    const sent = results.filter(Boolean).length;
+
+    const updates = {};
+    Object.keys(bumps).forEach(uid => {
+        updates[`participants/${uid}/nDate`] = bumps[uid].nDate;
+        updates[`participants/${uid}/nCount`] = bumps[uid].nCount;
+    });
+    try { await admin.database().ref(`rooms/${roomId}`).update(updates); } catch (e) {
+        console.warn('[rooms push] counter update failed:', e.message);
+    }
+    return sent;
+}
+
+function serializeRoom(id, r, uid) {
+    const participants = r.participants || {};
+    const occupants = r.occupants || {};
+    return {
+        id: id,
+        title: r.title,
+        category: r.category || 'general',
+        style: r.style === 'polite' ? 'polite' : 'casual',
+        pingpong: !!r.pingpong,
+        startAt: r.startAt || null,
+        createdAt: r.createdAt || 0,
+        expiresAt: r.expiresAt || 0,
+        participantCount: Object.keys(participants).length,
+        occupantCount: Object.keys(occupants).length,
+        maxPeople: ROOM_MAX_PEOPLE,
+        joined: uid ? !!participants[uid] : false,
+        isHost: uid ? r.createdBy === uid : false
+    };
+}
+
+// 방 만들기 — startAt을 안 주면 "지금 바로" 방
+app.post('/rooms/create', express.json(), async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, title, category, style, pingpong, fcmToken, startAt } = req.body || {};
+    if (!idToken || !title) return res.status(400).json({ error: 'idToken, title required' });
+
+    let uid;
+    try { uid = (await admin.auth().verifyIdToken(idToken)).uid; }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+
+    // 너무 먼 미래로 잡으면 노쇼가 급증하므로 24시간 이내로 제한
+    let start = null;
+    if (startAt) {
+        const t = Number(startAt);
+        if (!Number.isFinite(t)) return res.status(400).json({ error: 'startAt must be a timestamp' });
+        if (t > Date.now() + ROOM_SCHEDULE_MAX_MS) return res.status(400).json({ error: 'startAt too far' });
+        start = t;
+    }
+
+    try {
+        const now = Date.now();
+        const roomId = 'r' + now.toString(36) + Math.random().toString(36).slice(2, 8);
+        await admin.database().ref(`rooms/${roomId}`).set({
+            title: String(title).slice(0, 200),
+            category: String(category || 'general').slice(0, 32),
+            style: style === 'polite' ? 'polite' : 'casual',
+            pingpong: !!pingpong,
+            createdAt: now,
+            createdBy: uid,
+            startAt: start,
+            // "지금" 방은 만든 지 24시간, "지정" 방은 약속 시각 + 2시간에 정리한다.
+            // 지정 방에 만든 지 24시간을 쓰면 약속 전에 방이 사라지는 사고가 난다.
+            expiresAt: start ? start + ROOM_AFTER_START_TTL_MS : now + ROOM_LIVE_TTL_MS,
+            participants: { [uid]: { fcmToken: fcmToken || null, joinedAt: now, nCount: 0, nDate: kstDayKey(now) } }
+        });
+        res.json({ success: true, roomId });
+    } catch (e) {
+        console.error('[rooms/create] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 참여(= 알림 받기 등록). 마지막 한 자리를 두 명이 동시에 잡는 걸 막으려 트랜잭션을 건다.
+app.post('/rooms/join', express.json(), async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId, fcmToken } = req.body || {};
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+
+    let uid;
+    try { uid = (await admin.auth().verifyIdToken(idToken)).uid; }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+
+    try {
+        const roomRef = admin.database().ref(`rooms/${roomId}`);
+        const snap = await roomRef.once('value');
+        const room = snap.val();
+        if (!room) return res.json({ success: false, error: 'room_not_found' });
+
+        const now = Date.now();
+        let outcome = 'joined';
+        await roomRef.child('participants').transaction(cur => {
+            const ps = cur || {};
+            if (ps[uid]) { outcome = 'already'; return ps; }
+            if (Object.keys(ps).length >= ROOM_MAX_PEOPLE) { outcome = 'full'; return ps; }
+            outcome = 'joined';
+            ps[uid] = { fcmToken: fcmToken || null, joinedAt: now, nCount: 0, nDate: kstDayKey(now) };
+            return ps;
+        });
+
+        if (outcome === 'full') return res.json({ success: false, full: true });
+
+        // 시간 지정 방에서 사람이 모이는 게 보여야 기대가 생기고 노쇼가 줄어든다.
+        // "지금" 방은 입장 시점(/rooms/entered)에만 알리므로 여기서는 보내지 않는다.
+        if (outcome === 'joined' && room.startAt) {
+            const fresh = (await roomRef.once('value')).val() || {};
+            const others = Object.keys(fresh.participants || {}).filter(u => u !== uid);
+            const n = Object.keys(fresh.participants || {}).length;
+            if (others.length) {
+                await pushToParticipants(roomId, fresh, others,
+                    n >= ROOM_MAX_PEOPLE ? '🎉 자리가 다 찼어요' : '👋 새로운 참여자',
+                    n >= ROOM_MAX_PEOPLE
+                        ? `"${fresh.title}" — ${n}명이 다 모였어요`
+                        : `"${fresh.title}" — ${n}명이 되었어요`);
+            }
+        }
+
+        res.json({ success: true, already: outcome === 'already' });
+    } catch (e) {
+        console.error('[rooms/join] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 참여 취소. 아무도 안 남으면 빈 방이 목록에 남지 않게 방째로 지운다.
+app.post('/rooms/leave', express.json(), async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId } = req.body || {};
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+
+    let uid;
+    try { uid = (await admin.auth().verifyIdToken(idToken)).uid; }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+
+    try {
+        const roomRef = admin.database().ref(`rooms/${roomId}`);
+        await roomRef.child(`participants/${uid}`).remove();
+        const left = await roomRef.child('participants').once('value');
+        if (!left.exists() || left.numChildren() === 0) await roomRef.remove();
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[rooms/leave] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 실제 음성방에 들어갔을 때 클라이언트가 알려줌.
+// 빈 방에 첫 사람이 들어온 경우에만 알림을 보낸다 — 대화 중인 방에 한 명 더 들어올 때마다
+// 전원에게 푸시가 나가면 사람들이 알림을 꺼버려서 기능 자체가 죽는다.
+app.post('/rooms/entered', express.json(), async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId } = req.body || {};
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+
+    let uid;
+    try { uid = (await admin.auth().verifyIdToken(idToken)).uid; }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+
+    try {
+        const roomRef = admin.database().ref(`rooms/${roomId}`);
+        const room = (await roomRef.once('value')).val();
+        if (!room) return res.json({ success: false, error: 'room_not_found' });
+
+        // occupants는 클라이언트가 onDisconnect로 직접 정리한다(접속이 끊기면 자동으로 빠짐).
+        const occupants = Object.keys(room.occupants || {});
+        const alone = occupants.length <= 1 && (occupants.length === 0 || occupants[0] === uid);
+        if (!alone) return res.json({ success: true, notified: 0, reason: 'not_empty' });
+
+        const targets = Object.keys(room.participants || {}).filter(u => u !== uid);
+        if (!targets.length) return res.json({ success: true, notified: 0, reason: 'no_targets' });
+
+        const sent = await pushToParticipants(roomId, room, targets,
+            '🔔 대화가 열렸어요',
+            `"${room.title}" 방에 누가 들어왔어요`);
+        res.json({ success: true, notified: sent });
+    } catch (e) {
+        console.error('[rooms/entered] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 살아있는 방 목록. 만료된 방은 응답에서 빼고 정리도 같이 해둔다.
+app.post('/rooms/list', express.json(), async (req, res) => {
+    if (!admin.apps.length) return res.json({ rooms: [] });
+    const { idToken } = req.body || {};
+    let uid = null;
+    if (idToken) {
+        try { uid = (await admin.auth().verifyIdToken(idToken)).uid; } catch (e) { uid = null; }
+    }
+    try {
+        const snap = await admin.database().ref('rooms').once('value');
+        const data = snap.val() || {};
+        const now = Date.now();
+        const rooms = [];
+        const dead = [];
+        Object.entries(data).forEach(([id, r]) => {
+            if (!r || !r.title) return;
+            if (r.expiresAt && r.expiresAt < now) { dead.push(id); return; }
+            rooms.push(serializeRoom(id, r, uid));
+        });
+        // 대화 중 → 곧 시작 → 최신순
+        rooms.sort((a, b) => {
+            if (a.occupantCount !== b.occupantCount) return b.occupantCount - a.occupantCount;
+            if (a.startAt && b.startAt) return a.startAt - b.startAt;
+            if (a.startAt) return 1;
+            if (b.startAt) return -1;
+            return b.createdAt - a.createdAt;
+        });
+        dead.forEach(id => admin.database().ref(`rooms/${id}`).remove().catch(() => {}));
+        res.json({ rooms });
+    } catch (e) {
+        console.error('[rooms/list] error:', e.message);
+        res.json({ rooms: [] });
+    }
+});
+
+// 시간 지정 방의 5분 전 / 시작 시각 알림 + 만료된 방 정리.
+// 1분마다 돌면서, 이미 보낸 알림은 sent5m / sentStart 플래그로 중복 발송을 막는다.
+setInterval(async () => {
+    if (!admin.apps.length) return;
+    try {
+        const db = admin.database();
+        const snap = await db.ref('rooms').once('value');
+        const data = snap.val() || {};
+        const now = Date.now();
+
+        for (const [id, r] of Object.entries(data)) {
+            if (!r || !r.title) continue;
+
+            if (r.expiresAt && r.expiresAt < now) {
+                await db.ref(`rooms/${id}`).remove().catch(() => {});
+                continue;
+            }
+            if (!r.startAt) continue;
+
+            const all = Object.keys(r.participants || {});
+            if (!all.length) continue;
+
+            const untilStart = r.startAt - now;
+            if (!r.sent5m && untilStart <= 5 * 60 * 1000 && untilStart > 0) {
+                await db.ref(`rooms/${id}/sent5m`).set(true);
+                await pushToParticipants(id, r, all, '⏰ 곧 시작해요', `"${r.title}" — 5분 뒤에 시작해요`);
+            } else if (!r.sentStart && untilStart <= 0 && untilStart > -10 * 60 * 1000) {
+                await db.ref(`rooms/${id}/sentStart`).set(true);
+                await pushToParticipants(id, r, all, '🎙 지금 시작해요', `"${r.title}" — 지금 들어오세요`);
+            }
+        }
+    } catch (e) {
+        console.error('[rooms scheduler] error:', e.message);
+    }
+}, 60 * 1000);
+
 // 관리자 패널 전용 — 일반 유저용 /scheduled-rooms-today와 달리 누가 방을 만들었는지(createdBy)와
 // 참여예약한 사람들의 uid 목록(seats)까지 그대로 내려줌. 다른 유저의 uid가 노출되면 안 되므로
 // 반드시 관리자 인증을 거친 뒤에만 응답함
