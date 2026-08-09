@@ -574,7 +574,14 @@ app.post('/rooms/join', express.json(), async (req, res) => {
         let outcome = 'joined';
         await roomRef.child('participants').transaction(cur => {
             const ps = cur || {};
-            if (ps[uid]) { outcome = 'already'; return ps; }
+            if (ps[uid]) {
+                outcome = 'already';
+                // 방을 만들 때 자동으로 등록된 참여자(fcmToken 없음)이거나, 캐시 삭제 후 새 토큰을
+                // 받아온 경우 — 이미 참여자라고 그냥 넘어가면 fcmToken이 영원히 null로 남아서
+                // "알림받는중"으로 보여도 실제로는 아무 알림도 못 받는 상태가 굳어버린다.
+                if (fcmToken) ps[uid].fcmToken = fcmToken;
+                return ps;
+            }
             if (Object.keys(ps).length >= ROOM_MAX_PEOPLE) { outcome = 'full'; return ps; }
             outcome = 'joined';
             ps[uid] = { fcmToken: fcmToken || null, joinedAt: now, nCount: 0, nDate: kstDayKey(now) };
