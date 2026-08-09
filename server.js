@@ -609,6 +609,25 @@ app.post('/rooms/leave', express.json(), async (req, res) => {
     }
 });
 
+// 방에 혼자 남아있던 사람이 나가면서 "알림 받기"까지 거부한 경우 — 대화를 더 원치 않는다는
+// 뜻이므로(클라이언트가 확인 모달까지 띄운 뒤 호출) 다른 구독자 존재 여부와 무관하게 방을 통째로 지운다.
+app.post('/rooms/delete', express.json(), async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId } = req.body || {};
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+
+    try { await admin.auth().verifyIdToken(idToken); }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+
+    try {
+        await admin.database().ref(`rooms/${roomId}`).remove();
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[rooms/delete] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // 실제 음성방에 들어갔을 때 클라이언트가 알려줌.
 // 빈 방에 첫 사람이 들어온 경우에만 알림을 보낸다 — 대화 중인 방에 한 명 더 들어올 때마다
 // 전원에게 푸시가 나가면 사람들이 알림을 꺼버려서 기능 자체가 죽는다.
@@ -782,6 +801,68 @@ app.post('/admin/delete-scheduled-room', async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         console.error('[admin/delete-scheduled-room] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 지금 실제로 쓰이는 방 시스템(/rooms/) 전체 현황 — 실시간/시간지정 방 모두, 누가 만들었고
+// 누가 참여예약(알림 구독)했는지까지 내려줌. uid가 노출되므로 관리자 인증 필수.
+app.post('/admin/rooms', async (req, res) => {
+    if (!admin.apps.length) return res.json({ rooms: [] });
+    const { idToken } = req.body || {};
+    let decoded;
+    try { decoded = await admin.auth().verifyIdToken(idToken); }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+    if (!ADMIN_UIDS.has(decoded.uid) && !ADMIN_EMAILS.has(decoded.email)) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    try {
+        const snap = await admin.database().ref('rooms').once('value');
+        const data = snap.val() || {};
+        const rooms = Object.entries(data).map(([id, r]) => {
+            const participants = Object.entries(r.participants || {})
+                .map(([uid, p]) => ({ uid, joinedAt: p.joinedAt || 0 }))
+                .sort((a, b) => a.joinedAt - b.joinedAt);
+            const occupants = Object.keys(r.occupants || {});
+            return {
+                id,
+                title: r.title,
+                category: r.category || 'general',
+                style: r.style === 'polite' ? 'polite' : 'casual',
+                pingpong: !!r.pingpong,
+                channelId: r.channelId || null,
+                startAt: r.startAt || null,
+                createdAt: r.createdAt || 0,
+                expiresAt: r.expiresAt || 0,
+                createdBy: r.createdBy || null,
+                participants,
+                occupants
+            };
+        });
+        rooms.sort((a, b) => b.createdAt - a.createdAt);
+        res.json({ rooms });
+    } catch (e) {
+        console.error('[admin/rooms] error:', e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 관리자 패널에서 /rooms/ 방을 강제로 삭제
+app.post('/admin/delete-room', async (req, res) => {
+    if (!admin.apps.length) return res.status(503).json({ error: 'Firebase Admin not initialized' });
+    const { idToken, roomId } = req.body || {};
+    if (!idToken || !roomId) return res.status(400).json({ error: 'idToken, roomId required' });
+    let decoded;
+    try { decoded = await admin.auth().verifyIdToken(idToken); }
+    catch (e) { return res.status(401).json({ error: 'Invalid token' }); }
+    if (!ADMIN_UIDS.has(decoded.uid) && !ADMIN_EMAILS.has(decoded.email)) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    try {
+        await admin.database().ref(`rooms/${roomId}`).remove();
+        res.json({ success: true });
+    } catch (e) {
+        console.error('[admin/delete-room] error:', e.message);
         res.status(500).json({ error: e.message });
     }
 });

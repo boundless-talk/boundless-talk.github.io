@@ -521,9 +521,9 @@
         <span class="icon">🟢</span> 현재 접속자
         <span class="nav-badge" id="online-badge" style="display:none;background:var(--green)">0</span>
     </div>
-    <div class="nav-item" onclick="navigate('scheduled')">
-        <span class="icon">🌙</span> 예약방
-        <span class="nav-badge" id="scheduled-badge" style="display:none">0</span>
+    <div class="nav-item" onclick="navigate('rooms')">
+        <span class="icon">🗂️</span> 방 현황
+        <span class="nav-badge" id="rooms-badge" style="display:none">0</span>
     </div>
 
     <div class="nav-section">구독</div>
@@ -761,16 +761,21 @@
             </div>
         </div>
 
-        <!-- 예약방 (오늘 밤 10시 예약) -->
-        <div class="page" id="page-scheduled">
+        <!-- 방 현황 (Discover의 "Start a table" 시스템 — /rooms/) -->
+        <div class="page" id="page-rooms">
             <div class="section-header">
-                <div class="section-title">오늘 예약된 방</div>
+                <div class="section-title">현재 방 현황</div>
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <div class="section-count" id="scheduled-count"></div>
-                    <button onclick="loadScheduledRooms()" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;">↻ 새로고침</button>
+                    <div class="section-count" id="rooms-count"></div>
+                    <button onclick="loadRoomsPage()" style="padding:6px 12px;font-size:12px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;">↻ 새로고침</button>
                 </div>
             </div>
-            <div id="scheduled-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
+            <div class="tabs" id="rooms-filter-tabs">
+                <div class="tab active" id="rooms-filter-all" onclick="setRoomsFilter('all')">전체</div>
+                <div class="tab" id="rooms-filter-live" onclick="setRoomsFilter('live')">🔴 실시간</div>
+                <div class="tab" id="rooms-filter-sched" onclick="setRoomsFilter('sched')">🕘 시간지정</div>
+            </div>
+            <div id="rooms-list"><div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">불러오는 중...</div></div>
         </div>
 
         <!-- 이의신청 -->
@@ -1277,8 +1282,8 @@
         if (page === 'withdrawals') loadWithdrawals();
         if (page === 'refunds') loadRefunds();
         if (page === 'subscriptions') loadSubscriptions();
-        if (page === 'scheduled') loadScheduledRooms();
-        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', withdrawals:'탈퇴 사유', refunds:'환불 요청', subscriptions:'구독 현황', scheduled:'예약방' };
+        if (page === 'rooms') loadRoomsPage();
+        const titles = { dashboard:'대시보드', users:'전체 회원', banned:'정지·차단 회원', reports:'신고 내역', appeals:'이의신청', online:'현재 접속자', inquiries:'문의 내역', withdrawals:'탈퇴 사유', refunds:'환불 요청', subscriptions:'구독 현황', rooms:'방 현황' };
         document.getElementById('page-title').textContent = titles[page] || page;
         closeSidebar();
     }
@@ -1590,18 +1595,30 @@
         });
     }
 
-    const SCHEDULED_CAT_LABELS = { failure:'실패', praise:'칭찬', comfort:'위로', burnout:'번아웃', vent:'대나무숲', maskoff:'언마스크', philosophy:'철학', life:'일상', worries:'고민', taste:'취향', general:'기타' };
+    const ROOM_CAT_LABELS = { smalltalk:'스몰토크', romance:'연애', vent:'대나무숲', comfort:'따뜻한 한마디', worries:'말못할고민', burnout:'번아웃', worklife:'직장고민', life:'일상', funny:'웃긴얘기', politics:'정치사회', finance:'금융', books:'책소개', general:'기타' };
 
     function escHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
     }
 
-    async function loadScheduledRooms() {
-        const list = document.getElementById('scheduled-list');
+    // ── 방 현황 (Discover "Start a table" 시스템 — /rooms/) ──
+    let allRoomsData = [];
+    let adminUsersData = {};
+    let currentRoomsFilter = 'all'; // 'all' | 'live'(실시간) | 'sched'(시간지정)
+
+    function setRoomsFilter(filter) {
+        currentRoomsFilter = filter;
+        document.querySelectorAll('#rooms-filter-tabs .tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('rooms-filter-' + filter).classList.add('active');
+        renderRoomsList();
+    }
+
+    async function loadRoomsPage() {
+        const list = document.getElementById('rooms-list');
         try {
             const idToken = await auth.currentUser.getIdToken();
             const [res, usersSnap] = await Promise.all([
-                fetch(TOKEN_SERVER_URL + '/admin/scheduled-rooms-today', {
+                fetch(TOKEN_SERVER_URL + '/admin/rooms', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ idToken })
@@ -1609,58 +1626,75 @@
                 db.ref('users').once('value')
             ]);
             const data = await res.json();
-            const rooms = data.rooms || [];
-            const usersData = usersSnap.val() || {};
-            const userLabel = uid => {
-                const u = usersData[uid];
-                return (u && u.email) ? u.email : ('게스트 ' + uid.slice(0, 8));
-            };
-            document.getElementById('scheduled-count').textContent = `총 ${rooms.length}건`;
-            document.getElementById('scheduled-badge').style.display = rooms.length > 0 ? 'inline-block' : 'none';
-            document.getElementById('scheduled-badge').textContent = rooms.length;
-            if (rooms.length === 0) {
-                list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">오늘 예약된 방이 없습니다.</div>';
-                return;
-            }
-            list.innerHTML = rooms.map(r => {
-                const seats = r.seats || [];
-                const full = seats.length >= r.maxPeople;
-                const creatorLabel = r.createdBy ? escHtml(userLabel(r.createdBy)) : '알 수 없음';
-                const joinerLabels = seats.filter(s => s.uid !== r.createdBy).map(s => escHtml(userLabel(s.uid)));
-                return `
-                <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                        <span style="font-size:12px;color:var(--text-dim);">${SCHEDULED_CAT_LABELS[r.category] || r.category} · ${r.style === 'polite' ? '정중하게' : '친구처럼'}${r.pingpong ? ' · 🏓 핑퐁' : ''}</span>
-                        <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:${full ? 'var(--danger-dim)' : 'var(--surface2)'};color:${full ? 'var(--danger)' : 'var(--text-dim)'};">${seats.length}/${r.maxPeople}명 ${full ? '· 가득참' : '예약'}</span>
-                    </div>
-                    <div style="font-size:14px;color:var(--text);margin-bottom:10px;">${escHtml(r.title)}</div>
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">👤 만든 사람: <span style="color:var(--text);">${creatorLabel}</span></div>
-                    <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">🙋 참여예약: ${joinerLabels.length ? joinerLabels.join(', ') : '아직 없음'}</div>
-                    <button onclick="deleteScheduledRoom('${r.id}', this)" style="padding:6px 14px;font-size:12px;background:var(--danger-dim);border:1px solid rgba(255,77,77,0.3);color:var(--danger);border-radius:6px;cursor:pointer;">🗑 예약 삭제</button>
-                </div>`;
-            }).join('');
+            allRoomsData = data.rooms || [];
+            adminUsersData = usersSnap.val() || {};
+            renderRoomsList();
         } catch (e) {
-            console.error('[loadScheduledRooms] failed:', e);
-            list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);font-size:13px;">예약방 목록을 불러오지 못했습니다: ${e.message}</div>`;
+            console.error('[loadRoomsPage] failed:', e);
+            list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--danger);font-size:13px;">방 목록을 불러오지 못했습니다: ${e.message}</div>`;
         }
     }
 
-    async function deleteScheduledRoom(roomId, btn) {
-        if (!confirm('이 예약방을 삭제하시겠습니까?\n예약한 사람들의 좌석 기록도 함께 삭제되며, 되돌릴 수 없습니다.')) return;
+    function renderRoomsList() {
+        const list = document.getElementById('rooms-list');
+        const userLabel = uid => {
+            if (!uid) return '알 수 없음';
+            const u = adminUsersData[uid];
+            return (u && u.email) ? u.email : ('게스트 ' + uid.slice(0, 8));
+        };
+
+        let rooms = allRoomsData;
+        if (currentRoomsFilter === 'live') rooms = rooms.filter(r => !r.startAt);
+        if (currentRoomsFilter === 'sched') rooms = rooms.filter(r => !!r.startAt);
+
+        document.getElementById('rooms-count').textContent = `총 ${rooms.length}건`;
+        document.getElementById('rooms-badge').style.display = allRoomsData.length > 0 ? 'inline-block' : 'none';
+        document.getElementById('rooms-badge').textContent = allRoomsData.length;
+
+        if (rooms.length === 0) {
+            list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">방이 없습니다.</div>';
+            return;
+        }
+        list.innerHTML = rooms.map(r => {
+            const isLive = !r.startAt;
+            const occCount = (r.occupants || []).length;
+            const talking = occCount > 0;
+            const creatorLabel = escHtml(userLabel(r.createdBy));
+            const reserverLabels = (r.participants || []).filter(p => p.uid !== r.createdBy).map(p => escHtml(userLabel(p.uid)));
+            const kindBadge = isLive
+                ? `<span style="font-size:11px;padding:3px 10px;border-radius:20px;background:${talking ? 'var(--green-dim)' : 'var(--surface2)'};color:${talking ? 'var(--green)' : 'var(--text-dim)'};">${talking ? `🔴 대화 중 ${occCount}명` : '⚪ 빈 방 · 알림 대기'}</span>`
+                : `<span style="font-size:11px;padding:3px 10px;border-radius:20px;background:var(--accent-dim);color:var(--accent);">🕘 ${fmtDate(r.startAt)} 예정</span>`;
+            return `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:12px;color:var(--text-dim);">${ROOM_CAT_LABELS[r.category] || r.category} · ${r.style === 'polite' ? '정중하게' : '친구처럼'}${r.pingpong ? ' · 🏓 핑퐁' : ''}</span>
+                    ${kindBadge}
+                </div>
+                <div style="font-size:14px;color:var(--text);margin-bottom:10px;">${escHtml(r.title)}</div>
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px;">👤 만든 사람: <span style="color:var(--text);">${creatorLabel}</span></div>
+                <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px;">🙋 참여예약(알림 구독) ${(r.participants || []).length}명${reserverLabels.length ? ' — ' + reserverLabels.join(', ') : ''}</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-bottom:12px;">생성 ${fmtDate(r.createdAt)} · 만료 ${fmtDate(r.expiresAt)}</div>
+                <button onclick="deleteRoom('${r.id}', this)" style="padding:6px 14px;font-size:12px;background:var(--danger-dim);border:1px solid rgba(255,77,77,0.3);color:var(--danger);border-radius:6px;cursor:pointer;">🗑 방 삭제</button>
+            </div>`;
+        }).join('');
+    }
+
+    async function deleteRoom(roomId, btn) {
+        if (!confirm('이 방을 삭제하시겠습니까?\n참여예약(알림 구독) 기록도 함께 삭제되며, 되돌릴 수 없습니다.')) return;
         if (btn) { btn.disabled = true; btn.textContent = '삭제 중...'; }
         try {
             const idToken = await auth.currentUser.getIdToken();
-            const res = await fetch(TOKEN_SERVER_URL + '/admin/delete-scheduled-room', {
+            const res = await fetch(TOKEN_SERVER_URL + '/admin/delete-room', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idToken, roomId })
             });
             const data = await res.json();
             if (!data.success) throw new Error(data.error || 'unknown');
-            await loadScheduledRooms();
+            await loadRoomsPage();
         } catch (e) {
             alert('삭제 실패: ' + e.message);
-            if (btn) { btn.disabled = false; btn.textContent = '🗑 예약 삭제'; }
+            if (btn) { btn.disabled = false; btn.textContent = '🗑 방 삭제'; }
         }
     }
 

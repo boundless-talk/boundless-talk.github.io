@@ -5384,6 +5384,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 if (!_scheduledTabDefaultApplied && !isWithinOperatingHours()) {
                     _scheduledTabDefaultApplied = true;
                     switchDiscoTab('scheduled');
+                } else {
+                    // Discover는 HTML상 처음부터 활성 탭이라 switchDiscoTab('discover')를 거치지 않았고,
+                    // 그래서 로그인 직후엔 activeTopics 리스너가 아직 못 돌았거나 시간지정/빈 방 목록
+                    // (fetchScheduledRoomsV2)을 못 받아온 채로 비어 보이다가, 다른 탭에 갔다 돌아와야만
+                    // (그때 switchDiscoTab이 다시 렌더를 트리거해서) 방이 보이던 버그의 원인 — 여기서 바로 채워준다.
+                    renderDiscoGrid();
+                    fetchScheduledRoomsV2();
                 }
                 const titleBlock = document.getElementById('title-block');
                 if (titleBlock) titleBlock.style.display = 'none';
