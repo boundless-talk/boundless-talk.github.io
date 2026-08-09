@@ -2800,6 +2800,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         </div>
     </div>
 
+    <!-- 알림을 거부했을 때(빈 방 나가며, 또는 배지 눌러서) 뜨는 단일 확인 안내 모달 -->
+    <div class="nickname-modal-overlay" id="notify-declined-info-modal">
+        <div class="nickname-modal-box">
+            <h3 id="notify-declined-info-title">알림 꺼짐</h3>
+            <p id="notify-declined-info-desc">대화상대 입장시 놓칠 수 있어요.</p>
+            <div class="nickname-modal-actions">
+                <button class="nm-confirm-btn intro2-start-btn" id="notify-declined-info-ok-btn" style="width:100%;">확인</button>
+            </div>
+        </div>
+    </div>
+
     <!-- My Tables: 지난 대화 요약 보기 모달 -->
     <div class="nickname-modal-overlay" id="circle-summary-modal" onclick="if(event.target===this) closeCircleSummaryModal()">
         <div class="nickname-modal-box">
@@ -4086,8 +4097,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         } else {
             badgeEl.textContent = isKo ? '🔔 알림 안받는중' : '🔔 Not notifying';
             badgeEl.onclick = (e) => { e.stopPropagation(); toggleRoomNotify(room, badgeEl, true); };
-            showBadgeToast(isKo ? '대화상대 입장시 놓칠 수 있어요.' : "You may miss it when a conversation partner joins.");
             markRoomNotifyDeclined(room.roomId);
+            await showNotifyDeclinedInfo();
             try {
                 const idToken = await auth.currentUser.getIdToken();
                 await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
@@ -4098,6 +4109,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 console.warn('rooms/unsubscribe failed:', e.message);
             }
         }
+        fetchScheduledRoomsV2();
     }
 
     // 방을 만든 사람이 Discover에서 자기 빈 방을 직접 삭제 — 아직 아무도 안 들어와 있을 때만
@@ -4589,6 +4601,26 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             modal.classList.add('active');
         });
     }
+    // 알림을 거부했을 때(빈 방 나가며 "안받기", 또는 배지를 눌러 끌 때) 뜨는 단일 확인 안내 모달 —
+    // 토스트처럼 그냥 사라지지 않고, 사용자가 "확인"을 눌러야 닫힘
+    function showNotifyDeclinedInfo() {
+        const isKo = currentLang === 'ko';
+        const modal = document.getElementById('notify-declined-info-modal');
+        document.getElementById('notify-declined-info-title').textContent = isKo ? '알림 꺼짐' : 'Notifications off';
+        document.getElementById('notify-declined-info-desc').textContent = isKo
+            ? '대화상대 입장시 놓칠 수 있어요.'
+            : 'You may miss it when a conversation partner joins.';
+        const okBtn = document.getElementById('notify-declined-info-ok-btn');
+        return new Promise((resolve) => {
+            function onOk() {
+                modal.classList.remove('active');
+                okBtn.removeEventListener('click', onOk);
+                resolve();
+            }
+            okBtn.addEventListener('click', onOk);
+            modal.classList.add('active');
+        });
+    }
     async function maybeGetFcmToken() {
         if (shouldShowNotifyPreprompt()) {
             const accepted = await showNotifyPreprompt();
@@ -4845,6 +4877,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     });
     // 앱을 저녁 9시 경계 넘어 계속 켜두고 있어도 "방 만들기"/"예약하기" 버튼 라벨이 스스로 갱신되도록
     setInterval(updateDiscoCtaLabel, 60000);
+    // roomsUpdatedAt 실시간 신호(다른 기기의 방 생성/삭제를 즉시 반영)와는 별개로, 그 신호가
+    // 어떤 이유로든(서버 배포 지연, 네트워크 등) 못 오는 경우를 대비해 Discover를 보고 있는
+    // 동안엔 20초마다 한 번씩 스스로 다시 불러온다 — 최악의 경우에도 새로고침 없이 곧 반영되도록.
+    setInterval(() => {
+        const discoverPanel = document.getElementById('discover-tab-discover');
+        if (discoverPanel && discoverPanel.style.display !== 'none' && !isJoined) {
+            fetchScheduledRoomsV2();
+        }
+    }, 20000);
     // ── My Circles 탭 (구독 현황 카드는 그대로 재사용) ──
     // My Tables 부제목에 로그인한 계정(이메일/게스트)을 함께 표시
     function updateMyCirclesSubtext() {
@@ -9330,9 +9371,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                             // 알림을 거부해도 방 자체는 지우지 않는다 — 참여자 목록에서만 빠지고
                             // (badge의 "알림 안받는중"과 동일 취급), 방은 Discover에 그대로 남아
                             // 다른 사람이 발견해서 들어올 수 있음. 나만 그 알림을 못 받게 될 뿐.
-                            const isKo3 = currentLang === 'ko';
-                            showBadgeToast(isKo3 ? '대화상대 입장시 놓칠 수 있어요.' : "You may miss it when a conversation partner joins.");
                             markRoomNotifyDeclined(_leaveRoomsRoomId);
+                            await showNotifyDeclinedInfo();
                             try {
                                 const idToken = await auth.currentUser.getIdToken();
                                 await fetch(TOKEN_SERVER_URL + '/rooms/unsubscribe', {
@@ -9341,6 +9381,9 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                                 });
                             } catch(e) { console.warn('rooms/unsubscribe failed:', e.message); }
                         }
+                        // Discover 캐시(discoEmptyLiveRooms)에 남아있는 room.joined가 방금 정한 값과
+                        // 어긋나지 않도록(특히 "안받기" 직후 배지가 잠깐 "알림받는중"으로 잘못 보이던 문제) 새로고침
+                        fetchScheduledRoomsV2();
                     }
                     badgeSentThisSession = false;
                     document.getElementById('badge-modal').classList.add('active');
