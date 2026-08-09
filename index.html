@@ -3753,13 +3753,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         return card;
     }
 
-    const DISCO_TRENDING_FALLBACK = ['#내생에최고로웃긴썰', '#내가제일아끼는아이템', '#책소개', '#회사사람이야기', '#연애고민', '#재테크팁', '#단기목표공유'];
     function renderDiscoTrendingRow() {
         const row = document.getElementById('disco-trending-row');
         if (!row) return;
         row.innerHTML = '';
-        const liveTags = (typeof allLiveTopics !== 'undefined' ? allLiveTopics : []).slice(0, 6);
-        const tags = liveTags.length > 0 ? liveTags : DISCO_TRENDING_FALLBACK;
+        // 가짜 예시 해시태그는 쓰지 않음 — 지금 실제로 대화 중인 주제가 없으면 트렌딩 줄 자체를 숨김
+        const tags = (typeof allLiveTopics !== 'undefined' ? allLiveTopics : []).slice(0, 6);
+        if (tags.length === 0) { row.style.display = 'none'; return; }
         row.style.display = 'flex';
         const label = document.createElement('span');
         label.className = 'disco-trending-label';
@@ -4946,8 +4946,10 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         const row = document.getElementById(containerId);
         if (!row) return;
         row.innerHTML = '';
-        const liveTags = (typeof allLiveTopics !== 'undefined' ? allLiveTopics : []).slice(0, 6);
-        const tags = liveTags.length > 0 ? liveTags : DISCO_TRENDING_FALLBACK;
+        // 가짜 예시 해시태그는 쓰지 않음 — 지금 실제로 대화 중인 주제가 없으면 아무것도 안 보여줌
+        const tags = (typeof allLiveTopics !== 'undefined' ? allLiveTopics : []).slice(0, 6);
+        if (tags.length === 0) { row.style.display = 'none'; return; }
+        row.style.display = 'flex';
         tags.forEach((t, i) => {
             const tag = document.createElement('button');
             tag.type = 'button';
