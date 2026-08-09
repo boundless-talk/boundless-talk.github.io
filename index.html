@@ -1700,8 +1700,17 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-trending-tag { width: auto; flex: none; font-size: 12px; color: var(--dr); padding: 5px 12px; margin: 0; border: 1px solid rgba(var(--accent-rgb),0.3); border-radius: 14px; cursor: pointer; background: none; }
         /* Discover 목록 필터 — 실시간 / 시간지정 */
         .disco-filter-row { display: flex; justify-content: flex-end; gap: 12px; margin: 10px 0 12px; }
-        .disco-filter { display: inline-flex; align-items: center; gap: 2px; font-size: 9px; color: rgba(255,255,255,0.35); cursor: pointer; user-select: none; }
-        .disco-filter input[type="checkbox"] { width: 12px; height: 12px; accent-color: var(--accent-color); cursor: pointer; flex-shrink: 0; transform: scale(0.65); transform-origin: left center; margin: 0 -4px 0 0; }
+        .disco-filter { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; color: rgba(255,255,255,0.35); cursor: pointer; user-select: none; }
+        .disco-filter input[type="checkbox"] {
+            appearance: none; -webkit-appearance: none; margin: 0;
+            width: 11px; height: 11px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.3);
+            background: transparent; cursor: pointer; flex-shrink: 0; position: relative;
+        }
+        .disco-filter input[type="checkbox"]:checked { background: var(--accent-color); border-color: var(--accent-color); }
+        .disco-filter input[type="checkbox"]:checked::after {
+            content: ''; position: absolute; left: 3px; top: 0px; width: 3px; height: 6px;
+            border: solid #fff; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg);
+        }
         /* 시간지정 방 카드의 시작 시각 배지 */
         .disco-when-badge {
             display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700;
@@ -1840,13 +1849,12 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         .disco-topic-row { display: flex; align-items: center; gap: 8px; }
         .disco-topic-row input[type="text"] { flex: 1; min-width: 0; }
         /* 시작 시각 스크롤 선택 — 모달의 입력 톤을 그대로 따름 */
-        .disco-when-selects { display: flex; gap: 7px; }
+        .disco-when-selects { display: inline-flex; gap: 0; }
         .disco-when-selects select {
-            flex: 1; min-width: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09);
-            border-radius: 8px; color: #f5f4f2; font-size: 13.5px; padding: 10px 8px; outline: none;
+            background: rgba(255,255,255,0.08); border: none;
+            border-radius: 13px; color: #fff; font-size: 10.5px; font-weight: 700; padding: 5px 10px; outline: none;
             cursor: pointer; color-scheme: dark; appearance: none; text-align: center;
         }
-        .disco-when-selects select:focus { border-color: var(--dr); }
         #disco-create-when-hint { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 6px; }
         .disco-pp-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,.09); border-radius: 8px; padding: 10px 12px; }
         .disco-pp-row-label { font-size: 12.5px; color: rgba(255,255,255,0.7); }
@@ -2054,6 +2062,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-ring .ring-n.empty { border-color: rgba(0,0,0,.2); }
         html[data-cute-mode="cute"] .disco-search-input::placeholder { color: rgba(36,31,26,.35); }
         html[data-cute-mode="cute"] .disco-filter { color: rgba(36,31,26,.4); }
+        html[data-cute-mode="cute"] .disco-filter input[type="checkbox"] { border-color: rgba(36,31,26,.3); }
         html[data-cute-mode="cute"] .disco-sched-btn.joined {
             background: rgba(0,0,0,.04); border-color: rgba(0,0,0,.1); color: rgba(36,31,26,.5);
         }
@@ -2069,7 +2078,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .disco-pp-row { background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.08); }
         html[data-cute-mode="cute"] #disco-create-when-hint { color: rgba(36,31,26,.5); }
         html[data-cute-mode="cute"] .disco-when-selects select {
-            background: rgba(0,0,0,.03); border-color: rgba(0,0,0,.1); color: #241f1a; color-scheme: light;
+            background: rgba(0,0,0,.05); color: #241f1a; color-scheme: light;
         }
         html[data-cute-mode="cute"] .disco-seg-toggle { background: rgba(0,0,0,.05); }
         html[data-cute-mode="cute"] .disco-seg-opt { color: rgba(36,31,26,.35); }
@@ -2461,7 +2470,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                 <div class="disco-modal-label" id="disco-create-topic-label">주제</div>
                 <input type="text" id="disco-create-topic-input" placeholder="예: 오늘 있었던 일, F1, 자취 꿀팁">
                 <div style="margin-top:10px;">
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
                         <div id="disco-create-when-toggle" class="disco-seg-toggle" onclick="toggleDiscoCreateWhen()">
                             <div id="disco-create-when-live" class="disco-seg-opt active">실시간</div>
                             <div id="disco-create-when-sched" class="disco-seg-opt">시간지정</div>
@@ -4021,6 +4030,8 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         } else {
             custom.style.display = 'none';
             discoCreateStartAt = null;   // 실시간 방은 시작 시각이 없다
+            const hint = document.getElementById('disco-create-when-hint');
+            if (hint) hint.textContent = '';
         }
     }
     function toggleDiscoCreateWhen() {
