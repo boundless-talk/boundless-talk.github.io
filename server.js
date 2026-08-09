@@ -442,6 +442,7 @@ async function pushToParticipants(roomId, room, targetUids, title, body) {
     const today = kstDayKey();
     const sends = [];
     const bumps = {};
+    const deadTokenUids = []; // 브라우저 캐시 삭제 등으로 죽어버린 구독 — 토큰을 지워서 계속 조용히 실패하지 않게 함
 
     targetUids.forEach(uid => {
         const p = participants[uid];
@@ -459,7 +460,13 @@ async function pushToParticipants(roomId, room, targetUids, title, body) {
                     style: room.style === 'polite' ? 'polite' : 'casual',
                     pp: room.pingpong ? '1' : '0'
                 }
-            }).catch(e => { console.warn('[rooms push]', uid, e.message); return null; })
+            }).catch(e => {
+                console.warn('[rooms push]', uid, e.message);
+                if (e.code === 'messaging/registration-token-not-registered' || e.code === 'messaging/invalid-registration-token') {
+                    deadTokenUids.push(uid);
+                }
+                return null;
+            })
         );
     });
 
@@ -472,6 +479,7 @@ async function pushToParticipants(roomId, room, targetUids, title, body) {
         updates[`participants/${uid}/nDate`] = bumps[uid].nDate;
         updates[`participants/${uid}/nCount`] = bumps[uid].nCount;
     });
+    deadTokenUids.forEach(uid => { updates[`participants/${uid}/fcmToken`] = null; });
     try { await admin.database().ref(`rooms/${roomId}`).update(updates); } catch (e) {
         console.warn('[rooms push] counter update failed:', e.message);
     }
