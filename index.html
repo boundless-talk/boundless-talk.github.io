@@ -3445,6 +3445,11 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     const AGORA_APP_ID = "71b6f8c1cb424be1b2b5480d447e69e2";
     const TOKEN_SERVER_URL = "https://b-talk-0gi0.onrender.com";
+    // Render 무료 플랜은 한동안 요청이 없으면 서버가 잠들어서, 그 뒤 첫 요청(특히 Discover의
+    // /rooms/list)이 콜드 스타트로 20~30초씩 걸릴 수 있음 — "방이 바로 안 보이던" 원인.
+    // 로그인/인트로가 끝나기도 전인 지금 시점에 미리 한 번 깨워둬서, 실제로 Discover 화면에
+    // 도달했을 땐 이미 깨어있을 확률을 높인다(응답은 안 기다림, 그냥 깨우기만 하는 용도).
+    fetch(TOKEN_SERVER_URL + '/health').catch(() => {});
     const SIGNAL_SERVER_URL = "https://kvdb.io/YAPuhyeXZWiNidFcsstzqK/";
     const ADMIN_UID = "Gtm5D4E4eOXuUbYWnT94QV9dXRq2";
     const ADMIN_EMAIL = "freesia9353@gmail.com";
