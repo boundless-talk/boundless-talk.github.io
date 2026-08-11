@@ -1951,6 +1951,15 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         html[data-cute-mode="cute"] .main-battery-body { border-color: rgba(36,31,26,0.4); }
         html[data-cute-mode="cute"] .main-battery-nub { background: rgba(36,31,26,0.4); }
         html[data-cute-mode="cute"] .main-battery-pct { color: rgba(36,31,26,0.6); }
+        /* 설정 > 대화 충전량 팝업용 확대 배터리 그래픽 — main-battery와 같은 모양, 크기만 키움 */
+        .battery-modal-body {
+            width: 120px; height: 60px; border: 4px solid rgba(255,255,255,0.55); border-radius: 12px;
+            padding: 6px; box-sizing: border-box;
+        }
+        .battery-modal-fill { height: 100%; border-radius: 6px; background: #34c759; transition: width .3s ease, background .3s ease; }
+        .battery-modal-nub { width: 8px; height: 24px; background: rgba(255,255,255,0.55); border-radius: 0 5px 5px 0; margin-left: -3px; }
+        html[data-cute-mode="cute"] .battery-modal-body { border-color: rgba(36,31,26,0.4); }
+        html[data-cute-mode="cute"] .battery-modal-nub { background: rgba(36,31,26,0.4); }
 
         /* 친구 목록의 미니 배터리 표시 */
         .friend-battery-mini { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; }
@@ -2270,7 +2279,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
                             <div class="settings-badge-chips" id="settings-badge-chips"></div>
                         </div>
                     </div>
-                    <div class="settings-card" id="settings-rank-card" onclick="toggleRankInfoTip(event, this)" style="cursor:pointer;">
+                    <div class="settings-card" id="settings-rank-card" onclick="openBatteryStatusModal()" style="cursor:pointer;">
                         <div class="settings-card-icon" id="settings-rank-emoji">👋</div>
                         <div class="settings-card-label" id="settings-rank-label">내 랭크</div>
                         <div class="settings-card-value" id="settings-rank-name" style="color:#ffd166;">--</div>
@@ -2453,11 +2462,13 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
                 <div class="mycircles-subtabs">
                     <button class="mycircles-subtab active" id="subtab-recent" onclick="switchMyCirclesSubtab('recent')">Recently joined</button>
+                    <button class="mycircles-subtab" id="subtab-battery" onclick="switchMyCirclesSubtab('battery')">Battery log</button>
                     <button class="mycircles-subtab" id="subtab-subscription" onclick="switchMyCirclesSubtab('subscription')">Subscription</button>
                     <button class="mycircles-subtab" id="subtab-friends" onclick="switchMyCirclesSubtab('friends')">Friends</button>
                 </div>
 
                 <div id="mycircles-recent-list"></div>
+                <div id="mycircles-battery-list" style="display:none;"></div>
                 <div id="mycircles-subscription-panel" style="display:none;">
                     <div class="settings-card" id="mycircles-sub-card" onclick="openMainPayModal()" style="cursor:pointer;">
                         <div class="settings-card-label" id="mycircles-sub-label">구독 현황</div>
@@ -2807,6 +2818,24 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             <p id="notify-declined-info-desc">대화상대 입장시 놓칠 수 있어요.</p>
             <div class="nickname-modal-actions">
                 <button class="nm-confirm-btn intro2-start-btn" id="notify-declined-info-ok-btn" style="width:100%;">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 설정 > 대화 충전량 카드를 누르면 뜨는 배터리 상태 팝업(4번 화면 상단의 배터리 아이콘과 동일한 그래픽) -->
+    <div class="nickname-modal-overlay" id="battery-status-modal" onclick="if(event.target===this) closeBatteryStatusModal()">
+        <div class="nickname-modal-box">
+            <h3 id="battery-status-title">대화 충전량</h3>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:12px; margin:18px 0 10px;">
+                <div style="display:flex; align-items:center;">
+                    <div class="battery-modal-body"><div class="battery-modal-fill" id="battery-status-fill" style="width:0%"></div></div>
+                    <div class="battery-modal-nub"></div>
+                </div>
+                <div id="battery-status-pct" style="font-size:30px; font-weight:800; color:#f5f4f2;">0%</div>
+            </div>
+            <p id="battery-status-desc" style="font-size:12px; color:rgba(255,255,255,0.4); text-align:center; margin:0 0 4px;">매일 1%씩 감소돼요. 대화 중 번개(⚡)를 받으면 충전돼요.</p>
+            <div class="nickname-modal-actions">
+                <button class="nm-confirm-btn intro2-start-btn" id="battery-status-close-btn" style="width:100%;" onclick="closeBatteryStatusModal()">닫기</button>
             </div>
         </div>
     </div>
@@ -4506,9 +4535,6 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
     function togglePPInfoTip(e, btn) {
         toggleInfoTip(e, btn, currentLang === 'ko' ? '90초씩 릴레이 토크' : 'Relay talk, 90 seconds each');
     }
-    function toggleRankInfoTip(e, btn) {
-        toggleInfoTip(e, btn, currentLang === 'ko' ? '매일 1%씩 감소됩니다' : 'Drains 1% every day');
-    }
     document.addEventListener('click', () => {
         const tip = document.getElementById('pp-info-tip');
         if (tip && tip.classList.contains('active')) {
@@ -4868,6 +4894,7 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
         updateDiscoCtaLabel();
         updateMyCirclesSubtext();
         setText('subtab-recent', '최근 참여', 'Recently joined');
+        setText('subtab-battery', '배터리 로그', 'Battery log');
         setText('subtab-subscription', '구독', 'Subscription');
         setText('subtab-friends', '친구', 'Friends');
         setText('mycircles-sub-label', '구독 현황', 'Subscription');
@@ -5092,17 +5119,20 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
 
     function switchMyCirclesSubtab(tab) {
         currentMyCirclesSubtab = tab;
-        ['recent', 'subscription', 'friends'].forEach(t => {
+        ['recent', 'battery', 'subscription', 'friends'].forEach(t => {
             const btn = document.getElementById('subtab-' + t);
             if (btn) btn.classList.toggle('active', t === tab);
         });
         const recentList = document.getElementById('mycircles-recent-list');
+        const batteryList = document.getElementById('mycircles-battery-list');
         const subPanel = document.getElementById('mycircles-subscription-panel');
         const friendsPanel = document.getElementById('mycircles-friends-panel');
         if (recentList) recentList.style.display = (tab === 'recent') ? 'block' : 'none';
+        if (batteryList) batteryList.style.display = (tab === 'battery') ? 'block' : 'none';
         if (subPanel) subPanel.style.display = (tab === 'subscription') ? 'block' : 'none';
         if (friendsPanel) friendsPanel.style.display = (tab === 'friends') ? 'block' : 'none';
         if (tab === 'recent') renderRecentCirclesList();
+        if (tab === 'battery') loadBatteryLog();
         if (tab === 'subscription') loadMyCirclesSubStatus();
         if (tab === 'friends' && typeof loadFriendsList === 'function') loadFriendsList();
     }
@@ -5149,6 +5179,71 @@ select { background: #0d0e12; color: rgba(255,255,255,0.5); border: 1px solid rg
             row.appendChild(summaryBtn);
             container.appendChild(row);
         });
+    }
+
+    // My Tables > Battery log — 어느 방(주제)에서 번개(⚡)를 몇 번, 총 몇 % 받았는지 주제별로 묶어 보여줌
+    async function loadBatteryLog() {
+        const container = document.getElementById('mycircles-battery-list');
+        if (!container) return;
+        const isKo = currentLang === 'ko';
+        if (!auth.currentUser || isGuest) {
+            container.innerHTML = '';
+            const empty = document.createElement('div');
+            empty.className = 'mycircles-empty';
+            empty.textContent = isKo ? '로그인하면 볼 수 있어요.' : 'Log in to see this.';
+            container.appendChild(empty);
+            return;
+        }
+        container.innerHTML = `<div class="mycircles-empty">${isKo ? '불러오는 중...' : 'Loading...'}</div>`;
+        try {
+            const snap = await database.ref('users/' + auth.currentUser.uid + '/batteryLog').limitToLast(200).once('value');
+            const entries = Object.values(snap.val() || {});
+            container.innerHTML = '';
+            if (!entries.length) {
+                const empty = document.createElement('div');
+                empty.className = 'mycircles-empty';
+                empty.textContent = isKo ? '아직 받은 번개가 없어요.' : 'No lightning received yet.';
+                container.appendChild(empty);
+                return;
+            }
+            const byTopic = {};
+            entries.forEach(e => {
+                const topic = e.topic || (isKo ? '(주제 없음)' : '(no topic)');
+                if (!byTopic[topic]) byTopic[topic] = { count: 0, amount: 0, lastAt: 0 };
+                byTopic[topic].count += 1;
+                byTopic[topic].amount += (e.amount || 1);
+                byTopic[topic].lastAt = Math.max(byTopic[topic].lastAt, e.at || 0);
+            });
+            Object.entries(byTopic).sort((a, b) => b[1].lastAt - a[1].lastAt).forEach(([topic, info]) => {
+                const row = document.createElement('div');
+                row.className = 'mycircles-row';
+                const icon = document.createElement('div');
+                icon.className = 'mycircles-row-icon';
+                icon.textContent = '🔋';
+                const mid = document.createElement('div');
+                mid.className = 'mycircles-row-mid';
+                const title = document.createElement('div');
+                title.className = 'mycircles-row-title';
+                title.textContent = topic;
+                const meta = document.createElement('div');
+                meta.className = 'mycircles-row-meta';
+                meta.textContent = isKo
+                    ? `${info.count}번 받음 · +${info.amount}% · ${formatTimeAgo(info.lastAt)}`
+                    : `Received ${info.count}x · +${info.amount}% · ${formatTimeAgo(info.lastAt)}`;
+                mid.appendChild(title);
+                mid.appendChild(meta);
+                row.appendChild(icon);
+                row.appendChild(mid);
+                container.appendChild(row);
+            });
+        } catch(e) {
+            console.warn('loadBatteryLog failed:', e.message);
+            container.innerHTML = '';
+            const err = document.createElement('div');
+            err.className = 'mycircles-empty';
+            err.textContent = isKo ? '불러오지 못했어요.' : 'Failed to load.';
+            container.appendChild(err);
+        }
     }
 
     // ══════════════════ /Discover 화면 ══════════════════
@@ -8403,6 +8498,8 @@ database.ref('activeTopics/' + safeAgoraChannelId).on('value', snap => {
                 const newPct = Math.min(100, (cur.pct || 0) + 1);
                 await energyRef.set({ pct: newPct, updatedAt: Date.now() });
                 await database.ref(`users/${myFbUid}/dailyEnergy/${kstToday}`).set(firebase.database.ServerValue.increment(1));
+                // My Tables > Battery log에서 "어느 방에서 몇 번 받았는지" 보여주기 위한 기록
+                await database.ref(`users/${myFbUid}/batteryLog`).push({ topic: currentChannelName || '', amount: 1, at: Date.now() });
             } catch(e) { console.warn('energy self-write failed:', e); }
 
             showBadgeToast(currentLang === 'ko' ? `⚡ 번개를 받았어요! (+1%)` : `⚡ You received a lightning bolt! (+1%)`);
@@ -10090,6 +10187,26 @@ function renderSettingsBattery() {
     const pct = _settingsEnergyData.pct || 0;
     document.getElementById('settings-rank-emoji').textContent = getBatteryEmoji(pct);
     rankNameEl.textContent = pct + '%';
+}
+
+// 설정 > "대화 충전량" 카드를 누르면 4번 화면(대화방) 상단과 같은 배터리 그래픽을 큰 팝업으로 보여줌
+function openBatteryStatusModal() {
+    if (isGuest || !auth.currentUser) { promptGuestLogin(); return; }
+    const isKo = currentLang === 'ko';
+    const pct = Math.max(0, Math.min(100, (_settingsEnergyData && _settingsEnergyData.pct) || 0));
+    document.getElementById('battery-status-title').textContent = isKo ? '대화 충전량' : 'Talk Charge';
+    const fill = document.getElementById('battery-status-fill');
+    fill.style.width = pct + '%';
+    fill.style.background = pct <= 20 ? '#ff453a' : (pct <= 50 ? '#ffd60a' : '#34c759');
+    document.getElementById('battery-status-pct').textContent = pct + '%';
+    document.getElementById('battery-status-desc').textContent = isKo
+        ? '매일 1%씩 감소돼요. 대화 중 번개(⚡)를 받으면 충전돼요.'
+        : 'Drains 1% every day. Receiving a lightning bolt (⚡) during a call charges it.';
+    document.getElementById('battery-status-close-btn').textContent = isKo ? '닫기' : 'Close';
+    document.getElementById('battery-status-modal').classList.add('active');
+}
+function closeBatteryStatusModal() {
+    document.getElementById('battery-status-modal').classList.remove('active');
 }
 
 function renderSettingsDailyEnergy() {
